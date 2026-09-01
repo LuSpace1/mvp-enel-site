@@ -55,6 +55,11 @@ export const PASOS_VIAJE: PasoViaje[] = [
     nombre: 'Cierre',
     descripcion: 'El propósito que nos une cada día.',
   },
+  {
+    id: 'faq',
+    nombre: 'Preguntas frecuentes',
+    descripcion: 'Respuestas a consultas habituales.',
+  },
 ]
 
 export const PASO_INICIAL = 'portada'
