@@ -53,3 +53,6 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f"{'Admin: ' if self.is_platform_admin else 'User: '}{self.username}"
+
+    def get_full_name(self):
+        return self.username

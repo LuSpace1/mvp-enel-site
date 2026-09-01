@@ -17,3 +17,9 @@ class CustomUserAdmin(UserAdmin):
             {"fields": ("is_platform_admin", "is_active", "is_staff", "is_superuser")},
         ),
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            qs = qs.filter(is_platform_admin=False)
+        return qs

@@ -7,12 +7,6 @@ from .serializers import AnonymousAuthSerializer
 
 
 class AnonymousAuthView(APIView):
-    """
-    POST /api/auth/anonymous/
-    Recibe el identificador del navegador, crea o recupera al trabajador
-    y devuelve los datos de acceso.
-    """
-
     permission_classes = []
 
     def post(self, request):
@@ -21,11 +15,12 @@ class AnonymousAuthView(APIView):
         data = serializer.save()
         return Response(data, status=status.HTTP_200_OK)
 
+    def get(self, request):
+        return Response({"detail": "Método no permitido."}, status=405)
+
 
 class AdminAuthView(TokenObtainPairView):
-    """
-    POST /api/auth/admin/
-    Entrada con usuario y contraseña exclusiva para administradores.
-    """
-
     permission_classes = []
+
+    def get(self, request):
+        return Response({"detail": "Use POST para autenticarse."}, status=405)

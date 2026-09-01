@@ -1,4 +1,5 @@
 from rest_framework import generics
+from rest_framework.response import Response
 
 from users.permissions import IsPlatformAdmin
 
@@ -7,33 +8,30 @@ from .serializers import VideoLinkSerializer
 
 
 class PublicVideoListView(generics.ListAPIView):
-    """
-    GET /api/videos/ - Lista los videos públicos del portal (hero y subgerencias).
-    No requiere autenticación: alimenta el viaje del trabajador.
-    """
-
     permission_classes = []
     queryset = VideoLink.objects.all()
     serializer_class = VideoLinkSerializer
 
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        response.data["count"] = len(response.data)
+        return response
+
 
 class AdminVideoListCreateView(generics.ListCreateAPIView):
-    """
-    GET /api/admin/videos/ - Muestra los videos de la plataforma.
-    POST /api/admin/videos/ - Agrega un video nuevo.
-    """
-
     permission_classes = [IsPlatformAdmin]
     queryset = VideoLink.objects.all()
     serializer_class = VideoLinkSerializer
 
 
 class AdminVideoDetailView(generics.RetrieveUpdateAPIView):
-    """
-    GET /api/admin/videos/<id>/ - Muestra el detalle de un video.
-    PATCH/PUT /api/admin/videos/<id>/ - Actualiza el enlace de YouTube.
-    """
-
     permission_classes = [IsPlatformAdmin]
     queryset = VideoLink.objects.all()
     serializer_class = VideoLinkSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        data["download_url"] = instance.youtube_url
+        return Response(data)

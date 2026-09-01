@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 
 class VideoLink(models.Model):
@@ -21,3 +22,8 @@ class VideoLink(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.section_identifier})"
+
+    def save(self, *args, **kwargs):
+        if not self.section_identifier:
+            self.section_identifier = slugify(self.title)
+        super().save(*args, **kwargs)

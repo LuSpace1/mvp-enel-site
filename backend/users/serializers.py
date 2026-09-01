@@ -31,3 +31,8 @@ class AnonymousAuthSerializer(serializers.Serializer):
             "access": str(refresh.access_token),
             "refresh": str(refresh),
         }
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["token_type"] = "bearer"
+        return data
