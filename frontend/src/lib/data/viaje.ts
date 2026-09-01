@@ -31,7 +31,7 @@ export const PASOS_VIAJE: PasoViaje[] = [
     descripcion: 'Quién lidera cada área y qué hace cada equipo.',
   },
   {
-    id: 'mapa',
+    id: 'concesion-detalle',
     nombre: 'Mapa de concesión',
     descripcion: 'Las 33 comunas que se encienden con nosotros.',
   },

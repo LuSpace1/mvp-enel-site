@@ -22,7 +22,7 @@ const ITEMS: NavItem[] = [
   { id: 'historia', etiqueta: 'Historia' },
   { id: 'cultura', etiqueta: 'Cultura' },
   { id: 'organigrama', etiqueta: 'Equipos' },
-  { id: 'mapa', etiqueta: 'Concesión' },
+  { id: 'concesion-detalle', etiqueta: 'Concesión' },
   { id: 'cadena', etiqueta: 'Cadena' },
   { id: 'politicas', etiqueta: 'Políticas' },
   { id: 'galerias', etiqueta: 'Galerías' },

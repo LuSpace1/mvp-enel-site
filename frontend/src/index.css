@@ -217,52 +217,6 @@ body {
   contain-intrinsic-size: auto 360px;
 }
 
-.cv-mapa {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 730px;
-}
-
-/* Etiquetas permanentes de comunas dentro de una zona abierta */
-.leaflet-tooltip.comuna-label {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 2px 6px;
-  color: #fff;
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  text-shadow:
-    0 1px 2px rgba(10, 25, 47, 0.55),
-    0 0 6px rgba(10, 25, 47, 0.35);
-  pointer-events: none;
-}
-.leaflet-tooltip.comuna-label::before {
-  display: none;
-}
-
-/* Mapa: redondeamos los bordes internos del contenedor Leaflet */
-.leaflet-container {
-  font-family: inherit;
-  outline: none;
-}
-
-/* ---------- Mapa Leaflet: brillo eléctrico amarillo en hover de comuna ---------- */
-
-/* Todas las comunas de la zona abierta laten suavemente con un tenue resplandor amarillo */
-@keyframes comuna-viva {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 1px rgba(255, 200, 0, 0.15));
-  }
-  50% {
-    filter: drop-shadow(0 0 3px rgba(255, 200, 0, 0.3));
-  }
-}
-
 /* Flicker eléctrico amarillo: parpadeo agresivo + glow cálido */
 @keyframes electricidad-flicker {
   0% {
@@ -313,19 +267,7 @@ body {
   }
 }
 
-.leaflet-overlay-pane path.en-zona-abierta {
-  animation: comuna-viva 3s ease-in-out infinite;
-}
-
-.leaflet-overlay-pane path.comuna-electricidad {
-  animation:
-    electricidad-flicker 1.3s ease-in-out infinite,
-    electricidad-descarga 0.8s linear infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .leaflet-overlay-pane path.en-zona-abierta,
-  .leaflet-overlay-pane path.comuna-electricidad,
   .comuna-electricidad-svg {
     animation: none;
     filter: drop-shadow(0 0 8px rgba(255, 200, 0, 0.8))
@@ -333,7 +275,7 @@ body {
   }
 }
 
-/* ---------- Mapa SVG: Vista Concesión 2 ---------- */
+/* ---------- Mapa SVG: Vista Concesión ---------- */
 
 /* Trazo tipo "lápiz": se dibuja al entrar en view */
 .comuna-trazo {
@@ -375,7 +317,7 @@ body {
   user-select: none;
 }
 
-/* Descarga eléctrica sobre el contorno de la comuna en hover (como el mapa Leaflet) */
+/* Descarga eléctrica sobre el contorno de la comuna en hover */
 .comuna-electricidad-svg {
   stroke-dasharray: 0.35 0.65;
   animation:

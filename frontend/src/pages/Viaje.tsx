@@ -26,11 +26,6 @@ const OrganigramaSection = lazy(() =>
     default: modulo.OrganigramaSection,
   })),
 )
-const MapaConcesionSection = lazy(() =>
-  import('@/sections/MapaConcesionSection').then((modulo) => ({
-    default: modulo.MapaConcesionSection,
-  })),
-)
 const VistaConcesionSection = lazy(() =>
   import('@/sections/VistaConcesionSection').then((modulo) => ({
     default: modulo.VistaConcesionSection,
@@ -119,10 +114,6 @@ const Secciones = memo(function Secciones() {
 
       <SectionObserver id="organigrama">
         <OrganigramaSection />
-      </SectionObserver>
-
-      <SectionObserver id="mapa">
-        <MapaConcesionSection />
       </SectionObserver>
 
       <SectionObserver id="concesion-detalle">

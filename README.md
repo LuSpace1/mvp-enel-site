@@ -7,7 +7,7 @@ Trabajo realizado por el área de **Mejora Continua en Quality Assurance**.
 ## Stack
 
 - **Backend:** Python 3.12+ / Django 5 / Django REST Framework / JWT / SQLite
-- **Frontend:** React 19 / TypeScript / Vite / Tailwind CSS / Motion / Zustand / Leaflet
+- **Frontend:** React 19 / TypeScript / Vite / Tailwind CSS / Motion / Zustand
 - **Herramientas:** uv / oxlint / Prettier
 
 ## Arquitectura
