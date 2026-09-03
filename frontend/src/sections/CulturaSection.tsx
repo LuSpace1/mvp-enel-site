@@ -224,7 +224,7 @@ export function CulturaSection() {
           </div>
 
           {/* Contenedor del Carrusel */}
-          <div className="relative h-[520px] w-full overflow-hidden px-2 sm:h-[460px] md:h-[370px] md:px-0">
+          <div className="relative w-full overflow-hidden px-2 md:px-0">
             <AnimatePresence initial={false} custom={direction} mode="wait">
               <motion.div
                 key={slide}
@@ -234,10 +234,10 @@ export function CulturaSection() {
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.5, type: 'spring', bounce: 0.2 }}
-                className="absolute inset-x-2 flex h-full md:inset-x-0"
+                className="px-2 md:px-0"
               >
                 <article
-                  className="group bg-enel-fog/40 relative h-full w-full overflow-hidden rounded-2xl p-[2px] shadow-sm transition-shadow hover:shadow-xl"
+                  className="group bg-enel-fog/40 relative w-full overflow-hidden rounded-2xl p-[2px] shadow-sm transition-shadow hover:shadow-xl"
                   style={{ animation: 'float-subtle 4s ease-in-out infinite' }}
                 >
                   {/* Capa giratoria del borde eléctrico (Chispa) */}
@@ -250,7 +250,7 @@ export function CulturaSection() {
                   />
 
                   {/* Contenedor Interior (La Máscara) */}
-                  <div className="relative z-10 flex h-full flex-col rounded-[14px] bg-white p-7 md:p-10">
+                  <div className="relative z-10 flex min-h-[500px] flex-col rounded-[14px] bg-white p-7 sm:min-h-[450px] md:min-h-[400px] md:p-8">
                     <span className="bg-enel-blue block h-1 w-8 rounded-full transition-all group-hover:w-12" />
                     <h3 className="text-enel-navy mt-4 text-2xl font-semibold tracking-tight md:text-3xl">
                       {pilaresCultura[slide]?.titulo}
@@ -258,7 +258,7 @@ export function CulturaSection() {
                     <p className="mt-4 text-base leading-relaxed text-neutral-600 md:text-lg">
                       {pilaresCultura[slide]?.descripcion}
                     </p>
-                    <ul className="mt-auto flex flex-wrap gap-2 pt-6">
+                    <ul className="mt-auto flex flex-wrap gap-2 pt-5">
                       {pilaresCultura[slide]?.puntos.map((punto) => (
                         <li
                           key={punto}
