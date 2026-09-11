@@ -123,10 +123,10 @@ export function HistoriaSection() {
 
       <motion.div
         className="relative z-10 mt-20"
-        initial={reduce ? false : { opacity: 0, x: -500 }}
-        whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
-        transition={{ type: 'spring', stiffness: 25, damping: 16, mass: 2 }}
+        initial={reduce ? false : { opacity: 0, y: 50 }}
+        whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.1, margin: '0px 0px -50px 0px' }}
+        transition={{ type: 'spring', stiffness: 25, damping: 16, mass: 1.5 }}
       >
         {/* CARD PADRE */}
         <div
@@ -143,11 +143,83 @@ export function HistoriaSection() {
             }}
           />
 
-          <div className="relative z-10 flex flex-col gap-16">
-            {/* 1. TIMELINE SUPERIOR */}
-            <div className="relative flex w-full flex-col items-start justify-between gap-12 md:flex-row md:gap-4">
-              {/* Línea conectora horizontal (solo desktop) */}
-              <div className="bg-enel-fog/80 absolute top-8 right-[10%] left-[10%] hidden h-0.5 md:block" />
+          <div className="relative z-10 flex flex-col gap-10 md:gap-16">
+            {/* MÓVIL: filas punto → tarjeta, una por etapa */}
+            <div className="relative flex flex-col gap-4 pt-12 md:pt-0 md:hidden">
+              {/* Línea conectora vertical */}
+              <div className="bg-enel-fog/80 absolute top-20 bottom-8 left-6 w-0.5" aria-hidden="true" />
+              {timelineSteps.map((step, idx) => {
+                const stat = statCards[idx]
+                return (
+                  <motion.div
+                    key={step.num}
+                    className="relative flex items-center gap-4"
+                    initial={reduce ? false : { opacity: 0, x: -16 }}
+                    whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.1 }}
+                    transition={{ delay: idx * 0.1, duration: 0.5 }}
+                  >
+                    {/* Círculo numérico con título debajo */}
+                    <div className="z-10 flex w-12 shrink-0 flex-col items-center gap-1.5">
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white drop-shadow-lg ${step.borderColor} ${step.color} text-xl font-bold`}
+                      >
+                        {step.num}
+                      </div>
+                      <p className={`text-[10px] leading-tight font-bold ${step.color}`}>
+                        {step.titulo}
+                      </p>
+                    </div>
+                    {/* Tarjeta de estadística a la par */}
+                    {stat && (
+                      <div
+                        className={`flex min-w-0 flex-1 flex-col items-start gap-1 rounded-2xl border-2 ${stat.borderColor} ${stat.bgColor} bg-white/90 px-4 py-3 shadow-lg backdrop-blur-md`}
+                        onTouchStart={() => setIsBulbOn(true)}
+                        onTouchEnd={() => setIsBulbOn(false)}
+                      >
+                        <p
+                          className={`text-2xl font-extrabold tracking-tight ${stat.color}`}
+                        >
+                          {stat.statVal}
+                          {stat.statUnit ? <span className="ml-0.5 text-base">{stat.statUnit}</span> : null}
+                        </p>
+                        <p className="text-enel-navy text-[10px] leading-snug font-bold tracking-wider uppercase">
+                          {stat.statDesc}
+                        </p>
+                      </div>
+                    )}
+                  </motion.div>
+                )
+              })}
+              {/* 5ª estadística (equipo) sin número: fila completa */}
+              {statCards[4] && (
+                <motion.div
+                  className="relative pl-16"
+                  initial={reduce ? false : { opacity: 0, x: -16 }}
+                  whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                >
+                  <div
+                    className={`flex flex-col items-start gap-1 rounded-2xl border-2 ${statCards[4].borderColor} ${statCards[4].bgColor} bg-white/90 px-4 py-3 shadow-lg backdrop-blur-md`}
+                  >
+                    <p
+                      className={`text-2xl font-extrabold tracking-tight ${statCards[4].color}`}
+                    >
+                      {statCards[4].statVal}
+                    </p>
+                    <p className="text-enel-navy text-[10px] leading-snug font-bold tracking-wider uppercase">
+                      {statCards[4].statDesc}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* DESKTOP: TIMELINE SUPERIOR */}
+            <div className="relative hidden w-full flex-col items-start justify-between gap-12 md:flex md:flex-row md:gap-4">
+              {/* Línea conectora horizontal */}
+              <div className="bg-enel-fog/80 absolute top-8 right-[10%] left-[10%] h-0.5" />
 
               {timelineSteps.map((step, idx) => (
                 <motion.div
@@ -155,7 +227,7 @@ export function HistoriaSection() {
                   className="relative flex flex-1 flex-col items-center text-center"
                   initial={reduce ? false : { opacity: 0, y: 20 }}
                   whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.5 }}
+                  viewport={{ once: true, amount: 0.2 }}
                   transition={{ delay: idx * 0.15, duration: 0.6 }}
                 >
                   {/* Círculo numérico */}
@@ -178,8 +250,8 @@ export function HistoriaSection() {
               ))}
             </div>
 
-            {/* 2. TARJETAS DE ESTADÍSTICAS (Separadas del timeline) */}
-            <div className="flex flex-wrap justify-center gap-6">
+            {/* DESKTOP: tarjetas de estadísticas */}
+            <div className="hidden flex-wrap justify-center gap-6 md:flex">
               {statCards.map((stat, idx) => (
                 <motion.div
                   key={stat.statVal}
@@ -187,7 +259,7 @@ export function HistoriaSection() {
                   style={{ animation: 'float-subtle 4s ease-in-out infinite' }}
                   initial={reduce ? false : { opacity: 0, scale: 0.9 }}
                   whileInView={reduce ? undefined : { opacity: 1, scale: 1 }}
-                  viewport={{ once: true, amount: 0.5 }}
+                  viewport={{ once: true, amount: 0.2 }}
                   transition={{ delay: 0.4 + idx * 0.1, duration: 0.5 }}
                   onMouseEnter={() => setIsBulbOn(true)}
                   onMouseLeave={() => setIsBulbOn(false)}
@@ -207,9 +279,9 @@ export function HistoriaSection() {
           </div>
 
           {/* Bombilla Interactiva (Se enciende al hacer hover en los objetos) */}
-          <div className="absolute top-6 right-6 z-20 md:top-10 md:right-10">
+          <div className="absolute top-6 right-6 z-20 md:top-10 md:right-10 w-10 h-10 md:w-14 md:h-14">
             <Lightbulb
-              size={56}
+              size="100%"
               weight={isBulbOn ? 'fill' : 'duotone'}
               className={`transition-all duration-500 ${
                 isBulbOn
