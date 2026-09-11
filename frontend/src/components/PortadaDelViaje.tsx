@@ -79,7 +79,7 @@ export function PortadaDelViaje() {
             transition={{ duration: 1.3, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center"
           >
-            <h1 className="w-full text-4xl leading-[1.05] font-semibold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem] xl:whitespace-nowrap">
+            <h1 className="w-full text-4xl leading-[1.05] font-semibold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem]">
               Bienvenido a <span className="texto-gradiente-azul">Enel Distribución</span>.
             </h1>
           </motion.div>

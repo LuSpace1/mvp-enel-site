@@ -1,4 +1,5 @@
-import { startTransition, useRef, useState } from 'react'
+import { startTransition, useRef, useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ArrowUpRight,
   Buildings,
@@ -7,8 +8,10 @@ import {
   CaretLeft,
   CaretRight,
   MagnifyingGlass,
+  CaretDown,
+  X,
 } from '@phosphor-icons/react'
-import { motion, useInView, useReducedMotion } from 'motion/react'
+import { motion, useInView, useReducedMotion, AnimatePresence } from 'motion/react'
 
 import { Reveal } from '@/components/ui/Reveal'
 import { SectionShell } from '@/components/ui/SectionShell'
@@ -41,6 +44,12 @@ const TEASER_POS = [
   { x: 112, rotate: 8 },
 ]
 
+const gridVariants = {
+  enter: (dir: number) => ({ opacity: 0, x: dir >= 0 ? 60 : -60 }),
+  center: { opacity: 1, x: 0 },
+  exit: (dir: number) => ({ opacity: 0, x: dir >= 0 ? -60 : 60 }),
+}
+
 export function GaleriasSection() {
   const bannerRef = useRef<HTMLDivElement>(null)
   const [activePhoto, setActivePhoto] = useState(0)
@@ -60,6 +69,40 @@ export function GaleriasSection() {
       setActivePhoto((prev) => (prev - 1 + fotosMeOffice.length) % fotosMeOffice.length)
     })
   }
+
+  // Lightbox logic
+  const [lightboxAbierto, setLightboxAbierto] = useState<number | null>(null)
+  const [lightboxDir, setLightboxDir] = useState(0)
+  const lightboxScrollRef = useRef<HTMLDivElement>(null)
+  const lightboxDescRef = useRef<HTMLElement>(null)
+  const touchX = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (lightboxAbierto === null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxAbierto(null)
+      if (e.key === 'ArrowRight') navegarLightbox(1)
+      if (e.key === 'ArrowLeft') navegarLightbox(-1)
+    }
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [lightboxAbierto])
+
+  const navegarLightbox = (dir: number) => {
+    lightboxScrollRef.current?.scrollTo({ top: 0 })
+    setLightboxDir(dir)
+    setLightboxAbierto((prev) => {
+      if (prev === null) return null
+      return (prev + dir + fotosMeOffice.length) % fotosMeOffice.length
+    })
+  }
+
+  const lightboxFotoActiva = lightboxAbierto !== null ? fotosMeOffice[lightboxAbierto] : null
 
   return (
     <SectionShell id="galerias" className="relative overflow-hidden bg-[#f0eee6]">
@@ -104,7 +147,10 @@ export function GaleriasSection() {
                   key={foto.src}
                   className="absolute origin-center cursor-pointer rounded-md border border-neutral-200 bg-white p-4 pb-16 shadow-[0_20px_40px_rgba(0,0,0,0.12)]"
                   style={{ width: 'min(75vw, 320px)', zIndex: isActive ? 50 : 10 + indice }}
-                  onClick={() => !isActive && setActivePhoto(indice)}
+                  onClick={() => {
+                    if (!isActive) setActivePhoto(indice)
+                    else setLightboxAbierto(indice)
+                  }}
                   animate={
                     isActive
                       ? { x: 0, y: 0, rotate: 0, scale: 1.15, opacity: 1 }
@@ -325,6 +371,122 @@ export function GaleriasSection() {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Lightbox para Me Office */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {lightboxFotoActiva && (
+              <motion.div
+                ref={lightboxScrollRef}
+                className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-[#f0eee6]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onTouchStart={(e) => {
+                  touchX.current = e.touches[0]?.clientX ?? null
+                }}
+                onTouchEnd={(e) => {
+                  if (touchX.current === null) return
+                  const endX = e.changedTouches[0]?.clientX ?? touchX.current
+                  const delta = endX - touchX.current
+                  touchX.current = null
+                  if (Math.abs(delta) > 50) navegarLightbox(delta < 0 ? 1 : -1)
+                }}
+              >
+                {/* Barra superior fija */}
+                <div className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between gap-4 bg-gradient-to-b from-[#f0eee6]/90 to-transparent px-4 py-3 md:px-6">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="text-xl font-bold tracking-tight text-[#d97757] md:text-2xl">
+                      {String((lightboxAbierto ?? 0) + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="truncate font-serif text-lg font-medium text-[#191919] italic md:text-xl">
+                      {lightboxFotoActiva.alt}
+                    </h3>
+                    <span className="hidden shrink-0 text-sm font-semibold tracking-widest text-[#8a857c] uppercase sm:block">
+                      {(lightboxAbierto ?? 0) + 1} / {fotosMeOffice.length}
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      onClick={() => navegarLightbox(-1)}
+                      aria-label="Anterior"
+                      className="rounded-full p-3 text-[#191919] transition-colors hover:bg-[#191919]/10"
+                    >
+                      <CaretLeft size={28} weight="bold" />
+                    </button>
+                    <button
+                      onClick={() => navegarLightbox(1)}
+                      aria-label="Siguiente"
+                      className="rounded-full p-3 text-[#191919] transition-colors hover:bg-[#191919]/10"
+                    >
+                      <CaretRight size={28} weight="bold" />
+                    </button>
+                    <button
+                      onClick={() => setLightboxAbierto(null)}
+                      aria-label="Cerrar galería"
+                      className="rounded-full p-3 text-[#191919] transition-colors hover:bg-[#191919]/10"
+                    >
+                      <X size={24} weight="bold" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Contenido que cambia con la foto */}
+                <AnimatePresence initial={false} custom={lightboxDir} mode="wait">
+                  <motion.div
+                    key={lightboxAbierto}
+                    custom={lightboxDir}
+                    variants={gridVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                  >
+                    {/* Primer apartado: imagen a pantalla completa */}
+                    <div className="relative flex min-h-dvh items-center justify-center px-4 py-16 md:px-20">
+                      <img
+                        src={lightboxFotoActiva.src}
+                        alt={lightboxFotoActiva.alt}
+                        className="max-h-[80vh] w-full max-w-full rounded-lg object-contain shadow-2xl ring-1 ring-[#e0dcd0]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          lightboxDescRef.current?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                          })
+                        }
+                        className="absolute bottom-8 left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full border border-[#e4e0d5] bg-white/70 px-4 py-2 text-xs font-medium whitespace-nowrap text-[#686561] transition-colors hover:bg-white hover:text-[#191919]"
+                      >
+                        <CaretDown size={16} weight="bold" />
+                        Ver mas!
+                      </button>
+                    </div>
+
+                    {/* Segundo apartado: descripción */}
+                    <section ref={lightboxDescRef} className="bg-[#191919] px-4 pt-16 pb-24 md:px-6">
+                      <div className="mx-auto max-w-3xl">
+                        <p className="text-xs font-bold tracking-[0.2em] text-[#d97757] uppercase">
+                          El espacio
+                        </p>
+                        <h4 className="mt-3 font-serif text-2xl font-medium text-[#f0eee6] italic md:text-3xl">
+                          {lightboxFotoActiva.alt}
+                        </h4>
+                        <div className="mt-6 space-y-4">
+                          <p className="text-base leading-relaxed text-[#d8d4c9]">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                          </p>
+                        </div>
+                      </div>
+                    </section>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
     </SectionShell>
   )
 }

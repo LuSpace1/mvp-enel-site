@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import {
   Compass,
   HandCoins,
@@ -8,7 +8,7 @@ import {
   Wrench,
   type Icon,
 } from '@phosphor-icons/react'
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, useMotionValue, useReducedMotion } from 'motion/react'
 import { etapasCadena } from '@/lib/data/organizacion'
 import type { EtapaCadena } from '@/types/api'
 
@@ -71,7 +71,6 @@ export function CadenaValorSection() {
   }
 
   const [activa, setActiva] = useState<string>(primeraEtapa.id)
-  const [isHovered, setIsHovered] = useState(false)
 
   const etapaActual: EtapaCadena =
     etapasCadena.find((e) => e.id === activa) ?? primeraEtapa
@@ -82,6 +81,31 @@ export function CadenaValorSection() {
 
   // Arreglo duplicado para la cinta continua infinita hacia la derecha
   const etapasDuplicadas = [...etapasCadena, ...etapasCadena]
+
+  // Cinta continua: animación imperativa infinita que NUNCA se reinicia;
+  // el hover solo cambia la velocidad (los tags se pueden alcanzar).
+  const cintaRef = useRef<HTMLDivElement>(null)
+  const cintaX = useMotionValue(0)
+  const velocidadRef = useRef(1)
+
+  useEffect(() => {
+    if (reduce) return
+    let raf = 0
+    let ultimo = performance.now()
+    const paso = (ahora: number) => {
+      const dt = Math.min((ahora - ultimo) / 1000, 0.05)
+      ultimo = ahora
+      const mitad = cintaRef.current ? cintaRef.current.scrollWidth / 2 : 0
+      if (mitad > 0) {
+        // ~55 px/s a velocidad 1: ciclo completo de la mitad en ~18s
+        const siguiente = cintaX.get() - 55 * velocidadRef.current * dt
+        cintaX.set(siguiente <= -mitad ? siguiente + mitad : siguiente)
+      }
+      raf = requestAnimationFrame(paso)
+    }
+    raf = requestAnimationFrame(paso)
+    return () => cancelAnimationFrame(raf)
+  }, [reduce, cintaX])
 
   return (
     <section id="cadena" className="relative overflow-hidden bg-[#f0eee6] py-16 md:py-24">
@@ -102,8 +126,12 @@ export function CadenaValorSection() {
         {/* Cadena Continua en Movimiento (Avance hacia la derecha con animación de electricidad horizontal) */}
         <div
           className="relative w-full overflow-hidden py-4 select-none"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          onMouseEnter={() => {
+            velocidadRef.current = 0.1
+          }}
+          onMouseLeave={() => {
+            velocidadRef.current = 1
+          }}
         >
           {/* Atenuaciones laterales para difuminar bordes */}
           <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 md:w-28 z-30 bg-gradient-to-r from-[#f0eee6] to-transparent" />
@@ -132,19 +160,9 @@ export function CadenaValorSection() {
 
           {/* Cinta continua de Chevrons en movimiento hacia la derecha */}
           <motion.div
+            ref={cintaRef}
             className="flex items-center gap-2 w-max cursor-pointer relative z-20"
-            animate={
-              reduce
-                ? undefined
-                : {
-                    x: isHovered ? undefined : ['-50%', '0%'],
-                  }
-            }
-            transition={{
-              ease: 'linear',
-              duration: 18,
-              repeat: Infinity,
-            }}
+            style={{ x: cintaX }}
           >
             {etapasDuplicadas.map((etapa, idx) => {
               const config = CONFIG_ETAPAS[etapa.id] ?? CONFIG_DEFAULT

@@ -83,7 +83,7 @@ export const Indice = memo(function Indice() {
       {mostrar && (
         <motion.nav
           aria-label="Índice de secciones"
-          className="fixed top-1/2 right-3 z-30 md:right-5"
+          className="fixed top-1/2 right-5 z-30 hidden lg:block"
           initial={reduce ? { opacity: 0 } : { opacity: 0, x: 24, y: '-50%' }}
           animate={{ opacity: 1, x: 0, y: '-50%' }}
           exit={reduce ? { opacity: 0 } : { opacity: 0, x: 24 }}

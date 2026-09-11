@@ -68,6 +68,8 @@ export function OrganigramaSection() {
   const [ggAbierto, setGgAbierto] = useState(false)
   const [videoActivo, setVideoActivo] = useState<{ url: string; titulo: string } | null>(null)
   const reduce = useReducedMotion()
+  // Detalle de subgerencia activo: alimenta el modal centrado en móvil/tablet
+  const subAbierta = subgerencias.find((sub) => sub.id === nodoAbierto) ?? null
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -198,26 +200,25 @@ export function OrganigramaSection() {
                   </p>
                 </div>
 
-                {/* Detalle de Subgerencia: bottom sheet en móvil, popover anclado en desktop */}
+                {/* Detalle de Subgerencia: popover anclado solo en escritorio (lg+) */}
                 <div
                   onClick={(e) => e.stopPropagation()}
                   role="dialog"
                   aria-modal="true"
-                  className={`fixed inset-x-3 bottom-3 z-[100] max-h-[75dvh] overflow-y-auto rounded-[24px] border border-black/[0.06] bg-white/95 shadow-[0_-2px_6px_rgba(0,0,0,0.04),0_-24px_60px_-12px_rgba(10,25,47,0.22)] backdrop-blur-2xl transition-[opacity,translate,scale,visibility] duration-300 ease-out md:absolute md:inset-x-auto md:bottom-[110%] md:mb-4 md:max-h-none md:w-[min(340px,calc(100vw-2rem))] md:overflow-visible ${
+                  className={`absolute inset-x-auto bottom-[110%] z-[100] mb-4 hidden w-[min(340px,calc(100vw-2rem))] overflow-visible rounded-[24px] border border-black/[0.06] bg-white/95 shadow-[0_-2px_6px_rgba(0,0,0,0.04),0_-24px_60px_-12px_rgba(10,25,47,0.22)] backdrop-blur-2xl transition-[opacity,scale,visibility] duration-300 ease-out lg:block ${
                     idx === 0
-                      ? 'md:left-0'
+                      ? 'left-0'
                       : idx === subgerencias.length - 1
-                        ? 'md:right-0'
-                        : 'md:left-1/2 md:-translate-x-1/2'
+                        ? 'right-0'
+                        : 'left-1/2 -translate-x-1/2'
                   } ${
                     nodoAbierto === sub.id
-                      ? 'visible translate-y-0 opacity-100 md:scale-100'
-                      : 'pointer-events-none invisible translate-y-6 opacity-0 md:translate-y-0 md:scale-95'
+                      ? 'visible scale-100 opacity-100'
+                      : 'pointer-events-none invisible scale-95 opacity-0'
                   }`}
                 >
                   {/* Encabezado del Popover */}
                   <div className="bg-enel-navy relative flex items-start gap-4 p-5 text-left">
-                    <div className="absolute top-2 left-1/2 h-1 w-9 -translate-x-1/2 rounded-full bg-white/30 md:hidden" />
                     <button
                       onClick={() => setNodoAbierto(null)}
                       className="absolute top-3 right-3 rounded-full p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
@@ -285,14 +286,6 @@ export function OrganigramaSection() {
               </motion.div>
             ))}
           </motion.div>
-
-          {/* Scrim móvil: oscurece el árbol mientras el detalle está abierto */}
-          <div
-            onClick={() => setNodoAbierto(null)}
-            className={`fixed inset-0 z-[90] bg-black/45 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
-              nodoAbierto ? 'opacity-100' : 'pointer-events-none opacity-0'
-            }`}
-          />
         </motion.div>
 
         {/* ─── Áreas Staff: Sección aparte, fuera del organigrama ─── */}
@@ -386,6 +379,97 @@ export function OrganigramaSection() {
           })}
         </motion.div>
       </motion.div>
+
+      {/* Modal de Detalle de Subgerencia: centrado en móvil/tablet (en lg+ se usa el popover anclado) */}
+      <AnimatePresence>
+        {subAbierta && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/75 p-4 py-10 backdrop-blur-sm lg:hidden"
+            onClick={() => setNodoAbierto(null)}
+          >
+            <motion.div
+              initial={reduce ? { opacity: 0 } : { scale: 0.95, y: 20 }}
+              animate={reduce ? { opacity: 1 } : { scale: 1, y: 0 }}
+              exit={reduce ? { opacity: 0 } : { scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.45 }}
+              className="relative w-full max-w-md shrink-0 overflow-hidden rounded-[28px] border border-white/60 bg-white/95 shadow-2xl backdrop-blur-2xl"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              {/* Encabezado */}
+              <div className="bg-enel-navy relative flex items-start gap-4 p-5 text-left">
+                <button
+                  onClick={() => setNodoAbierto(null)}
+                  className="absolute top-3 right-3 rounded-full p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
+                  aria-label="Cerrar detalle"
+                >
+                  <X size={18} />
+                </button>
+                <img
+                  src={subAbierta.foto}
+                  className="h-12 w-12 rounded-full object-cover ring-2 ring-white/20"
+                  alt=""
+                />
+                <div>
+                  <p className="text-enel-blue text-[10px] font-semibold tracking-[0.14em] uppercase">
+                    Subgerencia {subAbierta.sigla}
+                  </p>
+                  <h4 className="mt-1 text-[13px] leading-tight font-semibold tracking-[-0.01em] text-white">
+                    {subAbierta.nombre}
+                  </h4>
+                  <p className="mt-1 text-[11px] font-medium text-neutral-300">
+                    Líder: {subAbierta.subgerente}
+                  </p>
+                </div>
+              </div>
+
+              {/* Cuerpo */}
+              <div className="p-5 text-left">
+                {videoDeSeccion(subAbierta.videoSection) && (
+                  <button
+                    onClick={() =>
+                      setVideoActivo({
+                        url: videoDeSeccion(subAbierta.videoSection)!.youtube_url,
+                        titulo: videoDeSeccion(subAbierta.videoSection)!.title,
+                      })
+                    }
+                    className="group/btn bg-enel-blue hover:bg-enel-blue-dark mb-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-semibold tracking-wide text-white shadow-sm transition-[background-color,box-shadow,transform] duration-300 ease-out hover:shadow-md active:scale-[0.98] active:duration-100"
+                  >
+                    <Play
+                      size={14}
+                      weight="fill"
+                      className="text-white transition-transform duration-300 group-hover/btn:scale-115"
+                    />
+                    Ver Video de Bienvenida
+                  </button>
+                )}
+                <p className="text-xs leading-relaxed text-neutral-600">{subAbierta.proposito}</p>
+
+                <div className="mt-5">
+                  <p className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.14em] text-neutral-400 uppercase">
+                    <span className="bg-enel-blue h-1.5 w-1.5 rounded-full" />
+                    Principales procesos
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {subAbierta.procesos.map((proc) => (
+                      <span
+                        key={proc}
+                        className="rounded-full border border-black/[0.06] bg-black/[0.03] px-2.5 py-1 text-[10px] font-medium text-neutral-600"
+                      >
+                        {proc}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modal de Video (Pop-up) */}
       <AnimatePresence>

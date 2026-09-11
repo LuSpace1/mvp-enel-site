@@ -307,7 +307,7 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
                   exit="exit"
                 >
                   {/* Primer apartado: imagen a pantalla completa */}
-                  <div className="relative flex min-h-screen items-center justify-center px-4 py-16 md:px-20">
+                  <div className="relative flex min-h-dvh items-center justify-center px-4 py-16 md:px-20">
                     <img
                       src={fotoActiva.src}
                       alt={fotoActiva.titulo}

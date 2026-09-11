@@ -172,7 +172,7 @@ export function Viaje() {
           <StormIntro />
         </Suspense>
       )}
-      <main className="min-h-screen pt-16">
+      <main className="min-h-dvh pt-16">
         {paso && <PasoHeader paso={paso} />}
         <Suspense fallback={null}>
           <Secciones />

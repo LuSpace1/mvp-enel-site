@@ -6,11 +6,10 @@ import { Reveal } from '@/components/ui/Reveal'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { pilaresCultura, valoresCultura } from '@/lib/data/cultura'
 
-const RAYOS = {
-  grande: 'M14 2.5 L4.5 14.5 H10 L8 22 L20 9 H12.5 Z',
-  mediano: 'M11 3.5 L5 12 H8.5 L6.5 19.5 L16 8.5 H11 Z',
-  chico: 'M12.5 4 L8 11 H10.5 L9 17 L15 6.5 H11.5 Z',
-}
+const RAYO_CHICO = 'M12.5 4 L8 11 H10.5 L9 17 L15 6.5 H11.5 Z'
+// Path chicos reutilizados con distinta rotación para la descarga al apretar
+const RAYO_GRANDE = 'M14 2.5 L4.5 14.5 H10 L8 22 L20 9 H12.5 Z'
+const RAYO_MEDIANO = 'M11 3.5 L5 12 H8.5 L6.5 19.5 L16 8.5 H11 Z'
 
 const COLORES_PREGUNTA = [
   'text-enel-blue',
@@ -18,6 +17,19 @@ const COLORES_PREGUNTA = [
   'text-enel-navy',
   'text-amber-500',
   'text-enel-violeta-soft',
+]
+
+// Dorsos de las tarjetas de valores: pastel azul y verde, alternados, para
+// evitar una ensalada de colores.
+const DORSOS_VALOR = [
+  {
+    clase: 'from-sky-100 to-sky-200 border-sky-300/60',
+    texto: 'text-enel-navy',
+  },
+  {
+    clase: 'from-emerald-100 to-emerald-200 border-emerald-300/60',
+    texto: 'text-enel-navy',
+  },
 ]
 
 const slideVariants = {
@@ -35,50 +47,6 @@ const slideVariants = {
     x: dir < 0 ? '50%' : '-50%',
     opacity: 0,
   }),
-}
-
-function Rayo({
-  d,
-  className = '',
-  size = 48,
-  delay = 0,
-  velocidad = 1.9,
-}: {
-  d: string
-  className?: string
-  size?: number
-  delay?: number
-  velocidad?: number
-}) {
-  return (
-    <motion.svg
-      aria-hidden="true"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      className={className}
-      animate={{
-        opacity: [0.5, 1, 0.15, 1, 0.7, 0.95],
-        scale: [0.92, 1.08, 0.98, 1.12, 1, 1.02],
-      }}
-      transition={{
-        duration: velocidad,
-        repeat: Infinity,
-        times: [0, 0.18, 0.35, 0.55, 0.72, 1],
-        delay,
-        ease: 'easeInOut',
-      }}
-    >
-      <motion.path
-        d={d}
-        fill="#ffd54a"
-        stroke="#ffb300"
-        strokeWidth={0.9}
-        strokeLinejoin="round"
-        style={{ filter: 'drop-shadow(0 0 6px rgba(255, 200, 60, 0.85))' }}
-      />
-    </motion.svg>
-  )
 }
 
 function RayoBurst({
@@ -283,97 +251,27 @@ export function CulturaSection() {
           </p>
         </Reveal>
 
-        {/* Titular rosa pálido con electricidad */}
-        <Reveal delay={0.1} className="relative z-10 mt-16">
-          <div
-            className="border-enel-pink/25 relative overflow-hidden rounded-3xl border-2 bg-[#fdeff4] px-6 py-12 text-center shadow-[0_18px_50px_-22px_rgba(235,0,83,0.4)] backdrop-blur-sm md:px-10"
-            style={{ animation: 'float-subtle 4s ease-in-out infinite' }}
-          >
-            {/* Puntos de circuito */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 opacity-60"
-              style={{
-                backgroundImage: 'radial-gradient(rgba(235, 0, 83, 0.12) 1px, transparent 1px)',
-                backgroundSize: '18px 18px',
-              }}
-            />
-
-            {/* Corriente barriendo el borde superior */}
-            {!reduce && (
-              <motion.span
-                aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-[3px]"
-                style={{
-                  background:
-                    'linear-gradient(90deg, transparent, rgba(255, 213, 74, 0.95) 50%, transparent)',
-                  backgroundSize: '200% 100%',
-                }}
-                animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: 'linear' }}
-              />
-            )}
-
-            {/* Rayos decorativos en esquinas */}
-            {!reduce && (
-              <>
-                <Rayo d={RAYOS.mediano} size={30} delay={0.9} className="absolute top-5 left-5" />
-                <Rayo
-                  d={RAYOS.chico}
-                  size={24}
-                  delay={1.7}
-                  velocidad={2.4}
-                  className="absolute top-3 right-7"
-                />
-                <Rayo
-                  d={RAYOS.chico}
-                  size={22}
-                  delay={0.4}
-                  velocidad={2.8}
-                  className="absolute bottom-6 left-10"
-                />
-                <Rayo
-                  d={RAYOS.mediano}
-                  size={28}
-                  delay={1.2}
-                  velocidad={2.1}
-                  className="absolute right-8 bottom-8"
-                />
-              </>
-            )}
-
-            {/* Rayo central flotante */}
-            {!reduce && (
-              <motion.div
-                aria-hidden="true"
-                className="relative mx-auto mb-2 w-fit"
-                animate={{ y: [0, -7, 0] }}
-                transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <Rayo d={RAYOS.grande} size={62} velocidad={1.4} />
-                <span className="bg-enel-pink/15 absolute inset-0 -z-10 m-auto h-16 w-16 rounded-full blur-2xl" />
-              </motion.div>
-            )}
-
-            <h3 className="text-enel-navy relative text-2xl font-semibold tracking-tight md:text-3xl">
-              Construir el futuro a través de la{' '}
-              <span className="from-enel-pink via-enel-blue bg-gradient-to-r to-amber-500 bg-clip-text text-transparent">
-                energía sustentable
-              </span>
+        {/* Título de las tarjetas de valores: solo la frase, sin card ni íconos */}
+        <Reveal delay={0.1} className="relative z-10 mt-16 mb-12">
+          <div className="px-4 text-center">
+            <h3 className="text-enel-navy text-2xl font-semibold tracking-tight md:text-3xl">
+              Construimos el futuro a base de{' '}
+              <span className="texto-gradiente-azul">energía</span>
             </h3>
+            <p className="mt-3 text-sm font-semibold tracking-[0.2em] text-neutral-400 uppercase">
+              Nuestros valores
+            </p>
           </div>
         </Reveal>
 
         {/* Tarjetas Interactivas Volteables flotantes (Valores) */}
-        <Reveal delay={0.2} className="relative z-10 mt-12 mb-10">
+        <Reveal delay={0.2} className="relative z-10 mb-10">
           <div className="flex flex-col items-center">
-            <p className="mb-12 text-sm font-semibold tracking-[0.2em] text-neutral-400 uppercase">
-              Construimos el futuro a base de
-            </p>
             <div className="flex flex-wrap justify-center gap-7">
               {valoresCultura.map((valor, indice) => {
                 const isFlipped = flippedCards[valor.palabra]
                 const sparkId = spark[valor.palabra] ?? 0
+                const dorso = DORSOS_VALOR[indice % DORSOS_VALOR.length] ?? DORSOS_VALOR[0]!
                 return (
                   <motion.div
                     key={valor.palabra}
@@ -426,9 +324,9 @@ export function CulturaSection() {
                         animate={{ opacity: 0 }}
                         transition={{ duration: 0.7, ease: 'easeOut' }}
                       >
-                        <RayoBurst d={RAYOS.grande} className="-top-6 left-1/2 -ml-3" />
-                        <RayoBurst d={RAYOS.mediano} rotar={70} className="top-8 -right-4" />
-                        <RayoBurst d={RAYOS.chico} rotar={-60} className="bottom-9 -left-5" />
+                        <RayoBurst d={RAYO_GRANDE} className="-top-6 left-1/2 -ml-3" />
+                        <RayoBurst d={RAYO_MEDIANO} rotar={70} className="top-8 -right-4" />
+                        <RayoBurst d={RAYO_CHICO} rotar={-60} className="bottom-9 -left-5" />
                       </motion.div>
                     )}
 
@@ -450,7 +348,7 @@ export function CulturaSection() {
                           className="pointer-events-none absolute inset-0 opacity-60"
                           style={{
                             backgroundImage:
-                              'radial-gradient(rgba(235, 0, 83, 0.12) 1px, transparent 1px)',
+                              'radial-gradient(rgba(10, 25, 47, 0.10) 1px, transparent 1px)',
                             backgroundSize: '10px 10px',
                           }}
                         />
@@ -474,9 +372,13 @@ export function CulturaSection() {
                       </motion.div>
 
                       {/* Dorso */}
-                      <div className="from-enel-violeta to-enel-violeta-soft border-enel-violeta/60 absolute inset-0 flex [transform:rotateY(180deg)] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-gradient-to-br p-3 text-center shadow-xl [backface-visibility:hidden]">
-                        <Lightning size={16} weight="fill" className="text-amber-400" />
-                        <span className="text-sm font-extrabold tracking-wide text-white uppercase drop-shadow-md">
+                      <div
+                        className={`${dorso.clase} absolute inset-0 flex [transform:rotateY(180deg)] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-gradient-to-br p-3 text-center shadow-xl [backface-visibility:hidden]`}
+                      >
+                        <Lightning size={16} weight="fill" className="text-amber-500" />
+                        <span
+                          className={`${dorso.texto} text-sm font-extrabold tracking-wide uppercase`}
+                        >
                           {valor.palabra}
                         </span>
                       </div>
