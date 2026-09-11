@@ -106,9 +106,9 @@ export function CierreSection() {
             <div className="flex justify-center">
               <motion.div
                 className="relative w-full max-w-lg"
-                initial={reduce ? false : { opacity: 0, x: -500 }}
-                whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
+                initial={reduce ? false : { opacity: 0, y: 40 }}
+                whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1, margin: '0px 0px -50px 0px' }}
                 transition={{ type: 'spring', stiffness: 40, damping: 14, mass: 1.5 }}
               >
                 <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_80px_rgba(10,25,47,0.18)]">
@@ -145,13 +145,13 @@ export function CierreSection() {
                     delay: 0.15 + indice * 0.06,
                     ease: [0.23, 1, 0.32, 1],
                   }}
-                  className="group hover:ring-enel-blue/20 relative rounded-2xl bg-black/[0.03] p-[2px] ring-1 ring-black/5 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(235,0,83,0.08)]"
+                  className="group hover:ring-enel-blue/20 relative flex flex-col rounded-2xl bg-black/[0.03] p-[2px] ring-1 ring-black/5 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(235,0,83,0.08)]"
                   style={{
                     animation: 'float-subtle 4s ease-in-out infinite',
                     animationDelay: `${indice * 0.4}s`,
                   }}
                 >
-                  <div className="relative overflow-hidden rounded-[calc(1rem-2px)] bg-white p-5">
+                  <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(1rem-2px)] bg-white p-5">
                     <div
                       aria-hidden="true"
                       className="pointer-events-none absolute inset-0 opacity-30 mix-blend-multiply"
@@ -162,7 +162,7 @@ export function CierreSection() {
                       }}
                     />
 
-                    <div className="relative z-10 flex items-start gap-4">
+                    <div className="relative z-10 flex flex-1 items-start gap-4">
                       <div
                         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${recurso.color} text-white shadow-md`}
                       >
@@ -178,7 +178,7 @@ export function CierreSection() {
                       </div>
                     </div>
 
-                    <span className="text-enel-blue relative z-10 mt-3 inline-flex items-center gap-1 text-[10px] font-bold tracking-[0.15em] uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    <span className="text-enel-blue relative z-10 mt-auto inline-flex items-center gap-1 pt-3 text-[10px] font-bold tracking-[0.15em] uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                       Abrir
                       <ArrowUpRight
                         size={12}
