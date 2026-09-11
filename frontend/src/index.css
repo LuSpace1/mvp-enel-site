@@ -211,6 +211,16 @@ body {
   filter: drop-shadow(0 0 8px rgba(255, 208, 47, 0.95));
 }
 
+/* Parpadeo de los rayos de la descarga del intro (solo opacidad: barato) */
+.rayo-descarga {
+  animation: chispa-flicker 0.18s steps(2, end) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rayo-descarga {
+    animation: none;
+  }
+}
+
 /* Diferir render de items fuera de pantalla (carruseles largos) */
 .cv-auto {
   content-visibility: auto;

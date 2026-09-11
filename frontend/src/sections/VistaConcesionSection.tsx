@@ -54,7 +54,6 @@ interface EstadoComuna {
   stroke: string
   sw: number
   glow: boolean
-  chispa: boolean
   labelO: number
   labelC: string
 }
@@ -74,7 +73,6 @@ function estadoDe(
       stroke: '#b0aca2',
       sw: 1.3,
       glow: false,
-      chispa: false,
       labelO: 0,
       labelC: '#57534e',
     }
@@ -90,7 +88,6 @@ function estadoDe(
       stroke: zona.color,
       sw: 2.4,
       glow: true,
-      chispa: true,
       labelO: 1,
       labelC: '#ffffff',
     }
@@ -103,7 +100,6 @@ function estadoDe(
           stroke: zona.color,
           sw: 1.8,
           glow: false,
-          chispa: false,
           labelO: 0.85,
           labelC: '#374151',
         }
@@ -113,7 +109,6 @@ function estadoDe(
           stroke: zona.color,
           sw: 0.7,
           glow: false,
-          chispa: false,
           labelO: 0.1,
           labelC: '#9ca3af',
         }
@@ -125,7 +120,6 @@ function estadoDe(
     stroke: zona.color,
     sw: iluminada ? 2.4 : 1.3,
     glow: false,
-    chispa: iluminada,
     labelO: 0,
     labelC: '#57534e',
   }
@@ -157,7 +151,7 @@ function ComunaSvg({
   if (!zona || !vista) return null
 
   const estado = estadoDe(zonaId, comuna.id, zonaAbierta, zonaHover, comunaHover)
-  const fontSize = FONT_BASE
+  const fontSize = comuna.label.fontSize ?? FONT_BASE
 
   return (
     <g
@@ -181,34 +175,22 @@ function ComunaSvg({
         if (!zonaAbierta) onAbrirZona(zonaId)
       }}
     >
-      <path
-        d={comuna.d}
-        pathLength={1}
-        fill="none"
-        stroke={estado.glow ? '#ffffff' : zona.color}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        className="comuna-trazo"
-        style={
-          {
-            '--d': `${0.18 + indice * 0.03}s`,
-            '--sw': estado.sw,
-            '--so': estado.glow ? 1 : 0.85,
-          } as CSSProperties
-        }
-      />
-      {estado.chispa && (
         <path
           d={comuna.d}
           pathLength={1}
           fill="none"
-          stroke={zona.color}
-          strokeWidth={2.4}
+          stroke={estado.glow ? '#ffffff' : zona.color}
           strokeLinejoin="round"
           strokeLinecap="round"
-          className="comuna-electricidad-svg"
+          className="comuna-trazo"
+          style={
+            {
+              '--d': `${0.18 + indice * 0.03}s`,
+              '--sw': estado.sw,
+              '--so': estado.glow ? 1 : 0.85,
+            } as CSSProperties
+          }
         />
-      )}
       <path
         d={comuna.d}
         fill={estado.fill}
@@ -311,6 +293,9 @@ export function VistaConcesionSection() {
   const zonaAbiertaData = zonaAbierta ? ZONA_POR_ID.get(zonaAbierta) : undefined
   const comunaHoverNombre = comunaHover
     ? COMUNAS_SVG.find((c) => c.id === comunaHover)?.nombreCorto
+    : null
+  const comunaHoverFullName = comunaHover
+    ? COMUNAS_SVG.find((c) => c.id === comunaHover)?.nombre
     : null
   const zonaHoverData = zonaHover ? ZONA_POR_ID.get(zonaHover) : undefined
   const zonaChip = zonaHoverData ?? zonaAbiertaData
@@ -591,6 +576,30 @@ export function VistaConcesionSection() {
                           </span>
                         </button>
                       ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {zonaAbierta && comunaHoverFullName && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 14 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute bottom-4 left-0 right-0 z-[1001] px-4 pointer-events-none"
+                  >
+                    <div className="mx-auto flex w-fit max-w-full justify-center rounded-2xl border border-neutral-200 bg-white/95 p-1.5 shadow-lg backdrop-blur">
+                      <div className="flex items-center gap-2 rounded-xl bg-neutral-100 px-4 py-2 text-sm font-bold text-enel-navy shadow-sm">
+                        {zonaAbiertaData && (
+                          <span
+                            className="h-3 w-3 rounded-full shadow-sm"
+                            style={{ backgroundColor: zonaAbiertaData.color }}
+                          />
+                        )}
+                        {comunaHoverFullName}
+                      </div>
                     </div>
                   </motion.div>
                 )}
