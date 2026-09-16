@@ -18,36 +18,28 @@ interface NavItem {
 
 const ITEMS: NavItem[] = [
   { id: 'portada', etiqueta: 'Inicio' },
-  { id: 'mapa-del-viaje', etiqueta: 'Ruta' },
   { id: 'historia', etiqueta: 'Historia' },
   { id: 'cultura', etiqueta: 'Cultura' },
   { id: 'organigrama', etiqueta: 'Equipos' },
   { id: 'concesion-detalle', etiqueta: 'Concesión' },
   { id: 'cadena', etiqueta: 'Cadena' },
   { id: 'politicas', etiqueta: 'Políticas' },
-  { id: 'galerias', etiqueta: 'Galerías' },
+  { id: 'galerias', etiqueta: 'Me Office' },
+  { id: 'personas', etiqueta: 'Rostros' },
   { id: 'cierre', etiqueta: 'Cierre' },
 ]
 
 const INDICE_POR_ID = new Map(PASOS_VIAJE.map((paso, indice) => [paso.id, indice]))
 
-function irA(id: string, abrirRuta: () => void) {
+function irA(id: string) {
   track('nav.clic', { paso: id })
-  if (id === 'mapa-del-viaje') {
-    abrirRuta()
-    setTimeout(() => {
-      desplazarASeccion(id)
-    }, 100)
-  } else {
-    desplazarASeccion(id)
-  }
+  desplazarASeccion(id)
 }
 
 export function Nav() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const reduce = useReducedMotion()
   const pasoActual = useViajeStore((estado) => estado.pasoActual)
-  const abrirRuta = useViajeStore((estado) => estado.abrirRuta)
 
   const indiceActual = INDICE_POR_ID.get(pasoActual) ?? 0
   const progreso = Math.max(0, indiceActual / (PASOS_VIAJE.length - 1))
@@ -85,7 +77,7 @@ export function Nav() {
             <li key={item.id}>
               <button
                 type="button"
-                onClick={() => irA(item.id, abrirRuta)}
+                onClick={() => irA(item.id)}
                 className={clsx(
                   'rounded-full px-2.5 py-1.5 text-[13px] font-medium transition-colors',
                   pasoActual === item.id
@@ -103,7 +95,7 @@ export function Nav() {
           <li>
             <button
               type="button"
-              onClick={() => irA('faq', abrirRuta)}
+              onClick={() => irA('faq')}
               className={clsx(
                 'flex items-center justify-center rounded-full p-1.5 text-[13px] font-medium transition-colors',
                 pasoActual === 'faq'
@@ -143,7 +135,7 @@ export function Nav() {
               <button
                 key={item.id}
                 onClick={() => {
-                  irA(item.id, abrirRuta)
+                  irA(item.id)
                   setMenuAbierto(false)
                 }}
                 className={clsx(
@@ -160,7 +152,7 @@ export function Nav() {
             {/* Opción FAQ en menú móvil */}
             <button
               onClick={() => {
-                irA('faq', abrirRuta)
+                irA('faq')
                 setMenuAbierto(false)
               }}
               className={clsx(
