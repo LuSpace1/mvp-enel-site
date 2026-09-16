@@ -8,7 +8,7 @@ import { pilaresCultura } from '@/lib/data/cultura'
 
 const slideVariants = {
   enter: (dir: number) => ({
-    x: dir > 0 ? 48 : -48,
+    x: dir > 0 ? '50%' : '-50%',
     opacity: 0,
   }),
   center: {
@@ -18,7 +18,7 @@ const slideVariants = {
   },
   exit: (dir: number) => ({
     zIndex: 0,
-    x: dir < 0 ? 48 : -48,
+    x: dir < 0 ? '50%' : '-50%',
     opacity: 0,
   }),
 }
@@ -28,6 +28,8 @@ export function CulturaSection() {
   const [slide, setSlide] = useState(0)
   const [direction, setDirection] = useState(1)
   const [pausado, setPausado] = useState(false)
+  const [pausadoManual, setPausadoManual] = useState(false)
+  const congelado = pausado || pausadoManual
 
   const nextSlide = () => {
     startTransition(() => {
@@ -62,10 +64,10 @@ export function CulturaSection() {
         }}
       />
       <motion.div
-        initial={reduce ? false : { opacity: 0, scale: 0.94, y: 24 }}
-        whileInView={reduce ? undefined : { opacity: 1, scale: 1, y: 0 }}
+        initial={reduce ? false : { opacity: 0, scale: 0.88, rotate: -2 }}
+        whileInView={reduce ? undefined : { opacity: 1, scale: 1, rotate: 0 }}
         viewport={{ once: true, amount: 0.15 }}
-        transition={{ type: 'spring', stiffness: 60, damping: 18, mass: 1 }}
+        transition={{ type: 'spring', stiffness: 50, damping: 15, mass: 1.2 }}
       >
         <Reveal className="relative z-10 mx-auto max-w-2xl text-center">
           <h2 className="text-enel-navy text-3xl font-semibold tracking-tight md:text-5xl">
@@ -78,37 +80,37 @@ export function CulturaSection() {
         </Reveal>
 
         <Reveal delay={0.1} className="relative z-10 mx-auto mt-12 w-full max-w-4xl">
-          {/* Controles y Barras de Progreso */}
-          <div className="mb-5 flex items-center gap-4">
+          {/* Controles y Barras de Progreso (Estilo Stories) */}
+          <div className="mb-6 flex items-center gap-4 px-4">
             <button
               onClick={prevSlide}
-              className="text-enel-navy hover:bg-enel-navy flex size-10 shrink-0 items-center justify-center rounded-full border border-black/[0.08] bg-white/80 shadow-sm transition-colors duration-300 hover:border-transparent hover:text-white active:scale-95"
+              className="text-enel-navy hover:text-enel-blue shrink-0 rounded-full border border-neutral-300 bg-white/50 p-2 transition hover:bg-white"
               aria-label="Anterior pilar"
             >
-              <CaretLeft size={16} weight="bold" />
+              <CaretLeft size={20} weight="bold" />
             </button>
 
-            <div className="flex h-1 flex-1 gap-1.5">
+            <div className="flex h-1.5 flex-1 gap-2 overflow-hidden rounded-full">
               {pilaresCultura.map((_, i) => (
                 <div
                   key={i}
-                  className="relative h-full flex-1 cursor-pointer overflow-hidden rounded-full bg-black/[0.08] transition-colors duration-300 hover:bg-black/[0.16]"
+                  className="relative h-full flex-1 cursor-pointer overflow-hidden border border-neutral-300 bg-white"
                   onClick={() => goToSlide(i)}
                 >
                   {i === slide && !reduce && (
                     <div
                       key={`progress-${slide}`}
-                      className="barra-cultura from-enel-pink absolute inset-y-0 left-0 rounded-full bg-gradient-to-r to-[#ff2d78]"
-                      style={{ animationPlayState: pausado ? 'paused' : 'running' }}
+                      className="barra-cultura bg-enel-pink absolute top-0 left-0 h-full"
+                      style={{ animationPlayState: congelado ? 'paused' : 'running' }}
                       onAnimationEnd={nextSlide}
                     />
                   )}
                   {/* Fallback de tiempo o completados */}
                   {(i < slide || reduce) && i !== slide && (
-                    <div className="from-enel-pink/30 absolute inset-y-0 left-0 w-full rounded-full bg-gradient-to-r to-[#ff2d78]/30" />
+                    <div className="bg-enel-pink absolute top-0 left-0 h-full w-full" />
                   )}
                   {reduce && i === slide && (
-                    <div className="from-enel-pink absolute inset-y-0 left-0 w-full rounded-full bg-gradient-to-r to-[#ff2d78]" />
+                    <div className="bg-enel-pink absolute top-0 left-0 h-full w-full" />
                   )}
                 </div>
               ))}
@@ -116,15 +118,15 @@ export function CulturaSection() {
 
             <button
               onClick={nextSlide}
-              className="text-enel-navy hover:bg-enel-navy flex size-10 shrink-0 items-center justify-center rounded-full border border-black/[0.08] bg-white/80 shadow-sm transition-colors duration-300 hover:border-transparent hover:text-white active:scale-95"
+              className="text-enel-navy hover:text-enel-blue shrink-0 rounded-full border border-neutral-300 bg-white/50 p-2 transition hover:bg-white"
               aria-label="Siguiente pilar"
             >
-              <CaretRight size={16} weight="bold" />
+              <CaretRight size={20} weight="bold" />
             </button>
           </div>
 
           {/* Contenedor del Carrusel */}
-          <div className="relative w-full overflow-hidden px-2 md:px-0">
+          <div className="relative w-full overflow-hidden px-2 py-4 md:px-0">
             <AnimatePresence initial={false} custom={direction} mode="popLayout">
               <motion.div
                 key={slide}
@@ -133,36 +135,49 @@ export function CulturaSection() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
+                transition={{ duration: 0.5, type: 'spring', bounce: 0.2 }}
                 className="px-2 md:px-0"
               >
                 <article
-                  className="group float-subtle relative w-full overflow-hidden rounded-[28px] border border-black/[0.06] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_24px_64px_-28px_rgba(10,25,47,0.25)] transition-[border-color,box-shadow] duration-300 ease-out hover:border-black/[0.1] hover:shadow-[0_2px_4px_rgba(0,0,0,0.04),0_36px_80px_-32px_rgba(10,25,47,0.35)]"
-                  style={{ animationPlayState: pausado ? 'paused' : 'running' }}
+                  className="group bg-enel-fog/40 relative w-full overflow-hidden rounded-2xl p-[2px] shadow-sm transition-shadow hover:shadow-xl"
+                  style={{
+                    animation: 'float-subtle 4s ease-in-out infinite',
+                    animationPlayState: congelado ? 'paused' : 'running',
+                  }}
                   onMouseEnter={() => setPausado(true)}
                   onMouseLeave={() => setPausado(false)}
                   onTouchStart={() => setPausado(true)}
                   onTouchEnd={() => setPausado(false)}
+                  onClick={() => setPausadoManual((p) => !p)}
                 >
-                  <div className="relative z-10 flex min-h-[440px] flex-col p-7 sm:min-h-[400px] md:min-h-[360px] md:p-10">
-                    <span className="relative block h-1 w-full max-w-[220px] overflow-hidden rounded-full bg-black/[0.06]">
+                  {/* Capa giratoria del borde eléctrico (Chispa) */}
+                  <div
+                    className="absolute inset-[-100%] z-0 animate-[spin_2s_linear_infinite] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    style={{
+                      backgroundImage:
+                        'conic-gradient(from 0deg, transparent 35%, rgba(251, 191, 36, 1) 48%, rgba(255, 255, 255, 1) 50%, transparent 50%, transparent 85%, rgba(251, 191, 36, 1) 98%, rgba(255, 255, 255, 1) 100%)',
+                    }}
+                  />
+
+                  {/* Contenedor Interior (La Máscara) */}
+                  <div className="relative z-10 flex min-h-[500px] flex-col rounded-[14px] bg-white p-7 sm:min-h-[450px] md:min-h-[400px] md:p-8">
+                    <span className="relative block h-1 w-24 overflow-hidden rounded-full bg-black/[0.06]">
                       <span
-                        key={`barra-card-${slide}`}
-                        className="barra-cultura from-enel-blue to-enel-pink absolute inset-y-0 left-0 rounded-full bg-gradient-to-r"
-                        style={{ animationPlayState: pausado ? 'paused' : 'running' }}
+                        className="barra-cultura bg-enel-blue absolute inset-y-0 left-0 rounded-full"
+                        style={{ animationPlayState: congelado ? 'paused' : 'running' }}
                       />
                     </span>
-                    <h3 className="text-enel-navy mt-8 text-3xl font-semibold tracking-[-0.02em] md:text-4xl">
+                    <h3 className="text-enel-navy mt-4 text-2xl font-semibold tracking-tight md:text-3xl">
                       {pilaresCultura[slide]?.titulo}
                     </h3>
-                    <p className="mt-4 max-w-2xl text-base leading-relaxed text-neutral-500 md:text-lg">
+                    <p className="mt-4 text-base leading-relaxed text-neutral-600 md:text-lg">
                       {pilaresCultura[slide]?.descripcion}
                     </p>
-                    <ul className="mt-auto flex flex-wrap gap-2 pt-8">
+                    <ul className="mt-auto flex flex-wrap gap-2 pt-5">
                       {pilaresCultura[slide]?.puntos.map((punto) => (
                         <li
                           key={punto}
-                          className="text-enel-navy/80 group-hover:border-enel-blue/30 group-hover:text-enel-blue rounded-full border border-black/[0.08] bg-white px-4 py-1.5 text-sm font-medium transition-colors duration-300"
+                          className="bg-enel-mist text-enel-navy group-hover:bg-enel-blue/10 group-hover:text-enel-blue-dark rounded-full px-4 py-1.5 text-sm font-medium transition"
                         >
                           {punto}
                         </li>
@@ -176,13 +191,13 @@ export function CulturaSection() {
         </Reveal>
 
         {/* Invitación Final */}
-        <Reveal delay={0.15} className="relative z-10 mx-auto mt-14 max-w-2xl px-4 text-center">
-          <span aria-hidden="true" className="bg-enel-blue/40 mx-auto mb-6 block h-px w-12" />
-          <p className="text-enel-navy text-lg leading-relaxed font-medium text-balance md:text-xl">
+        <Reveal delay={0.15} className="relative z-10 mx-auto mt-10 max-w-2xl px-4 text-center">
+          <p className="text-enel-navy rounded-2xl border border-neutral-200/80 bg-white/75 px-8 py-6 text-base leading-relaxed font-medium shadow-sm backdrop-blur-sm md:text-lg">
             Te invitamos a vivir estos principios en tu trabajo diario y a ser parte de una cultura
             que promueve la seguridad, la colaboración, la mejora continua y la innovación.
           </p>
         </Reveal>
+
       </motion.div>
     </SectionShell>
   )
