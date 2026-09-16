@@ -219,7 +219,7 @@ export function OrganigramaSection() {
                   }`}
                 >
                   {/* Encabezado del Popover */}
-                  <div className="bg-enel-navy relative flex items-start gap-4 p-5 text-left">
+                  <div className="bg-enel-navy relative flex items-start gap-4 rounded-t-[23px] p-5 text-left">
                     <button
                       onClick={() => setNodoAbierto(null)}
                       className="absolute top-3 right-3 rounded-full p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
