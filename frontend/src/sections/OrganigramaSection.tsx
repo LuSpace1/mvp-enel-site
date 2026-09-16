@@ -4,6 +4,7 @@ import {
   Play,
   ArrowRight,
   ChartLine,
+  Handshake,
   ShieldCheck,
   UsersThree,
   Scales,
@@ -298,16 +299,15 @@ export function OrganigramaSection() {
             style={{ originX: 1 }}
             className="h-px flex-1 bg-gradient-to-l from-neutral-300 to-transparent"
           />
-          <motion.span
+          <motion.div
             initial={reduce ? false : { scale: 0.92, opacity: 0 }}
             whileInView={reduce ? undefined : { scale: 1, opacity: 1 }}
             viewport={{ once: true }}
             transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
-            className="flex items-center gap-2 rounded-full border border-black/5 bg-white/60 px-4 py-1.5 text-[10px] font-semibold tracking-[0.18em] whitespace-nowrap text-neutral-500 uppercase shadow-xs backdrop-blur-md"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-white/70 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-8px_rgba(10,25,47,0.10)] backdrop-blur-md"
           >
-            <span className="bg-enel-blue size-1.5 rounded-full" />
-            Soporte Transversal
-          </motion.span>
+            <Handshake size={20} weight="duotone" className="text-enel-blue" aria-hidden="true" />
+          </motion.div>
           <motion.div
             initial={reduce ? false : { scaleX: 0 }}
             whileInView={reduce ? undefined : { scaleX: 1 }}
@@ -326,8 +326,8 @@ export function OrganigramaSection() {
             Especialistas que impulsan a toda la organización
           </h3>
           <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-neutral-500">
-            No integran las gerencias: son equipos que las asesoran y acompañan de forma
-            transversal, reportando directamente a la Gerencia General.
+            Pertenecen a Enel Chile y entregan apoyo transversal a las líneas de negocio, sin
+            integrar las gerencias.
           </p>
         </Reveal>
 
@@ -593,7 +593,7 @@ export function OrganigramaSection() {
 
               <div className="mt-2 text-left">
                 <span className="text-enel-blue bg-enel-blue/[0.08] inline-flex items-center rounded-full px-3.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
-                  Soporte Transversal Staff
+                  {staffActivo.etiqueta}
                 </span>
                 <h3 className="text-enel-navy mt-3 mb-4 text-2xl font-semibold tracking-[-0.02em]">
                   {staffActivo.nombre}
@@ -604,7 +604,7 @@ export function OrganigramaSection() {
                   </p>
                 </div>
                 <p className="mt-4 text-center text-[11px] font-medium text-neutral-400">
-                  Esta área reporta directamente a la Gerencia General de Enel Distribución Chile.
+                  Pertenece a Enel Chile y entrega apoyo transversal a las líneas de negocio.
                 </p>
               </div>
             </motion.div>
