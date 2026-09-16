@@ -1,3 +1,6 @@
+import fotoCEO from '@/assets/images/centro_de_exelencia_enel.jpg'
+import fotoMUT from '@/assets/images/torre_enel_mut.jpeg'
+
 export const fotosMeOffice = [
   { src: 'https://picsum.photos/seed/meoffice-lobby/900/600', alt: 'Lobby de Me Office' },
   { src: 'https://picsum.photos/seed/meoffice-sala/900/600', alt: 'Sala de reuniones Me Office' },
@@ -29,10 +32,55 @@ export const fotosEquipos = Array.from({ length: 50 }, (_, i) => ({
   descripcion: DESCRIPCIONES_EQUIPOS[i % DESCRIPCIONES_EQUIPOS.length]!,
 }))
 
-export const centroExcelencia = {
-  titulo: 'Centro de Excelencia Operacional',
-  subtitulo: 'Seguridad e innovación en acción',
-  descripcion:
-    'Un espacio de formación técnica de 8.000 m² diseñado para desarrollar y fortalecer las competencias de nuestros equipos y contratistas en la operación de redes eléctricas, con el compromiso de cero accidentes.',
-  url: 'https://www.enel.cl/es/conoce-enel/ceo-centro-de-excelencia-operacional-enel-distribucion.html',
-}
+export const instalaciones = [
+  {
+    titulo: 'Centro de Excelencia Operacional',
+    subtitulo: 'Seguridad e innovación en acción',
+    descripcion:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    url: 'https://www.enel.cl/es/conoce-enel/ceo-centro-de-excelencia-operacional-enel-distribucion.html',
+    imagen: fotoCEO,
+    alt: 'Centro de Excelencia Operacional',
+    accion: 'Centro de Excelencia',
+  },
+  {
+    titulo: 'Edificio Corporativo MUT',
+    subtitulo: 'Nuestro hogar en el Mercado Urbano Tobalaba',
+    descripcion:
+      'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    url: 'https://www.enel.cl/es/conoce-enel/prensa/press-enel-chile/d202404-enel-inicio-traslado-a-edificio-corporativo-en-mut.html',
+    imagen: fotoMUT,
+    alt: 'Edificio corporativo Enel en el MUT',
+    accion: 'Conocer el MUT',
+  },
+  {
+    titulo: 'Oficinas Comerciales',
+    subtitulo: 'Atención presencial cerca de ti',
+    descripcion:
+      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    url: 'https://www.enel.cl/es/clientes/empalmes-y-proyectos-electricos/agenda-visita.html',
+    imagen: 'https://picsum.photos/seed/enel-comercial/1200/800',
+    alt: 'Oficinas comerciales Enel',
+    accion: 'Agendar visita',
+  },
+  {
+    titulo: 'Oficinas Victoria',
+    subtitulo: 'Operación y servicio en la zona sur',
+    descripcion:
+      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+    url: 'https://www.enel.cl/es/historias/a201803-victoria-612.html',
+    imagen: 'https://picsum.photos/seed/enel-victoria/1200/800',
+    alt: 'Oficinas Enel Victoria',
+    accion: 'Conocer Victoria',
+  },
+  {
+    titulo: 'Oficinas Marathon',
+    subtitulo: 'Equipos administrativos y operativos',
+    descripcion:
+      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.',
+    url: 'https://www.enel.cl/',
+    imagen: 'https://picsum.photos/seed/enel-marathon/1200/800',
+    alt: 'Oficinas Enel Marathon',
+    accion: 'Conocer Marathon',
+  },
+]
