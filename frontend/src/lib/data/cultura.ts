@@ -28,63 +28,63 @@ export const valoresCultura: ValorCultura[] = [
 
 export const pilaresCultura = [
   {
-    id: 'confianza',
-    titulo: 'Confianza',
+    id: 'seguridad',
+    titulo: 'La seguridad es nuestra prioridad',
     descripcion:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      'Promovemos una cultura preventiva donde cada tarea se realiza considerando los riesgos y las medidas necesarias para proteger a las personas, las comunidades y el entorno.',
     puntos: [
-      'Lorem ipsum dolor sit amet.',
-      'Consectetur adipiscing elit.',
-      'Sed do eiusmod tempor.',
-      'Ut labore et dolore.',
+      'Reportamos condiciones inseguras.',
+      'Política Stop Work',
+      'Aprendemos de los incidentes y compartimos las lecciones aprendidas.',
+      'Cuidamos nuestra seguridad y la de quienes nos rodean.',
     ],
   },
   {
-    id: 'respeto',
-    titulo: 'Respeto',
+    id: 'equipo',
+    titulo: 'Trabajamos como un solo equipo',
     descripcion:
-      'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      'La continuidad del servicio, la experiencia de nuestros clientes y el desarrollo de la red son el resultado del trabajo coordinado de múltiples equipos.',
     puntos: [
-      'Lorem ipsum dolor sit amet.',
-      'Consectetur adipiscing elit.',
-      'Sed do eiusmod tempor.',
-      'Ut labore et dolore.',
+      'Compartimos conocimiento.',
+      'Escuchamos distintas perspectivas.',
+      'Colaboramos entre áreas.',
+      'Construimos soluciones en conjunto.',
     ],
   },
   {
-    id: 'flexibilidad',
-    titulo: 'Flexibilidad',
+    id: 'mejora',
+    titulo: 'Mejora continua',
     descripcion:
-      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+      'Impulsamos una cultura donde cuestionamos procesos, identificamos oportunidades y promovemos cambios que generen mayor valor para nuestros clientes y equipos.',
     puntos: [
-      'Lorem ipsum dolor sit amet.',
-      'Consectetur adipiscing elit.',
-      'Sed do eiusmod tempor.',
-      'Ut labore et dolore.',
+      'Proponemos nuevas ideas.',
+      'Simplificamos procesos.',
+      'Aprendemos de los errores.',
+      'Compartimos buenas prácticas.',
     ],
   },
   {
-    id: 'innovacion',
-    titulo: 'Innovación',
+    id: 'futuro',
+    titulo: 'Pensamos en el futuro',
     descripcion:
-      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      'Trabajamos impulsando una red más resiliente, eficiente y preparada para los desafíos energéticos y ambientales de los próximos años.',
     puntos: [
-      'Lorem ipsum dolor sit amet.',
-      'Consectetur adipiscing elit.',
-      'Sed do eiusmod tempor.',
-      'Ut labore et dolore.',
+      'Utilizamos los recursos de manera responsable.',
+      'Consideramos los impactos ambientales.',
+      'Promovemos soluciones sostenibles.',
+      'Apoyamos la electrificación y la innovación',
     ],
   },
   {
-    id: 'proactividad',
-    titulo: 'Proactividad',
+    id: 'cliente',
+    titulo: 'Cliente en el centro',
     descripcion:
-      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.',
+      'Detrás de cada conexión, atención o proyecto existen hogares, comercios, industrias y servicios que dependen de una energía segura y confiable.',
     puntos: [
-      'Lorem ipsum dolor sit amet.',
-      'Consectetur adipiscing elit.',
-      'Sed do eiusmod tempor.',
-      'Ut labore et dolore.',
+      'Buscamos soluciones oportunas.',
+      'Escuchamos las necesidades de nuestros clientes.',
+      'Actuamos con cercanía y responsabilidad.',
+      'Trabajamos para mejorar continuamente su experiencia.',
     ],
   },
 ]
