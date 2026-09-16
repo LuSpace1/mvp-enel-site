@@ -1,10 +1,10 @@
 import { startTransition, useState } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
-import { CaretLeft, CaretRight } from '@phosphor-icons/react'
+import { Lightning, CaretLeft, CaretRight } from '@phosphor-icons/react'
 
 import { Reveal } from '@/components/ui/Reveal'
 import { SectionShell } from '@/components/ui/SectionShell'
-import { pilaresCultura } from '@/lib/data/cultura'
+import { pilaresCultura, valoresCultura } from '@/lib/data/cultura'
 
 const slideVariants = {
   enter: (dir: number) => ({
@@ -198,6 +198,73 @@ export function CulturaSection() {
           </p>
         </Reveal>
 
+        {/* Título de las tarjetas de valores: solo la frase, sin card ni íconos */}
+        <Reveal delay={0.1} className="relative z-10 mt-16 mb-12">
+          <div className="px-4 text-center">
+            <h3 className="text-enel-navy text-2xl font-semibold tracking-tight md:text-3xl">
+              Construimos el futuro a base de
+            </h3>
+            <p className="mt-3 text-sm font-semibold tracking-[0.2em] text-neutral-400 uppercase">
+              Nuestros valores
+            </p>
+          </div>
+        </Reveal>
+
+        {/* Tarjetas flotantes (Valores) */}
+        <Reveal delay={0.2} className="relative z-10 mb-10">
+          <div className="flex flex-col items-center">
+            <div className="flex flex-wrap justify-center gap-7">
+              {valoresCultura.map((valor, indice) => (
+                <motion.div
+                  key={valor.palabra}
+                  className="relative h-36 w-36"
+                  animate={reduce ? undefined : { y: [0, -9, 0] }}
+                  transition={{
+                    duration: 3.4,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                    delay: indice * 0.18,
+                  }}
+                >
+                  {/* Sombra flotante */}
+                  <motion.span
+                    aria-hidden="true"
+                    className="bg-enel-navy/25 absolute -bottom-5 left-1/2 h-2.5 w-16 rounded-full blur-[6px]"
+                    animate={
+                      reduce
+                        ? undefined
+                        : { scaleX: [1, 0.7, 1], opacity: [0.45, 0.2, 0.45], x: '-50%' }
+                    }
+                    transition={{
+                      duration: 3.4,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                      delay: indice * 0.18,
+                    }}
+                  />
+
+                  <div className="border-enel-blue/35 relative grid h-full w-full place-items-center overflow-hidden rounded-2xl border-2 bg-white shadow-sm">
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 opacity-60"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(rgba(10, 25, 47, 0.10) 1px, transparent 1px)',
+                        backgroundSize: '10px 10px',
+                      }}
+                    />
+                    <div className="relative flex flex-col items-center gap-2 px-3 text-center">
+                      <Lightning size={20} weight="fill" className="text-enel-blue" />
+                      <span className="text-enel-navy text-sm font-extrabold tracking-wide uppercase">
+                        {valor.palabra}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </Reveal>
       </motion.div>
     </SectionShell>
   )
