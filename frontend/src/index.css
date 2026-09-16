@@ -339,15 +339,15 @@ body {
     filter 0.3s ease;
 }
 
-/* Nombres de comunas: sans geométrica, mayúsculas con tracking, halo sutil */
+/* Nombres de comunas: misma sans y peso que las etiquetas de zona, con halo sutil */
 .comuna-label-svg {
   font-family: var(--font-sans);
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   fill: var(--lc, #ffffff);
-  stroke: rgba(15, 42, 29, 0.4);
-  stroke-width: 2.6px;
+  stroke: rgba(15, 42, 29, 0.35);
+  stroke-width: 2.2px;
   stroke-linejoin: round;
   paint-order: stroke;
   opacity: var(--lo, 0);
