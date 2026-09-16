@@ -4,6 +4,7 @@ import {
   CaretLeft,
   CaretRight,
   GridFour,
+  Images,
   MagnifyingGlass,
 } from '@phosphor-icons/react'
 import { motion, useInView, useReducedMotion } from 'motion/react'
@@ -12,6 +13,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { EquiposGaleria } from '@/components/EquiposGaleria'
 import { MeOfficeShowcase } from '@/components/MeOfficeShowcase'
+import { VisorGaleria } from '@/components/VisorGaleria'
 import { fotosEquipos, instalaciones } from '@/lib/data/galerias'
 import { track } from '@/lib/analytics'
 import { useViajeStore } from '@/store/useViajeStore'
@@ -24,6 +26,9 @@ const TEASER_POS = [
   { x: '50%', rotate: 8 },
 ]
 
+const DESCRIPCION_INSTALACIONES_EXTRA =
+  'Espacios pensados para el trabajo seguro y colaborativo de los equipos, con estándares de eficiencia energética y confort para quienes los visitan a diario.'
+
 export function GaleriasSection() {
   const instalacionesRef = useRef<HTMLDivElement>(null)
   const carruselRef = useRef<HTMLDivElement>(null)
@@ -31,6 +36,9 @@ export function GaleriasSection() {
   const [indiceInicial, setIndiceInicial] = useState<number | null>(null)
   const [puedeAtras, setPuedeAtras] = useState(false)
   const [puedeAdelante, setPuedeAdelante] = useState(true)
+  const [instalacionActiva, setInstalacionActiva] = useState<number | null>(null)
+  const [fotoInstalacion, setFotoInstalacion] = useState(0)
+  const [dirInstalacion, setDirInstalacion] = useState(0)
   const reduce = useReducedMotion()
   const instalacionesInView = useInView(instalacionesRef, { once: true, amount: 0.15 })
   const navegar = useViajeStore((estado) => estado.navegar)
@@ -71,6 +79,19 @@ export function GaleriasSection() {
     const paso = (card?.offsetWidth ?? el.clientWidth / 3) + 24
     el.scrollBy({ left: paso * direccion, behavior: reduce ? 'auto' : 'smooth' })
     track('instalaciones.desplazar', { direccion })
+  }
+
+  function abrirGaleriaInstalacion(indice: number) {
+    setDirInstalacion(0)
+    setFotoInstalacion(0)
+    setInstalacionActiva(indice)
+    track('instalacion.galeria.abrir', { instalacion: instalaciones[indice]?.titulo })
+  }
+
+  function navegarGaleriaInstalacion(dir: number) {
+    const total = instalaciones[instalacionActiva ?? 0]?.galeria.length ?? 1
+    setDirInstalacion(dir)
+    setFotoInstalacion((prev) => (prev + dir + total) % total)
   }
 
   return (
@@ -257,7 +278,10 @@ export function GaleriasSection() {
                   delay={indice * 0.08}
                   className="w-[85%] shrink-0 snap-start sm:w-[60%] md:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)]"
                 >
-                  <article className="group 3xl:h-[24rem] relative h-[20rem] overflow-hidden rounded-[2rem] border-4 border-white/70 shadow-[0_20px_45px_-15px_rgba(10,25,47,0.55)]">
+                  <article
+                    onClick={() => abrirGaleriaInstalacion(indice)}
+                    className="group 3xl:h-[24rem] relative h-[20rem] cursor-pointer overflow-hidden rounded-[2rem] border-4 border-white/70 shadow-[0_20px_45px_-15px_rgba(10,25,47,0.55)]"
+                  >
                     <img
                       src={instalacion.imagen}
                       alt={instalacion.alt}
@@ -266,6 +290,19 @@ export function GaleriasSection() {
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.06]"
                     />
                     <div className="from-enel-navy via-enel-navy/55 absolute inset-0 bg-gradient-to-t to-transparent" />
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        abrirGaleriaInstalacion(indice)
+                      }}
+                      aria-label={`Ver galería de ${instalacion.titulo}`}
+                      className="absolute top-5 right-5 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3.5 py-2 text-[11px] font-bold tracking-[0.08em] text-white uppercase shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/25"
+                    >
+                      <Images size={15} weight="fill" />
+                      Galería
+                    </button>
 
                     <div className="3xl:p-8 relative flex h-full flex-col justify-end p-6 md:p-7">
                       <span
@@ -285,9 +322,10 @@ export function GaleriasSection() {
                         href={instalacion.url}
                         target="_blank"
                         rel="noreferrer"
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.stopPropagation()
                           track('instalacion.abrir', { instalacion: instalacion.titulo })
-                        }
+                        }}
                         className="text-enel-navy mt-6 inline-flex w-fit items-center gap-2.5 rounded-full bg-white/95 px-5 py-3 text-xs font-bold tracking-wide uppercase shadow-lg backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:bg-white"
                       >
                         {instalacion.accion}
@@ -311,6 +349,17 @@ export function GaleriasSection() {
           </div>
         </div>
       </motion.div>
+
+      {/* Galería de fotos de cada instalación */}
+      <VisorGaleria
+        fotos={instalacionActiva !== null ? instalaciones[instalacionActiva]!.galeria : []}
+        indice={instalacionActiva !== null ? fotoInstalacion : null}
+        direccion={dirInstalacion}
+        etiqueta="La instalación"
+        descripcionExtra={DESCRIPCION_INSTALACIONES_EXTRA}
+        onCerrar={() => setInstalacionActiva(null)}
+        onNavegar={navegarGaleriaInstalacion}
+      />
     </SectionShell>
   )
 }

@@ -32,6 +32,23 @@ export const fotosEquipos = Array.from({ length: 50 }, (_, i) => ({
   descripcion: DESCRIPCIONES_EQUIPOS[i % DESCRIPCIONES_EQUIPOS.length]!,
 }))
 
+const DESCRIPCIONES_GALERIA_INSTALACION = [
+  'Acceso principal y fachada del recinto, pensados para recibir a clientes, visitas y equipos de trabajo.',
+  'Zonas comunes y espacios de encuentro donde se coordina la operación diaria.',
+  'Salas de control y monitoreo desde donde se supervisa la red en tiempo real.',
+  'Áreas técnicas y de mantenimiento que sostienen la continuidad del servicio.',
+  'Espacios de formación y capacitación para los equipos de la compañía.',
+]
+
+// Placeholder: 5 fotos por instalación mientras llega el material real.
+function galeriaInstalacion(slug: string, titulo: string) {
+  return Array.from({ length: 5 }, (_, i) => ({
+    src: `https://picsum.photos/seed/${slug}-${i + 1}/1600/1000`,
+    titulo,
+    descripcion: DESCRIPCIONES_GALERIA_INSTALACION[i]!,
+  }))
+}
+
 export const instalaciones = [
   {
     titulo: 'Centro de Excelencia Operacional',
@@ -42,6 +59,7 @@ export const instalaciones = [
     imagen: fotoCEO,
     alt: 'Centro de Excelencia Operacional',
     accion: 'Centro de Excelencia',
+    galeria: galeriaInstalacion('instalacion-ceo', 'Centro de Excelencia Operacional'),
   },
   {
     titulo: 'Edificio Corporativo MUT',
@@ -52,6 +70,7 @@ export const instalaciones = [
     imagen: fotoMUT,
     alt: 'Edificio corporativo Enel en el MUT',
     accion: 'Conocer el MUT',
+    galeria: galeriaInstalacion('instalacion-mut', 'Edificio Corporativo MUT'),
   },
   {
     titulo: 'Oficinas Comerciales',
@@ -62,6 +81,7 @@ export const instalaciones = [
     imagen: 'https://picsum.photos/seed/enel-comercial/1200/800',
     alt: 'Oficinas comerciales Enel',
     accion: 'Agendar visita',
+    galeria: galeriaInstalacion('instalacion-comercial', 'Oficinas Comerciales'),
   },
   {
     titulo: 'Oficinas Victoria',
@@ -72,6 +92,7 @@ export const instalaciones = [
     imagen: 'https://picsum.photos/seed/enel-victoria/1200/800',
     alt: 'Oficinas Enel Victoria',
     accion: 'Conocer Victoria',
+    galeria: galeriaInstalacion('instalacion-victoria', 'Oficinas Victoria'),
   },
   {
     titulo: 'Oficinas Marathon',
@@ -82,5 +103,6 @@ export const instalaciones = [
     imagen: 'https://picsum.photos/seed/enel-marathon/1200/800',
     alt: 'Oficinas Enel Marathon',
     accion: 'Conocer Marathon',
+    galeria: galeriaInstalacion('instalacion-marathon', 'Oficinas Marathon'),
   },
 ]
