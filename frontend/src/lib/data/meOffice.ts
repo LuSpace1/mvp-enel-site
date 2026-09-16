@@ -19,27 +19,33 @@ export interface PresentacionMeOffice {
 // Mientras `src` esté vacío, la pantalla muestra un placeholder.
 export const presentacionesMeOffice: PresentacionMeOffice[] = [
   {
-    id: 'primeros-pasos',
-    etiqueta: 'Primeros pasos',
-    titulo: 'Cómo empezar a usar Me Office',
+    id: 'reserva-de-puestos',
+    etiqueta: 'Reserva de puestos',
+    titulo: 'Reserva tu puesto de trabajo',
     media: { tipo: 'video', src: '' },
   },
   {
-    id: 'espacio-de-trabajo',
-    etiqueta: 'Tu espacio de trabajo',
-    titulo: 'Encuentra y reserva tu espacio',
+    id: 'me-learning',
+    etiqueta: 'Me learning (formación)',
+    titulo: 'Me learning: formación y desarrollo',
     media: { tipo: 'video', src: '' },
   },
   {
-    id: 'salas-y-reuniones',
-    etiqueta: 'Salas y reuniones',
-    titulo: 'Agenda salas y coordina con tu equipo',
+    id: 'beneficios',
+    etiqueta: 'Beneficios',
+    titulo: 'Conoce tus beneficios',
     media: { tipo: 'video', src: '' },
   },
   {
-    id: 'desde-el-movil',
-    etiqueta: 'Desde tu móvil',
-    titulo: 'Me Office en tu teléfono',
+    id: 'sueldo-y-liquidaciones',
+    etiqueta: 'Sueldo y liquidaciones',
+    titulo: 'Consulta y descarga tus liquidaciones',
+    media: { tipo: 'video', src: '' },
+  },
+  {
+    id: 'tramites-y-solicitudes',
+    etiqueta: 'Trámites y solicitudes',
+    titulo: 'Vacaciones, permisos y certificados',
     media: { tipo: 'video', src: '' },
   },
 ]
