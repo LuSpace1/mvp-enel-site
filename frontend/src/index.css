@@ -130,6 +130,33 @@ body {
   }
 }
 
+/* Barra de progreso del carrusel de cultura (se pausa con hover/presión) */
+@keyframes barra-cultura {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+.barra-cultura {
+  animation: barra-cultura 7s linear forwards;
+}
+
+/* Progreso de las pestañas de Me Office (mismo compás que la barra de cultura) */
+@keyframes barra-meoffice {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.barra-meoffice {
+  transform-origin: left;
+  animation: barra-meoffice 10s linear forwards;
+}
+
 /* Flujo de la cadena de valor: guiones que avanzan hacia el cliente */
 @keyframes cadena-flujo {
   from {
