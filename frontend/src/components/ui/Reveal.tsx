@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import type { CSSProperties, PropsWithChildren } from 'react'
 
 interface RevealProps {
+  id?: string
   delay?: number
   className?: string
   y?: number
@@ -9,6 +10,7 @@ interface RevealProps {
 }
 
 export function Reveal({
+  id,
   children,
   delay = 0,
   className,
@@ -19,6 +21,7 @@ export function Reveal({
 
   return (
     <motion.div
+      id={id}
       className={className}
       style={style}
       initial={reduce ? false : { opacity: 0, y }}
