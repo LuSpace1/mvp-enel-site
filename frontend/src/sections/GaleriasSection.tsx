@@ -97,30 +97,30 @@ export function GaleriasSection() {
           <img
             src={meOfficeLogo}
             alt="Me Office"
-            className="h-14 w-auto drop-shadow-sm md:h-16"
+            className="3xl:h-16 h-14 w-auto drop-shadow-sm"
             width={112}
             height={123}
           />
-          <h2 className="text-enel-navy mt-5 text-4xl font-bold tracking-tight md:text-6xl">
+          <h2 className="text-enel-navy 3xl:mt-5 3xl:text-6xl mt-4 text-4xl font-bold tracking-tight md:text-5xl">
             Herramienta Me Office
           </h2>
-          <p className="mt-6 text-base leading-relaxed font-medium text-neutral-600 md:text-xl">
+          <p className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg">
             Recorre la herramienta en cuatro presentaciones: elige una pestaña y mira cómo se usa en
             el día a día.
           </p>
         </Reveal>
 
-        <Reveal delay={0.1} className="mt-10 md:mt-14">
+        <Reveal delay={0.1} className="3xl:mt-14 mt-10">
           <MeOfficeShowcase />
         </Reveal>
 
-        <Reveal id="personas" delay={0.1} className="relative mt-36">
-          <div className="mb-10 flex flex-col justify-between gap-6 px-6 md:flex-row md:items-end md:px-12">
+        <Reveal id="personas" delay={0.1} className="3xl:mt-36 relative mt-24">
+          <div className="3xl:mb-10 mb-8 flex flex-col justify-between gap-6 px-6 md:flex-row md:items-end md:px-12">
             <div>
-              <h2 className="text-enel-navy text-3xl font-bold tracking-tight md:text-5xl">
+              <h2 className="text-enel-navy 3xl:text-5xl text-3xl font-bold tracking-tight md:text-4xl">
                 Descubre a los equipos
               </h2>
-              <p className="mt-4 font-medium text-neutral-600 md:text-lg">
+              <p className="3xl:text-lg mt-4 font-medium text-neutral-600">
                 La energía que mueve a Chile tiene rostros e historias.
               </p>
             </div>
@@ -132,14 +132,14 @@ export function GaleriasSection() {
               initial={reduce ? false : { opacity: 0, y: 40, scale: 0.98 }}
               animate={reduce ? undefined : { opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              className="px-6 pt-6 pb-20 md:px-12"
+              className="3xl:pb-20 px-6 pt-6 pb-14 md:px-12"
             >
               <EquiposGaleria abiertoInicial={indiceInicial} />
             </motion.div>
           ) : (
-            <div className="flex flex-col items-center gap-8 px-6 pb-20 md:px-12">
+            <div className="3xl:pb-20 flex flex-col items-center gap-8 px-6 pb-14 md:px-12">
               {/* Mosaico de polaroids: vista previa interactiva de los equipos */}
-              <div className="relative flex h-[360px] w-full max-w-3xl items-center justify-center md:h-[460px]">
+              <div className="3xl:h-[460px] relative flex h-[320px] w-full max-w-3xl items-center justify-center md:h-[380px]">
                 {fotosEquipos.slice(0, 3).map((foto, indice) => {
                   const pos = TEASER_POS[indice] || { x: 0, rotate: 0 }
                   return (
@@ -218,7 +218,7 @@ export function GaleriasSection() {
         </Reveal>
 
         {/* Conoce nuestras instalaciones */}
-        <div className="mt-32">
+        <div className="3xl:mt-32 mt-24">
           <motion.div
             ref={instalacionesRef}
             className="mx-auto max-w-3xl text-center"
@@ -227,16 +227,16 @@ export function GaleriasSection() {
             transition={{ type: 'spring', stiffness: 70, damping: 18 }}
             style={{ transformOrigin: 'bottom center' }}
           >
-            <h2 className="text-enel-navy text-4xl font-bold tracking-tight md:text-6xl">
+            <h2 className="text-enel-navy 3xl:text-6xl text-4xl font-bold tracking-tight md:text-5xl">
               Conoce nuestras instalaciones
             </h2>
-            <p className="mt-6 text-base leading-relaxed font-medium text-neutral-600 md:text-xl">
+            <p className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg">
               Los espacios donde trabaja la energía que mueve a Chile, desde el centro de formación
               hasta las oficinas de operación.
             </p>
           </motion.div>
 
-          <div className="mt-12 flex items-center gap-2 md:gap-4">
+          <div className="3xl:mt-12 mt-10 flex items-center gap-2 md:gap-4">
             <button
               type="button"
               onClick={() => desplazarInstalaciones(-1)}
@@ -257,7 +257,7 @@ export function GaleriasSection() {
                   delay={indice * 0.08}
                   className="w-[85%] shrink-0 snap-start sm:w-[60%] md:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)]"
                 >
-                  <article className="group relative h-[24rem] overflow-hidden rounded-[2rem] border-4 border-white/70 shadow-[0_20px_45px_-15px_rgba(10,25,47,0.55)]">
+                  <article className="group 3xl:h-[24rem] relative h-[20rem] overflow-hidden rounded-[2rem] border-4 border-white/70 shadow-[0_20px_45px_-15px_rgba(10,25,47,0.55)]">
                     <img
                       src={instalacion.imagen}
                       alt={instalacion.alt}
@@ -267,12 +267,12 @@ export function GaleriasSection() {
                     />
                     <div className="from-enel-navy via-enel-navy/55 absolute inset-0 bg-gradient-to-t to-transparent" />
 
-                    <div className="relative flex h-full flex-col justify-end p-7 md:p-8">
+                    <div className="3xl:p-8 relative flex h-full flex-col justify-end p-6 md:p-7">
                       <span
                         aria-hidden="true"
                         className="bg-enel-pink mb-4 block h-1 w-10 rounded-full"
                       />
-                      <h3 className="text-2xl leading-tight font-bold tracking-tight text-white md:text-[1.7rem]">
+                      <h3 className="3xl:text-[1.7rem] text-2xl leading-tight font-bold tracking-tight text-white">
                         {instalacion.titulo}
                       </h3>
                       <p className="mt-2 text-[11px] font-bold tracking-[0.18em] text-white/65 uppercase">
