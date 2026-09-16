@@ -4,12 +4,11 @@ import { ArrowLeft, MapPin } from '@phosphor-icons/react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
 import { Reveal } from '@/components/ui/Reveal'
-import { COMUNAS_SVG, VIEWBOX, ZONAS_SVG } from '@/lib/data/comunas-svg'
+import { COMUNAS_SVG, FUENTE_BASE, VIEWBOX, ZONAS_SVG } from '@/lib/data/comunas-svg'
 import type { ComunaSvg } from '@/lib/data/comunas-svg'
 import { ZONAS_CONCESION, ZONA_POR_ID } from '@/lib/data/zonas'
 import { track } from '@/lib/analytics'
 
-const FONT_BASE = 10
 // Label de zona en modo zoom: tamaño en px de pantalla y franja superior donde vive
 const TAM_ZONA_ZOOM = 20
 const FRANJA_ZONA = 38
@@ -151,7 +150,7 @@ function ComunaSvg({
   if (!zona || !vista) return null
 
   const estado = estadoDe(zonaId, comuna.id, zonaAbierta, zonaHover, comunaHover)
-  const fontSize = comuna.label.fontSize ?? FONT_BASE
+  const fontSize = comuna.label.fontSize ?? FUENTE_BASE
 
   return (
     <g
@@ -175,22 +174,22 @@ function ComunaSvg({
         if (!zonaAbierta) onAbrirZona(zonaId)
       }}
     >
-        <path
-          d={comuna.d}
-          pathLength={1}
-          fill="none"
-          stroke={estado.glow ? '#ffffff' : zona.color}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          className="comuna-trazo"
-          style={
-            {
-              '--d': `${0.18 + indice * 0.03}s`,
-              '--sw': estado.sw,
-              '--so': estado.glow ? 1 : 0.85,
-            } as CSSProperties
-          }
-        />
+      <path
+        d={comuna.d}
+        pathLength={1}
+        fill="none"
+        stroke={estado.glow ? '#ffffff' : zona.color}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        className="comuna-trazo"
+        style={
+          {
+            '--d': `${0.18 + indice * 0.03}s`,
+            '--sw': estado.sw,
+            '--so': estado.glow ? 1 : 0.85,
+          } as CSSProperties
+        }
+      />
       <path
         d={comuna.d}
         fill={estado.fill}
@@ -223,7 +222,7 @@ function ComunaSvg({
       >
         {comuna.label.lineas
           ? comuna.label.lineas.map((ln, i) => (
-              <tspan key={i} x={comuna.label.x} dy={i === 0 ? undefined : FONT_BASE * 1.18}>
+              <tspan key={i} x={comuna.label.x} dy={i === 0 ? undefined : fontSize * 1.18}>
                 {ln}
               </tspan>
             ))
@@ -414,7 +413,7 @@ export function VistaConcesionSection() {
       />
 
       <motion.div
-        className="relative z-10 mx-auto w-full max-w-5xl px-5 md:px-8"
+        className="relative z-10 mx-auto w-full max-w-5xl px-5 md:px-8 lg:max-w-6xl"
         initial={reduce ? false : { opacity: 0, y: -100 }}
         whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.1 }}
@@ -479,9 +478,11 @@ export function VistaConcesionSection() {
                 }}
               />
 
+              {/* El contenedor adopta la proporción del viewBox (~1206×835, panorámica)
+                  manteniendo el tamaño del mapa. */}
               <div
                 ref={svgRef}
-                className={`relative h-[520px] sm:h-[660px] md:h-[740px] ${animar ? 'animar' : ''}`}
+                className={`relative aspect-[13/9] w-full ${animar ? 'animar' : ''}`}
               >
                 <svg
                   viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
@@ -588,10 +589,10 @@ export function VistaConcesionSection() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 14 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute bottom-4 left-0 right-0 z-[1001] px-4 pointer-events-none"
+                    className="pointer-events-none absolute right-0 bottom-4 left-0 z-[1001] px-4"
                   >
                     <div className="mx-auto flex w-fit max-w-full justify-center rounded-2xl border border-neutral-200 bg-white/95 p-1.5 shadow-lg backdrop-blur">
-                      <div className="flex items-center gap-2 rounded-xl bg-neutral-100 px-4 py-2 text-sm font-bold text-enel-navy shadow-sm">
+                      <div className="text-enel-navy flex items-center gap-2 rounded-xl bg-neutral-100 px-4 py-2 text-sm font-bold shadow-sm">
                         {zonaAbiertaData && (
                           <span
                             className="h-3 w-3 rounded-full shadow-sm"
