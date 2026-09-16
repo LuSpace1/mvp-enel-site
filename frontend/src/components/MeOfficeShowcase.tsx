@@ -153,7 +153,7 @@ export function MeOfficeShowcase() {
         aria-labelledby={`meoffice-tab-${presentacion.id}`}
         onMouseEnter={alEntrar}
         onMouseLeave={alSalir}
-        className="relative mx-auto w-full max-w-5xl"
+        className="3xl:max-w-5xl relative mx-auto w-full max-w-4xl"
       >
         {/* Tapa y pantalla */}
         <div className="relative rounded-[16px] border border-[#101013] bg-gradient-to-b from-[#2b2b30] via-[#1b1b1f] to-[#141416] p-3 shadow-[0_40px_90px_-32px_rgba(10,25,47,0.6),0_10px_30px_-18px_rgba(10,25,47,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]">
