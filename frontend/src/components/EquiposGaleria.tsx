@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { CaretDown, CaretLeft, CaretRight, MagnifyingGlass, X } from '@phosphor-icons/react'
+import { useRef, useState } from 'react'
+import { CaretLeft, CaretRight, MagnifyingGlass } from '@phosphor-icons/react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { clsx } from 'clsx'
 
+import { VisorGaleria } from '@/components/VisorGaleria'
 import { fotosEquipos } from '@/lib/data/galerias'
 import { track } from '@/lib/analytics'
 
@@ -26,9 +26,6 @@ const gridVariants = {
 export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: number | null }) {
   const reduce = useReducedMotion()
   const gridRef = useRef<HTMLDivElement>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const descripcionRef = useRef<HTMLElement>(null)
-  const touchX = useRef<number | null>(null)
   const [spotActivo, setSpotActivo] = useState(false)
   const [pagina, setPagina] = useState(0)
   const [dirPagina, setDirPagina] = useState(0)
@@ -60,7 +57,6 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
   }
 
   const navegar = (dir: number) => {
-    scrollRef.current?.scrollTo({ top: 0 })
     setAbierto((prev) => {
       if (prev === null) return prev
       return (prev + dir + fotosEquipos.length) % fotosEquipos.length
@@ -68,23 +64,6 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
     setDireccion(dir)
   }
 
-  useEffect(() => {
-    if (abierto === null) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') cerrar()
-      if (e.key === 'ArrowRight') navegar(1)
-      if (e.key === 'ArrowLeft') navegar(-1)
-    }
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    window.addEventListener('keydown', onKey)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
-    }
-  }, [abierto])
-
-  const fotoActiva = abierto !== null ? fotosEquipos[abierto] : null
   const fotosPagina = fotosEquipos.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA)
   const desde = pagina * POR_PAGINA + 1
   const hasta = Math.min((pagina + 1) * POR_PAGINA, fotosEquipos.length)
@@ -237,123 +216,17 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
         </div>
       </div>
 
-      {/* Lightbox (portaled a document.body para que cubra el viewport real) */}
-      {createPortal(
-        <AnimatePresence>
-          {fotoActiva && (
-            <motion.div
-              ref={scrollRef}
-              className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-[#f0eee6]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onTouchStart={(e) => {
-                touchX.current = e.touches[0]?.clientX ?? null
-              }}
-              onTouchEnd={(e) => {
-                if (touchX.current === null) return
-                const endX = e.changedTouches[0]?.clientX ?? touchX.current
-                const delta = endX - touchX.current
-                touchX.current = null
-                if (Math.abs(delta) > 50) navegar(delta < 0 ? 1 : -1)
-              }}
-            >
-              {/* Barra superior fija */}
-              <div className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between gap-4 bg-gradient-to-b from-[#f0eee6]/90 to-transparent px-4 py-3 md:px-6">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="text-xl font-bold tracking-tight text-[#d97757] md:text-2xl">
-                    {String((abierto ?? 0) + 1).padStart(2, '0')}
-                  </span>
-                  <h3 className="truncate font-serif text-lg font-medium text-[#191919] italic md:text-xl">
-                    {fotoActiva.titulo}
-                  </h3>
-                  <span className="hidden shrink-0 text-sm font-semibold tracking-widest text-[#8a857c] uppercase sm:block">
-                    {(abierto ?? 0) + 1} / {fotosEquipos.length}
-                  </span>
-                </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  <button
-                    onClick={() => navegar(-1)}
-                    aria-label="Equipo anterior"
-                    className="rounded-full p-3 text-[#191919] transition-colors hover:bg-[#191919]/10"
-                  >
-                    <CaretLeft size={28} weight="bold" />
-                  </button>
-                  <button
-                    onClick={() => navegar(1)}
-                    aria-label="Equipo siguiente"
-                    className="rounded-full p-3 text-[#191919] transition-colors hover:bg-[#191919]/10"
-                  >
-                    <CaretRight size={28} weight="bold" />
-                  </button>
-                  <button
-                    onClick={cerrar}
-                    aria-label="Cerrar galería"
-                    className="rounded-full p-3 text-[#191919] transition-colors hover:bg-[#191919]/10"
-                  >
-                    <X size={24} weight="bold" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Contenido que cambia con la foto */}
-              <AnimatePresence initial={false} custom={direccion} mode="wait">
-                <motion.div
-                  key={abierto}
-                  custom={direccion}
-                  variants={gridVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                >
-                  {/* Primer apartado: imagen a pantalla completa */}
-                  <div className="relative flex min-h-dvh items-center justify-center px-4 py-16 md:px-20">
-                    <img
-                      src={fotoActiva.src}
-                      alt={fotoActiva.titulo}
-                      className="max-h-[80vh] w-full max-w-full rounded-lg object-contain shadow-2xl ring-1 ring-[#e0dcd0]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        descripcionRef.current?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start',
-                        })
-                      }
-                      className="absolute bottom-8 left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full border border-[#e4e0d5] bg-white/70 px-4 py-2 text-xs font-medium whitespace-nowrap text-[#686561] transition-colors hover:bg-white hover:text-[#191919]"
-                    >
-                      <CaretDown size={16} weight="bold" />
-                      Ver mas!
-                    </button>
-                  </div>
-
-                  {/* Segundo apartado: descripción */}
-                  <section ref={descripcionRef} className="bg-[#191919] px-4 pt-16 pb-24 md:px-6">
-                    <div className="mx-auto max-w-3xl">
-                      <p className="text-xs font-bold tracking-[0.2em] text-[#d97757] uppercase">
-                        El equipo
-                      </p>
-                      <h4 className="mt-3 font-serif text-2xl font-medium text-[#f0eee6] italic md:text-3xl">
-                        {fotoActiva.titulo}
-                      </h4>
-                      <div className="mt-6 space-y-4">
-                        <p className="text-base leading-relaxed text-[#d8d4c9]">
-                          {fotoActiva.descripcion}
-                        </p>
-                        <p className="text-base leading-relaxed text-[#a09b92]">
-                          {DESCRIPCION_EXTRA}
-                        </p>
-                      </div>
-                    </div>
-                  </section>
-                </motion.div>
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body,
-      )}
+      {/* Lightbox compartido con las galerías de instalaciones */}
+      <VisorGaleria
+        fotos={fotosEquipos}
+        indice={abierto}
+        direccion={direccion}
+        etiqueta="El equipo"
+        descripcionExtra={DESCRIPCION_EXTRA}
+        nombreEntidad="equipo"
+        onCerrar={cerrar}
+        onNavegar={navegar}
+      />
     </div>
   )
 }
