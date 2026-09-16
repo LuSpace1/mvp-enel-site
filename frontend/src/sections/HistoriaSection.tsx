@@ -178,12 +178,6 @@ export function HistoriaSection() {
                         </p>
                       </div>
                     )}
-                    <div className={`mt-4 flex flex-col items-center text-center ${step.color}`}>
-                      <h3 className="text-lg font-bold tracking-tight">{step.titulo}</h3>
-                      <p className="mt-1.5 max-w-[220px] px-2 text-[13px] leading-snug font-medium drop-shadow-sm">
-                        {step.desc}
-                      </p>
-                    </div>
                   </div>
                 </motion.div>
               )
