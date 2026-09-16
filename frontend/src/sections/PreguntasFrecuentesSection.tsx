@@ -194,7 +194,7 @@ function PreguntaFila({
 
 export function PreguntasFrecuentesSection() {
   const reduce = useReducedMotion()
-  const [activa, setActiva] = useState<string | null>(PREGUNTAS_FRECUENTES[0]?.id ?? null)
+  const [activa, setActiva] = useState<string | null>(null)
 
   const toggle = useCallback((id: string) => {
     setActiva((prev) => (prev === id ? null : id))
