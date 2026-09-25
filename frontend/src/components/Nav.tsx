@@ -9,7 +9,7 @@ import { clsx } from 'clsx'
 import { useViajeStore } from '@/store/useViajeStore'
 import { PASOS_VIAJE } from '@/lib/data/viaje'
 
-import logoEnel from '@/assets/icons/Enel_Group_logo.svg'
+import logoEnel from '@/assets/icons/Enel_Group_logo_blanco.png'
 
 interface NavItem {
   id: string

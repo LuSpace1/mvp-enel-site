@@ -14,8 +14,9 @@ import { CaretRight } from '@phosphor-icons/react'
 import { track } from '@/lib/analytics'
 import { STORM_INTRO_CLAVE } from '@/lib/intro'
 import { useMediaQuery } from '@/lib/useMediaQuery'
-import logoEnel from '@/assets/icons/Enel_Group_logo.svg'
-import videoIntro from '@/assets/videos/video4.mp4'
+import logoEnel from '@/assets/icons/Enel_Group_logo_blanco.png'
+import videoIntro from '@/assets/videos/portada.mp4'
+import posterPortada from '@/assets/images/portada-poster.jpg'
 
 // Esqueleto del logo Enel: cada pieza se dibuja por trazo conforme avanza el scroll.
 const PIEZAS_LAZO: { d: string; ancho: number; tramo: [number, number] }[] = [
@@ -240,6 +241,8 @@ export function StormIntro() {
           <video
             ref={videoRef}
             src={videoIntro}
+            poster={posterPortada}
+            preload="metadata"
             autoPlay
             muted
             loop

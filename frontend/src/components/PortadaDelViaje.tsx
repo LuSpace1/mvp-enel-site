@@ -1,15 +1,29 @@
+import { useEffect, useRef } from 'react'
 import { ArrowDown, PlayCircle } from '@phosphor-icons/react'
 
-import { motion, useReducedMotion } from 'motion/react'
+import { motion, useInView, useReducedMotion } from 'motion/react'
 import { VideoEmbed } from '@/components/ui/VideoEmbed'
 import { track } from '@/lib/analytics'
 import { videoDeSeccion } from '@/lib/data/videos'
 
-import fotoMUT from '@/assets/images/MUT.jpg'
+import videoPortada from '@/assets/videos/hero.mp4'
+import posterPortada from '@/assets/images/hero-poster.jpg'
 
 export function PortadaDelViaje() {
   const video = videoDeSeccion('hero_main')
   const reduce = useReducedMotion()
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const enVista = useInView(videoRef, { amount: 0.1 })
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el) return
+    if (enVista) {
+      void el.play().catch(() => {})
+    } else {
+      el.pause()
+    }
+  }, [enVista])
 
   return (
     <section
@@ -17,13 +31,20 @@ export function PortadaDelViaje() {
       className="bg-enel-navy relative flex min-h-[72dvh] items-center overflow-hidden py-16 md:min-h-[80dvh] md:py-24"
     >
       <div className="pointer-events-none absolute inset-0">
-        <motion.img
-          src={fotoMUT}
-          alt=""
+        <motion.video
+          ref={videoRef}
+          src={videoPortada}
+          poster={posterPortada}
+          preload="metadata"
+          autoPlay
+          muted
+          loop
+          playsInline
+          disableRemotePlayback
           aria-hidden="true"
-          className="h-full w-full object-cover opacity-[0.55]"
+          className="h-full w-full object-cover opacity-[0.45]"
           initial={reduce ? false : { scale: 1.15, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.55 }}
+          animate={{ scale: 1, opacity: 0.45 }}
           transition={{ duration: 2.0, ease: [0.25, 1, 0.5, 1] }}
         />
         <motion.div
@@ -50,7 +71,7 @@ export function PortadaDelViaje() {
             initial={reduce ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.3, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 w-full"
+            className="mx-auto mt-8 w-full max-w-3xl"
           >
             <VideoEmbed youtubeUrl={video.youtube_url} titulo={video.title} />
           </motion.div>
