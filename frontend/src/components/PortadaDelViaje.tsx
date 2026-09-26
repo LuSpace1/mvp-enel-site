@@ -6,7 +6,7 @@ import { VideoEmbed } from '@/components/ui/VideoEmbed'
 import { track } from '@/lib/analytics'
 import { videoDeSeccion } from '@/lib/data/videos'
 
-import videoPortada from '@/assets/videos/hero.mp4'
+import videoPortada from '@/assets/videos/hero.webm'
 import posterPortada from '@/assets/images/hero-poster.jpg'
 
 export function PortadaDelViaje() {

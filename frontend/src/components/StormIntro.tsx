@@ -15,7 +15,7 @@ import { track } from '@/lib/analytics'
 import { STORM_INTRO_CLAVE } from '@/lib/intro'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import logoEnel from '@/assets/icons/Enel_Group_logo_blanco.png'
-import videoIntro from '@/assets/videos/portada.mp4'
+import videoIntro from '@/assets/videos/portada.webm'
 import posterPortada from '@/assets/images/portada-poster.jpg'
 
 // Esqueleto del logo Enel: cada pieza se dibuja por trazo conforme avanza el scroll.
