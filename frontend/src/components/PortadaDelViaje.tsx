@@ -42,9 +42,9 @@ export function PortadaDelViaje() {
           playsInline
           disableRemotePlayback
           aria-hidden="true"
-          className="h-full w-full object-cover opacity-[0.45]"
+          className="h-full w-full object-cover opacity-[0.20]"
           initial={reduce ? false : { scale: 1.15, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.45 }}
+          animate={{ scale: 1, opacity: 0.2 }}
           transition={{ duration: 2.0, ease: [0.25, 1, 0.5, 1] }}
         />
         <motion.div
