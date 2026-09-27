@@ -1,24 +1,31 @@
-# Portal Interactivo Enel Distribución
+# Portal Enel Distribución
 
-Portal interactivo scroll-driven para que cualquier trabajador —interno o externo— de Enel Distribución Chile se familiarice con la empresa. Recorrido narrativo por historia, cultura, organizacional, zona de concesión, cadena de valor y políticas ISO.
+Portal interactivo de Enel Distribución Chile. Es una sola página que se recorre con scroll: el contenido se arma mientras bajas, con animaciones, videos de fondo y galerías.
 
-Trabajo realizado por el área de **Mejora Continua en Quality Assurance**.
+## Secciones
 
-## Stack
+1. Intro animado
+2. Inicio (portada)
+3. Historia
+4. Cultura
+5. Equipos
+6. Concesión
+7. Cadena de valor
+8. Políticas ISO
+9. Me Office
+10. Rostros
+11. Preguntas frecuentes
+12. Cierre
 
-- **Backend:** Python 3.12+ / Django 5 / Django REST Framework / JWT / SQLite
-- **Frontend:** React 19 / TypeScript / Vite / Tailwind CSS / Motion / Zustand
-- **Herramientas:** uv / oxlint / Prettier
+## Tecnologías
 
-## Arquitectura
+- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS 4, Motion, Zustand
+- **Backend:** Django 5, Django REST Framework, SQLite
+- **Lint y formato:** oxlint, Prettier
 
-SPA single-page con experiencia scroll-driven narrativa de 10 capítulos. El frontend carga bajo demanda cada sección via `React.lazy()` y consume una API REST que gestiona autenticación anónima (UUID + JWT) y contenido de videos.
+## Cómo correrlo
 
-En desarrollo, Vite proxea las llamadas a `/api` hacia el backend Django en `localhost:8000`.
-
-## Getting Started
-
-**Prerrequisitos:** Python 3.12+, Node.js, [uv](https://docs.astral.sh/uv/)
+Necesitas Python 3.12+, Node.js y [uv](https://docs.astral.sh/uv/).
 
 ```bash
 # Backend
@@ -27,14 +34,22 @@ uv sync
 uv run python manage.py migrate
 uv run python manage.py runserver
 
-# Frontend
+# Frontend (en otra terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-El portal queda disponible en `http://localhost:5173`.
+El sitio queda en `http://localhost:5173`. Vite manda las llamadas `/api` al backend, que corre en el puerto 8000.
+
+En `frontend/` también están:
+
+```bash
+npm run build    # compilar para producción
+npm run lint     # revisar con oxlint
+npm run format   # formatear con prettier
+```
 
 ---
 
-*Prototipo MVP — Enel Distribución Chile | Mejora Continua en Quality Assurance*
+*Mejora Continua — Quality Assurance, Enel Distribución Chile*
