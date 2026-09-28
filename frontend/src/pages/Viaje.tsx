@@ -7,7 +7,6 @@ import { useAuthStore } from '@/store/useAuthStore'
 import { useVideosStore } from '@/store/useVideosStore'
 import { useViajeStore } from '@/store/useViajeStore'
 import { PASOS_VIAJE } from '@/lib/data/viaje'
-import { STORM_INTRO_CLAVE } from '@/lib/intro'
 
 const StormIntro = lazy(() =>
   import('@/components/StormIntro').then((modulo) => ({ default: modulo.StormIntro })),
@@ -59,19 +58,6 @@ const Footer = lazy(() =>
 )
 
 const PASO_POR_ID = new Map(PASOS_VIAJE.map((paso) => [paso.id, paso]))
-
-let introVistoCache: boolean | null = null
-
-function introYaVisto(): boolean {
-  if (introVistoCache === null) {
-    try {
-      introVistoCache = sessionStorage.getItem(STORM_INTRO_CLAVE) !== null
-    } catch {
-      introVistoCache = false
-    }
-  }
-  return introVistoCache
-}
 
 const SectionObserver = memo(function SectionObserver({
   id,
@@ -167,11 +153,9 @@ export function Viaje() {
     <div className="text-enel-navy min-h-svh bg-[#f0eee6] font-sans">
       <Nav />
       <Indice />
-      {(!import.meta.env.PROD || !introYaVisto()) && (
-        <Suspense fallback={null}>
-          <StormIntro />
-        </Suspense>
-      )}
+      <Suspense fallback={null}>
+        <StormIntro />
+      </Suspense>
       <main className="min-h-dvh pt-16">
         {paso && <PasoHeader paso={paso} />}
         <Suspense fallback={null}>

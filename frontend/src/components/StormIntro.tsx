@@ -12,7 +12,6 @@ import type { MotionValue } from 'motion/react'
 import { CaretRight } from '@phosphor-icons/react'
 
 import { track } from '@/lib/analytics'
-import { STORM_INTRO_CLAVE } from '@/lib/intro'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import logoEnel from '@/assets/icons/Enel_Group_logo_blanco.png'
 import videoIntro from '@/assets/videos/portada.webm'
@@ -181,7 +180,6 @@ export function StormIntro() {
   useMotionValueEvent(scrollYProgress, 'change', (v) => {
     if (!marcado.current && v >= 0.9) {
       marcado.current = true
-      sessionStorage.setItem(STORM_INTRO_CLAVE, '1')
       track('intro.completar')
     }
     if (!introCompletado && v >= 0.62) setIntroCompletado(true)
@@ -201,7 +199,6 @@ export function StormIntro() {
   const saltar = () => {
     marcado.current = true
     esPrimeraVez.current = false
-    sessionStorage.setItem(STORM_INTRO_CLAVE, '1')
     track('intro.saltar')
     document.getElementById('portada')?.scrollIntoView({ behavior: 'smooth' })
   }
