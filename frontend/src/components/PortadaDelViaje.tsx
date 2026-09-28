@@ -42,15 +42,10 @@ export function PortadaDelViaje() {
           playsInline
           disableRemotePlayback
           aria-hidden="true"
-          className="h-full w-full object-cover opacity-[0.20]"
+          className="h-full w-full object-cover opacity-70"
           initial={reduce ? false : { scale: 1.15, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.2 }}
+          animate={{ scale: 1, opacity: 0.7 }}
           transition={{ duration: 2.0, ease: [0.25, 1, 0.5, 1] }}
-        />
-        <motion.div
-          className="from-enel-navy via-enel-navy/70 to-enel-navy-soft/30 absolute inset-0 bg-gradient-to-b"
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity }}
         />
       </div>
 
