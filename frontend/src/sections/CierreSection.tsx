@@ -64,7 +64,7 @@ export function CierreSection() {
   const reduce = useReducedMotion()
 
   return (
-    <section id="cierre" className="relative overflow-hidden bg-[#f0eee6] py-24 md:py-36">
+    <section id="cierre" className="relative overflow-hidden bg-white py-24 md:py-36">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-multiply"
@@ -91,12 +91,11 @@ export function CierreSection() {
               Sigue explorando
             </span>
             <h2 className="text-enel-navy mt-6 text-4xl leading-[1.05] font-semibold tracking-tight md:text-6xl">
-              Bienvenido al equipo <span className="texto-gradiente-azul">Enel</span>
+              Accesos rápidos al equipo <span className="texto-gradiente-azul">Enel</span>
             </h2>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-neutral-500 md:text-lg">
-              Si es tu primer día, aquí tienes todo lo que necesitas para arrancar con el pie
-              derecho. Si ya eres parte de la familia, usa estos recursos para reforzar lo que sabes
-              y seguir creciendo.
+              Accede en un solo lugar a los recursos y herramientas que usas a diario: manuales,
+              normas de seguridad, contactos y todo lo que necesitas para tu trabajo en Enel.
             </p>
           </div>
         </Reveal>

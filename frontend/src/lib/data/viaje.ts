@@ -34,7 +34,7 @@ export const PASOS_VIAJE: PasoViaje[] = [
   },
   {
     id: 'galerias',
-    nombre: 'Herramienta Me Office',
+    nombre: 'Herramienta Me-Office',
   },
   {
     id: 'personas',

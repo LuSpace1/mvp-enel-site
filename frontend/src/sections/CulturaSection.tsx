@@ -53,7 +53,7 @@ export function CulturaSection() {
   }
 
   return (
-    <SectionShell id="cultura" className="relative overflow-hidden bg-[#f0eee6] pb-10 md:pb-14">
+    <SectionShell id="cultura" className="relative overflow-hidden bg-white pb-10 md:pb-14">
       {/* Fondo Cuadernillo Global */}
       <div
         aria-hidden="true"

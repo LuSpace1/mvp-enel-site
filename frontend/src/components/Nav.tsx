@@ -46,7 +46,7 @@ export function Nav() {
 
   return (
     <motion.header
-      className="fixed inset-x-0 top-0 z-40 h-16 border-b border-white/60 bg-[#f0eee6]/40 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-xl"
+      className="fixed inset-x-0 top-0 z-40 h-16 border-b border-white/60 bg-white/40 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-xl"
       initial={reduce ? false : { y: '-100%' }}
       animate={{ y: 0 }}
       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
@@ -129,7 +129,7 @@ export function Nav() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="border-enel-fog/70 absolute top-16 right-0 left-0 z-30 flex max-h-[70vh] flex-col overflow-y-auto border-b bg-[#f0eee6] p-4 shadow-2xl lg:hidden"
+            className="border-enel-fog/70 absolute top-16 right-0 left-0 z-30 flex max-h-[70vh] flex-col overflow-y-auto border-b bg-white p-4 shadow-2xl lg:hidden"
           >
             {ITEMS.map((item) => (
               <button

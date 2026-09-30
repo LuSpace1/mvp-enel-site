@@ -2,7 +2,7 @@ import type { PasoViaje } from '@/lib/data/viaje'
 
 export function PasoHeader({ paso }: { paso: PasoViaje }) {
   return (
-    <div className="sticky top-16 z-20 border-b border-white/60 bg-[#f0eee6]/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] backdrop-blur-xl">
+    <div className="sticky top-16 z-20 border-b border-white/60 bg-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] backdrop-blur-xl">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-multiply"

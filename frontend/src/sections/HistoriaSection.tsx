@@ -78,7 +78,7 @@ export function HistoriaSection() {
   const reduce = useReducedMotion()
 
   return (
-    <SectionShell id="historia" className="relative overflow-hidden bg-[#f0eee6]">
+    <SectionShell id="historia" className="relative overflow-hidden bg-white">
       {/* Fondo Cuadernillo Global */}
       <div
         aria-hidden="true"

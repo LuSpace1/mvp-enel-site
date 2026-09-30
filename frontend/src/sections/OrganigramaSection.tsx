@@ -87,7 +87,7 @@ export function OrganigramaSection() {
   return (
     <SectionShell
       id="organigrama"
-      className="bg-[#f0eee6] bg-[radial-gradient(rgba(10,25,47,0.09)_1.5px,transparent_1.5px)] bg-[size:16px_16px] pt-10 md:pt-14"
+      className="bg-white bg-[radial-gradient(rgba(10,25,47,0.09)_1.5px,transparent_1.5px)] bg-[size:16px_16px] pt-10 md:pt-14"
       innerClassName="py-12"
     >
       <motion.div

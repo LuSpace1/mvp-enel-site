@@ -12,7 +12,6 @@ import type { MotionValue } from 'motion/react'
 import { CaretRight } from '@phosphor-icons/react'
 
 import { track } from '@/lib/analytics'
-import { useMediaQuery } from '@/lib/useMediaQuery'
 import logoEnel from '@/assets/icons/Enel_Group_logo_blanco.png'
 import videoIntro from '@/assets/videos/portada.webm'
 import posterPortada from '@/assets/images/portada-poster.jpg'
@@ -30,7 +29,7 @@ const PIEZAS_LAZO: { d: string; ancho: number; tramo: [number, number] }[] = [
   { d: 'M 368 58 L 385 58 L 385 106 L 401 128', ancho: 12, tramo: [0.32, 0.4] }, // cola verde
 ]
 
-// Una pieza del esqueleto del logo: se dibuja por trazo y al terminar una chispa amarilla recorre su longitud.
+// Una pieza del esqueleto del logo: se dibuja por trazo conforme avanza el scroll.
 function PiezaLazo({
   prog,
   config,
@@ -41,117 +40,18 @@ function PiezaLazo({
   const [inicio, fin] = config.tramo
   const pathLength = useTransform(prog, config.tramo, [0, 1])
   const gate = useTransform(prog, [inicio, fin], [0, 1])
-  const blipOff = useTransform(prog, [fin - 0.005, fin + 0.05], [0, 1])
-  const blipOp = useTransform(prog, [fin - 0.005, fin + 0.015], [0, 1])
 
   return (
-    <g>
-      <motion.path
-        d={config.d}
-        fill="none"
-        stroke="#0e4d7a"
-        strokeWidth={config.ancho}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-        style={{ pathLength, opacity: gate }}
-      />
-      <motion.path
-        d={config.d}
-        fill="none"
-        stroke="#ffd02f"
-        strokeWidth={config.ancho + 4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-        style={{
-          pathLength: 0.05,
-          pathOffset: blipOff,
-          opacity: blipOp,
-        }}
-      />
-    </g>
-  )
-}
-
-// Nuevo efecto de electricidad viva y realista usando SVG Filters (feTurbulence)
-function CampoElectrico({ gateLogo, esMovil }: { gateLogo: MotionValue<number>; esMovil: boolean }) {
-  // Anillos concéntricos que serán distorsionados por el filtro.
-  // Al usar strokeDasharray y rotar, simulamos arcos de plasma viajando.
-  const anillos = [
-    { r: 120, width: 3, dash: "90 200", dur: 2.5, reverse: false, opacity: 0.9 },
-    { r: 155, width: 2, dash: "150 250", dur: 3.2, reverse: true, opacity: 0.8 },
-    { r: 190, width: 4, dash: "60 350", dur: 2.8, reverse: false, opacity: 0.6 },
-    { r: 230, width: 2, dash: "120 400", dur: 4.5, reverse: true, opacity: 0.5 },
-  ]
-
-  // En móviles reducimos el número de anillos para mantener 60fps constantes (los filtros SVG son pesados)
-  const anillosActivos = esMovil ? anillos.slice(0, 2) : anillos
-
-  return (
-    <motion.div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center translate-y-8 sm:translate-y-12"
-      style={{ opacity: gateLogo }}
-    >
-      <svg viewBox="-300 -300 600 600" className="absolute w-[600px] h-[600px] sm:w-[700px] sm:h-[700px] mix-blend-screen max-w-none">
-        <defs>
-          <filter id="plasma-realista" x="-50%" y="-50%" width="200%" height="200%">
-            {/* Ruido fractal animado para la distorsión eléctrica */}
-            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise">
-              <animate 
-                attributeName="seed" 
-                values="0;1;2;3;4;5;6;7;8;9;10;11;12;13;14" 
-                dur="0.6s" 
-                calcMode="discrete" 
-                repeatCount="indefinite" 
-              />
-            </feTurbulence>
-            
-            {/* Distorsiona las líneas base usando el ruido, rompiendo los círculos en rayos erráticos */}
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="40" xChannelSelector="R" yChannelSelector="G" result="displaced" />
-            
-            {/* Sistema de resplandores superpuestos (Glow) realista */}
-            <feGaussianBlur in="displaced" stdDeviation="3" result="blur1" />
-            <feGaussianBlur in="displaced" stdDeviation="12" result="blur2" />
-            <feGaussianBlur in="displaced" stdDeviation="25" result="blur3" />
-            
-            <feMerge>
-              <feMergeNode in="blur3" />
-              <feMergeNode in="blur2" />
-              <feMergeNode in="blur1" />
-              {/* Núcleo del rayo caliente */}
-              <feMergeNode in="displaced" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        <g filter="url(#plasma-realista)">
-          {anillosActivos.map((anillo, i) => (
-            <motion.circle
-              key={i}
-              cx="0"
-              cy="0"
-              r={anillo.r}
-              fill="none"
-              stroke="#ffd02f" 
-              strokeWidth={anillo.width}
-              strokeDasharray={anillo.dash}
-              strokeLinecap="round"
-              style={{ opacity: anillo.opacity }}
-              animate={{
-                rotate: anillo.reverse ? [360, 0] : [0, 360],
-              }}
-              transition={{
-                duration: anillo.dur,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-            />
-          ))}
-        </g>
-      </svg>
-    </motion.div>
+    <motion.path
+      d={config.d}
+      fill="none"
+      stroke="#0e4d7a"
+      strokeWidth={config.ancho}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      vectorEffect="non-scaling-stroke"
+      style={{ pathLength, opacity: gate }}
+    />
   )
 }
 
@@ -162,7 +62,6 @@ export function StormIntro() {
   const marcado = useRef(false)
   const esPrimeraVez = useRef(true)
   const [introCompletado, setIntroCompletado] = useState(false)
-  const esMovil = useMediaQuery('(max-width: 767px)')
   const enVista = useInView(ref, { amount: 0.05 })
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
@@ -210,26 +109,25 @@ export function StormIntro() {
 
   const brillo = useTransform(prog, [0.38, 0.52], [0.4, 1.15])
   const gris = useTransform(prog, [0.38, 0.52], [1, 0])
-  const gateLogo = useTransform(prog, [0.42, 0.52], [0, 1])
   const escalaLogo = useTransform(prog, [0.05, 0.45], [4.5, 1])
   const opOfficial = useTransform(prog, [0.42, 0.52], [0, 1])
   const opEsqueleto = useTransform(prog, [0.44, 0.54], [1, 0])
-  
+
   const imgFilter = useTransform(() => `brightness(${brillo.get()}) grayscale(${gris.get()})`)
-  
+
   // Título: entrada temprana, muy larga y progresiva
-  const opEnel = useTransform(prog, [0.35, 0.70], [0, 1])
-  const yEnel = useTransform(prog, [0.35, 0.70], [80, 0])
-  const scaleEnel = useTransform(prog, [0.35, 0.70], [0.85, 1])
-  const opDist = useTransform(prog, [0.40, 0.70], [0, 1])
-  const sxLinea = useTransform(prog, [0.45, 0.70], [0, 1])
+  const opEnel = useTransform(prog, [0.35, 0.7], [0, 1])
+  const yEnel = useTransform(prog, [0.35, 0.7], [80, 0])
+  const scaleEnel = useTransform(prog, [0.35, 0.7], [0.85, 1])
+  const opDist = useTransform(prog, [0.4, 0.7], [0, 1])
+  const sxLinea = useTransform(prog, [0.45, 0.7], [0, 1])
 
   if (reduce) return null
 
   return (
     <section
       ref={ref}
-      aria-label="Intro animado: tormenta eléctrica Enel"
+      aria-label="Intro animado: logo Enel"
       className="relative z-50 h-[200vh] md:h-[250vh]"
     >
       <motion.div className="sticky top-0 h-dvh overflow-hidden" style={{ y: yTelon }}>
@@ -255,9 +153,6 @@ export function StormIntro() {
             style={{ opacity: opCont, scale: scaleCont, y: yCont }}
           >
             <motion.div style={{ scale: escalaLogo }} className="relative w-[min(84vw,540px)]">
-              {/* Nuevo efecto eléctrico continuo */}
-              <CampoElectrico gateLogo={gateLogo} esMovil={esMovil} />
-              
               <div className="relative">
                 {/* Esqueleto que se dibuja con el scroll */}
                 <motion.svg
@@ -282,9 +177,8 @@ export function StormIntro() {
 
             <motion.h1
               style={{ opacity: opEnel, y: yEnel, scale: scaleEnel }}
-              className="text-enel-navy mt-4 text-4xl leading-[1.02] font-semibold tracking-tighter sm:text-6xl md:text-7xl"
+              className="text-enel-navy mt-4 w-[min(84vw,540px)] text-right text-4xl leading-[1.02] font-semibold tracking-tighter sm:text-6xl md:text-7xl"
             >
-              Enel{' '}
               <motion.span style={{ opacity: opDist }} className="texto-gradiente-azul">
                 Distribución
               </motion.span>

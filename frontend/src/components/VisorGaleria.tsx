@@ -66,7 +66,7 @@ export function VisorGaleria({
       {fotoActiva && indice !== null && (
         <motion.div
           ref={scrollRef}
-          className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-[#f0eee6]"
+          className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -82,7 +82,7 @@ export function VisorGaleria({
           }}
         >
           {/* Barra superior fija */}
-          <div className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between gap-4 bg-gradient-to-b from-[#f0eee6]/90 to-transparent px-4 py-3 md:px-6">
+          <div className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between gap-4 bg-gradient-to-b from-white/90 to-transparent px-4 py-3 md:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <span className="text-xl font-bold tracking-tight text-[#d97757] md:text-2xl">
                 {String(indice + 1).padStart(2, '0')}
@@ -157,7 +157,7 @@ export function VisorGaleria({
                   <p className="text-xs font-bold tracking-[0.2em] text-[#d97757] uppercase">
                     {etiqueta}
                   </p>
-                  <h4 className="mt-3 font-serif text-2xl font-medium text-[#f0eee6] italic md:text-3xl">
+                  <h4 className="mt-3 font-serif text-2xl font-medium text-white italic md:text-3xl">
                     {fotoActiva.titulo}
                   </h4>
                   <div className="mt-6 space-y-4">

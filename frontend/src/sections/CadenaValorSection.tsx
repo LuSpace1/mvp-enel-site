@@ -108,7 +108,7 @@ export function CadenaValorSection() {
   }, [reduce, cintaX])
 
   return (
-    <section id="cadena" className="relative overflow-hidden bg-[#f0eee6] py-16 md:py-24">
+    <section id="cadena" className="relative overflow-hidden bg-white py-16 md:py-24">
       <motion.div
         className="relative z-10 mx-auto w-full max-w-6xl px-4 md:px-8"
         initial={reduce ? false : { opacity: 0, y: 24 }}
@@ -134,8 +134,8 @@ export function CadenaValorSection() {
           }}
         >
           {/* Atenuaciones laterales para difuminar bordes */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 md:w-28 z-30 bg-gradient-to-r from-[#f0eee6] to-transparent" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 md:w-28 z-30 bg-gradient-to-l from-[#f0eee6] to-transparent" />
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 md:w-28 z-30 bg-gradient-to-r from-white to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 md:w-28 z-30 bg-gradient-to-l from-white to-transparent" />
 
           {/* Barrido de onda / pulso de corriente eléctrica continua horizontal de izquierda a derecha */}
           {!reduce && (

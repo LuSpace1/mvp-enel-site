@@ -57,7 +57,7 @@ export function PortadaDelViaje() {
           className="flex flex-col items-center"
         >
           <h1 className="w-full text-4xl leading-[1.05] font-semibold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem]">
-            Bienvenido a <span className="texto-gradiente-azul">Enel Distribución</span>.
+            Conoce <span className="texto-gradiente-azul">Enel Distribución</span>
           </h1>
         </motion.div>
 
@@ -79,9 +79,9 @@ export function PortadaDelViaje() {
           className="mt-8 flex flex-col items-center"
         >
           <p className="max-w-2xl text-base leading-relaxed text-white/70 md:text-lg">
-            Bienvenido a Enel Distribución. En este sitio, encontrarás todo lo que necesitas saber
-            sobre el negocio, nuestra cultura organizacional, quiénes somos y cómo trabajamos para
-            ser la empresa de distribución de energía eléctrica más grande de Chile.
+            En este sitio, encontrarás todo lo que necesitas saber sobre el negocio, nuestra cultura
+            organizacional, quiénes somos y cómo trabajamos para ser la empresa de distribución de
+            energía eléctrica más grande de Chile.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <motion.button

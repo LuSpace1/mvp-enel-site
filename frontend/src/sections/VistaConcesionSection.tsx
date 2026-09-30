@@ -401,7 +401,7 @@ export function VistaConcesionSection() {
   return (
     <section
       id="concesion-detalle"
-      className="relative overflow-hidden bg-[#ece8dd] py-14 md:py-20"
+      className="relative overflow-hidden bg-white py-14 md:py-20"
     >
       <div
         aria-hidden="true"

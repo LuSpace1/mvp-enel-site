@@ -150,7 +150,7 @@ export function Viaje() {
   const paso = PASO_POR_ID.get(pasoActual)
 
   return (
-    <div className="text-enel-navy min-h-svh bg-[#f0eee6] font-sans">
+    <div className="text-enel-navy min-h-svh bg-white font-sans">
       <Nav />
       <Indice />
       <Suspense fallback={null}>

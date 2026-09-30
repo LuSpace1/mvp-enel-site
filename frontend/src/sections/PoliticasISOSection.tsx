@@ -30,7 +30,7 @@ export function PoliticasISOSection() {
   const reduce = useReducedMotion()
 
   return (
-    <SectionShell id="politicas" className="relative overflow-hidden bg-[#f0eee6] pb-2 md:pb-4">
+    <SectionShell id="politicas" className="relative overflow-hidden bg-white pb-2 md:pb-4">
       {/* Fondo Cuadernillo Global */}
       <div
         aria-hidden="true"

@@ -201,7 +201,7 @@ export function PreguntasFrecuentesSection() {
   }, [])
 
   return (
-    <section id="faq" className="relative overflow-hidden bg-[#f0eee6] py-12 md:py-20">
+    <section id="faq" className="relative overflow-hidden bg-white py-12 md:py-20">
       <motion.div
         className="relative z-10 mx-auto w-full max-w-5xl px-5 md:px-8"
         initial={reduce ? false : { opacity: 0, y: 24 }}

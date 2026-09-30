@@ -95,7 +95,7 @@ export function GaleriasSection() {
   }
 
   return (
-    <SectionShell id="galerias" className="relative overflow-hidden bg-[#f0eee6]">
+    <SectionShell id="galerias" className="relative overflow-hidden bg-white">
       {/* Fondo Cuadernillo Global */}
       <div
         aria-hidden="true"
@@ -123,10 +123,10 @@ export function GaleriasSection() {
             height={123}
           />
           <h2 className="text-enel-navy 3xl:mt-5 3xl:text-6xl mt-4 text-4xl font-bold tracking-tight md:text-5xl">
-            Herramienta Me Office
+            Herramienta Me-Office
           </h2>
           <p className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg">
-            Recorre la herramienta en cuatro presentaciones: elige una pestaña y mira cómo se usa en
+            Recorre la herramienta en cinco presentaciones: elige una pestaña y mira cómo se usa en
             el día a día.
           </p>
         </Reveal>
