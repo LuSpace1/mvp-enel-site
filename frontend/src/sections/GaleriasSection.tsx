@@ -49,7 +49,13 @@ export function GaleriasSection() {
     if (!nodo) return
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => navegar(entry.isIntersecting ? 'personas' : 'galerias'))
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            navegar('personas')
+          } else if (useViajeStore.getState().pasoActual === 'personas') {
+            navegar('galerias')
+          }
+        })
       },
       { root: null, rootMargin: '-30% 0px -30% 0px' },
     )
