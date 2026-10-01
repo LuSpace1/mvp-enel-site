@@ -17,13 +17,16 @@ export function PortadaDelViaje() {
 
   useEffect(() => {
     const el = videoRef.current
-    if (!el) return
-    if (enVista) {
+    if (!el || reduce) return
+    const ahorraDatos = (navigator as Navigator & { connection?: { saveData?: boolean } })
+      .connection?.saveData
+    if (enVista && !ahorraDatos) {
+      if (!el.getAttribute('src')) el.setAttribute('src', videoPortada)
       void el.play().catch(() => {})
     } else {
       el.pause()
     }
-  }, [enVista])
+  }, [enVista, reduce])
 
   return (
     <section
@@ -33,10 +36,8 @@ export function PortadaDelViaje() {
       <div className="pointer-events-none absolute inset-0">
         <motion.video
           ref={videoRef}
-          src={videoPortada}
           poster={posterPortada}
-          preload="metadata"
-          autoPlay
+          preload="none"
           muted
           loop
           playsInline

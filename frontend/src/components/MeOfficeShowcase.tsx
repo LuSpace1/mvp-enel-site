@@ -41,6 +41,8 @@ function MediaPantalla({ presentacion }: { presentacion: PresentacionMeOffice })
       src={media.src}
       alt=""
       aria-hidden="true"
+      loading="lazy"
+      decoding="async"
       className="h-full w-full bg-black object-contain"
     />
   )

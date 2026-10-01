@@ -1,5 +1,4 @@
-import { lazy, memo, Suspense, useEffect } from 'react'
-import { Toaster } from 'sonner'
+import { lazy, memo, Suspense, useEffect, useRef } from 'react'
 import { Nav } from '@/components/Nav'
 import { Indice } from '@/components/Indice'
 import { PasoHeader } from '@/components/PasoPantalla'
@@ -59,79 +58,74 @@ const Footer = lazy(() =>
 
 const PASO_POR_ID = new Map(PASOS_VIAJE.map((paso) => [paso.id, paso]))
 
-const SectionObserver = memo(function SectionObserver({
-  id,
-  children,
-}: {
-  id: string
-  children: React.ReactNode
-}) {
+const Secciones = memo(function Secciones() {
   const navegar = useViajeStore((estado) => estado.navegar)
+  const contenedorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const contenedor = contenedorRef.current
+    if (!contenedor) return
+
+    const nodos = contenedor.querySelectorAll<HTMLElement>('[data-seccion]')
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            navegar(id)
+            const id = (entry.target as HTMLElement).dataset.seccion
+            if (id) navegar(id)
           }
         })
       },
       { root: null, rootMargin: '-40% 0px -60% 0px' },
     )
 
-    const nodo = document.getElementById(id)
-    if (nodo) observer.observe(nodo)
+    nodos.forEach((nodo) => observer.observe(nodo))
     return () => observer.disconnect()
-  }, [id, navegar])
+  }, [navegar])
 
-  return <div className="scroll-mt-32">{children}</div>
-})
-
-const Secciones = memo(function Secciones() {
   return (
-    <>
-      <SectionObserver id="portada">
+    <div ref={contenedorRef}>
+      <div data-seccion="portada" className="scroll-mt-32">
         <PortadaDelViaje />
-      </SectionObserver>
+      </div>
 
-      <SectionObserver id="historia">
+      <div data-seccion="historia" className="scroll-mt-32">
         <HistoriaSection />
-      </SectionObserver>
+      </div>
 
-      <SectionObserver id="cultura">
+      <div data-seccion="cultura" className="scroll-mt-32">
         <CulturaSection />
-      </SectionObserver>
+      </div>
 
-      <SectionObserver id="organigrama">
+      <div data-seccion="organigrama" className="scroll-mt-32">
         <OrganigramaSection />
-      </SectionObserver>
+      </div>
 
-      <SectionObserver id="concesion-detalle">
+      <div data-seccion="concesion-detalle" className="scroll-mt-32">
         <VistaConcesionSection />
-      </SectionObserver>
+      </div>
 
-      <SectionObserver id="cadena">
+      <div data-seccion="cadena" className="scroll-mt-32">
         <CadenaValorSection />
-      </SectionObserver>
+      </div>
 
-      <SectionObserver id="politicas">
+      <div data-seccion="politicas" className="scroll-mt-32">
         <PoliticasISOSection />
-      </SectionObserver>
+      </div>
 
-      <SectionObserver id="galerias">
+      <div data-seccion="galerias" className="scroll-mt-32">
         <GaleriasSection />
-      </SectionObserver>
+      </div>
 
-      <SectionObserver id="cierre">
+      <div data-seccion="cierre" className="scroll-mt-32">
         <CierreSection />
-      </SectionObserver>
+      </div>
 
-      <SectionObserver id="faq">
+      <div data-seccion="faq" className="scroll-mt-32">
         <PreguntasFrecuentesSection />
         <Footer />
-      </SectionObserver>
-    </>
+      </div>
+    </div>
   )
 })
 
@@ -162,7 +156,6 @@ export function Viaje() {
           <Secciones />
         </Suspense>
       </main>
-      <Toaster position="bottom-right" richColors />
     </div>
   )
 }

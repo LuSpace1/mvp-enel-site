@@ -134,6 +134,8 @@ export function VisorGaleria({
                 <img
                   src={fotoActiva.src}
                   alt={fotoActiva.titulo}
+                  decoding="async"
+                  fetchPriority="high"
                   className="max-h-[80vh] w-full max-w-full rounded-lg object-contain shadow-2xl ring-1 ring-[#e0dcd0]"
                 />
                 <button

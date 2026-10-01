@@ -87,7 +87,7 @@ export function OrganigramaSection() {
   return (
     <SectionShell
       id="organigrama"
-      className="bg-white bg-[radial-gradient(rgba(10,25,47,0.09)_1.5px,transparent_1.5px)] bg-[size:16px_16px] pt-10 md:pt-14"
+      className="bg-white pt-10 md:pt-14"
       innerClassName="py-12"
     >
       <motion.div
@@ -187,6 +187,8 @@ export function OrganigramaSection() {
                   <img
                     src={sub.foto}
                     alt={sub.subgerente}
+                    loading="lazy"
+                    decoding="async"
                     className={`mx-auto h-20 w-20 rounded-full object-cover shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_1px_4px_rgba(0,0,0,0.06)] ring-4 transition-all duration-300 ${
                       nodoAbierto === sub.id
                         ? 'ring-enel-blue/30'
@@ -230,6 +232,8 @@ export function OrganigramaSection() {
                       src={sub.foto}
                       className="h-12 w-12 rounded-full object-cover ring-2 ring-white/20"
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div>
                       <p className="text-enel-blue text-[10px] font-semibold tracking-[0.14em] uppercase">
@@ -413,6 +417,8 @@ export function OrganigramaSection() {
                   src={subAbierta.foto}
                   className="h-12 w-12 rounded-full object-cover ring-2 ring-white/20"
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div>
                   <p className="text-enel-blue text-[10px] font-semibold tracking-[0.14em] uppercase">

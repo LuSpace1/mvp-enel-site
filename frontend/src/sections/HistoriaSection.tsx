@@ -79,15 +79,6 @@ export function HistoriaSection() {
 
   return (
     <SectionShell id="historia" className="relative overflow-hidden bg-white">
-      {/* Fondo Cuadernillo Global */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-multiply"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(10, 25, 47, 0.35) 1.5px, transparent 1.5px)',
-          backgroundSize: '16px 16px',
-        }}
-      />
       <Reveal className="relative z-10 mx-auto max-w-3xl text-center">
         <h2 className="text-enel-navy text-3xl font-semibold tracking-tight md:text-5xl">
           Grupo Enel
@@ -133,16 +124,6 @@ export function HistoriaSection() {
           className="border-enel-navy/80 relative mx-auto w-full max-w-6xl overflow-hidden rounded-[2.5rem] border-4 bg-white p-10 shadow-2xl md:p-16"
           style={{ animation: 'float-subtle 4s ease-in-out infinite' }}
         >
-          {/* Fondo Cuadernillo del Card Padre */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 opacity-25"
-            style={{
-              backgroundImage: 'radial-gradient(rgba(10, 25, 47, 0.35) 1.5px, transparent 1.5px)',
-              backgroundSize: '16px 16px',
-            }}
-          />
-
           <div className="relative z-10 grid gap-10 pt-8 sm:grid-cols-2 md:gap-6 md:pt-14 lg:grid-cols-4">
             {timelineSteps.map((step, idx) => {
               const stat = statCards[idx]

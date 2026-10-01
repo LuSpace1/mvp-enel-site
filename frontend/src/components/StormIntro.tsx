@@ -61,7 +61,9 @@ export function StormIntro() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const marcado = useRef(false)
   const esPrimeraVez = useRef(true)
+  const videoActivado = useRef(false)
   const [introCompletado, setIntroCompletado] = useState(false)
+  const [videoActivo, setVideoActivo] = useState(false)
   const enVista = useInView(ref, { amount: 0.05 })
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
@@ -83,17 +85,24 @@ export function StormIntro() {
     }
     if (!introCompletado && v >= 0.62) setIntroCompletado(true)
     if (esPrimeraVez.current && v >= 0.99) esPrimeraVez.current = false
+    if (!videoActivado.current && v > 0.01) {
+      videoActivado.current = true
+      setVideoActivo(true)
+    }
   })
 
   useEffect(() => {
     const video = videoRef.current
-    if (!video) return
-    if (enVista) {
+    if (!video || reduce || !videoActivo) return
+    const ahorraDatos = (navigator as Navigator & { connection?: { saveData?: boolean } })
+      .connection?.saveData
+    if (enVista && !ahorraDatos) {
+      if (!video.getAttribute('src')) video.setAttribute('src', videoIntro)
       void video.play().catch(() => {})
     } else {
       video.pause()
     }
-  }, [enVista])
+  }, [enVista, reduce, videoActivo])
 
   const saltar = () => {
     marcado.current = true
@@ -120,7 +129,6 @@ export function StormIntro() {
   const yEnel = useTransform(prog, [0.35, 0.7], [80, 0])
   const scaleEnel = useTransform(prog, [0.35, 0.7], [0.85, 1])
   const opDist = useTransform(prog, [0.4, 0.7], [0, 1])
-  const sxLinea = useTransform(prog, [0.45, 0.7], [0, 1])
 
   if (reduce) return null
 
@@ -135,10 +143,8 @@ export function StormIntro() {
           {/* Video de fondo: Santiago en loop, al 100% */}
           <video
             ref={videoRef}
-            src={videoIntro}
             poster={posterPortada}
-            preload="metadata"
-            autoPlay
+            preload="none"
             muted
             loop
             playsInline
@@ -183,10 +189,6 @@ export function StormIntro() {
                 Distribución
               </motion.span>
             </motion.h1>
-            <motion.div
-              style={{ scaleX: sxLinea }}
-              className="mt-5 h-1 w-14 rounded-full bg-[#ffd02f] shadow-[0_0_12px_rgba(255,208,47,0.8)]"
-            />
             <motion.p
               style={{ opacity: opDist }}
               className="bg-enel-navy/40 mt-6 max-w-md rounded-full px-6 py-3 text-sm leading-relaxed text-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md md:text-base"

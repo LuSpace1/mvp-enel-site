@@ -403,15 +403,6 @@ export function VistaConcesionSection() {
       id="concesion-detalle"
       className="relative overflow-hidden bg-white py-14 md:py-20"
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-multiply"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(10, 25, 47, 0.35) 1.5px, transparent 1.5px)',
-          backgroundSize: '16px 16px',
-        }}
-      />
-
       <motion.div
         className="relative z-10 mx-auto w-full max-w-5xl px-5 md:px-8 lg:max-w-6xl"
         initial={reduce ? false : { opacity: 0, y: -100 }}
@@ -468,16 +459,6 @@ export function VistaConcesionSection() {
 
           <Reveal delay={0.1} className="w-full">
             <div className="relative overflow-hidden rounded-3xl border border-neutral-300 bg-[#faf8f1] shadow-[0_24px_70px_-24px_rgba(10,25,47,0.45)]">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 opacity-25"
-                style={{
-                  backgroundImage:
-                    'radial-gradient(rgba(10, 25, 47, 0.3) 1.5px, transparent 1.5px)',
-                  backgroundSize: '16px 16px',
-                }}
-              />
-
               {/* El contenedor adopta la proporción del viewBox (~1206×835, panorámica)
                   manteniendo el tamaño del mapa. */}
               <div

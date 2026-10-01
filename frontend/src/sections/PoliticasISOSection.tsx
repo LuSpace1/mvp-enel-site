@@ -9,16 +9,6 @@ import { politicasExtra, politicasISO } from '@/lib/data/iso'
 const PRINCIPAL = politicasISO[0]
 const RESTO = politicasISO.slice(1)
 
-const PUNTO_NAVY = {
-  backgroundImage: 'radial-gradient(rgba(10, 25, 47, 0.35) 1.5px, transparent 1.5px)',
-  backgroundSize: '16px 16px',
-}
-
-const PUNTO_BLANCO = {
-  backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.4) 1.5px, transparent 1.5px)',
-  backgroundSize: '16px 16px',
-}
-
 const POSICIONES_RESTO = [
   'md:col-start-3 md:row-start-1',
   'md:col-start-4 md:row-start-1',
@@ -31,13 +21,6 @@ export function PoliticasISOSection() {
 
   return (
     <SectionShell id="politicas" className="relative overflow-hidden bg-white pb-2 md:pb-4">
-      {/* Fondo Cuadernillo Global */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-multiply"
-        style={PUNTO_NAVY}
-      />
-
       <motion.div
         initial={reduce ? false : { opacity: 0, y: 80, rotateX: 12 }}
         whileInView={reduce ? undefined : { opacity: 1, y: 0, rotateX: 0 }}
@@ -72,11 +55,6 @@ export function PoliticasISOSection() {
                 data-analytics-component="iso"
                 data-analytics-politica={PRINCIPAL.id}
               >
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 opacity-20 mix-blend-screen"
-                  style={PUNTO_BLANCO}
-                />
                 <Certificate
                   aria-hidden="true"
                   size={230}
@@ -164,11 +142,6 @@ export function PoliticasISOSection() {
                 data-analytics-component="iso"
                 data-analytics-politica={politica.id}
               >
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 opacity-40 mix-blend-multiply"
-                  style={PUNTO_NAVY}
-                />
                 <span className="bg-enel-mist text-enel-blue group-hover:bg-enel-blue relative z-10 flex h-10 w-10 items-center justify-center rounded-xl transition group-hover:text-white">
                   <ArrowUpRight size={20} weight="bold" />
                 </span>
@@ -184,11 +157,6 @@ export function PoliticasISOSection() {
 
           <Reveal className="flex md:col-span-full md:row-start-3" delay={0.2} y={50}>
             <div className="group hover:border-enel-blue hover:shadow-enel-blue/20 3xl:p-8 relative flex w-full flex-col justify-center overflow-hidden rounded-3xl border-4 border-dashed border-gray-300 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1.5">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 opacity-20 mix-blend-multiply"
-                style={PUNTO_NAVY}
-              />
               <p className="relative z-10 mb-6 text-center text-[12px] font-bold tracking-[0.2em] text-neutral-400 uppercase">
                 Marco ampliado
               </p>

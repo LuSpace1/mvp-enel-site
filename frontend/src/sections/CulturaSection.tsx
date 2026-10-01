@@ -54,15 +54,6 @@ export function CulturaSection() {
 
   return (
     <SectionShell id="cultura" className="relative overflow-hidden bg-white pb-10 md:pb-14">
-      {/* Fondo Cuadernillo Global */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-multiply"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(10, 25, 47, 0.35) 1.5px, transparent 1.5px)',
-          backgroundSize: '16px 16px',
-        }}
-      />
       <motion.div
         initial={reduce ? false : { opacity: 0, scale: 0.88, rotate: -2 }}
         whileInView={reduce ? undefined : { opacity: 1, scale: 1, rotate: 0 }}
@@ -244,15 +235,6 @@ export function CulturaSection() {
                   />
 
                   <div className="border-enel-blue/35 relative grid h-full w-full place-items-center overflow-hidden rounded-2xl border-2 bg-white shadow-sm">
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 opacity-60"
-                      style={{
-                        backgroundImage:
-                          'radial-gradient(rgba(10, 25, 47, 0.10) 1px, transparent 1px)',
-                        backgroundSize: '10px 10px',
-                      }}
-                    />
                     <div className="relative flex flex-col items-center gap-2 px-3 text-center">
                       <Lightning size={20} weight="fill" className="text-enel-blue" />
                       <span className="text-enel-navy text-sm font-extrabold tracking-wide uppercase">

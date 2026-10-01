@@ -96,16 +96,6 @@ export function GaleriasSection() {
 
   return (
     <SectionShell id="galerias" className="relative overflow-hidden bg-white">
-      {/* Fondo Cuadernillo Global */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-multiply"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(10, 25, 47, 0.35) 1.5px, transparent 1.5px)',
-          backgroundSize: '16px 16px',
-        }}
-      />
-
       <motion.div
         className="relative z-10 w-full"
         initial={reduce ? false : { opacity: 0, scale: 1.08, filter: 'blur(10px)' }}
@@ -121,6 +111,8 @@ export function GaleriasSection() {
             className="3xl:h-16 h-14 w-auto drop-shadow-sm"
             width={112}
             height={123}
+            loading="lazy"
+            decoding="async"
           />
           <h2 className="text-enel-navy 3xl:mt-5 3xl:text-6xl mt-4 text-4xl font-bold tracking-tight md:text-5xl">
             Herramienta Me-Office

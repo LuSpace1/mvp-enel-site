@@ -65,14 +65,6 @@ export function CierreSection() {
 
   return (
     <section id="cierre" className="relative overflow-hidden bg-white py-24 md:py-36">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-multiply"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(10, 25, 47, 0.35) 1.5px, transparent 1.5px)',
-          backgroundSize: '16px 16px',
-        }}
-      />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="bg-enel-blue/8 absolute -top-40 -left-40 h-[30rem] w-[30rem] rounded-full blur-[120px]" />
         <div className="bg-enel-pink/8 absolute -right-40 -bottom-40 h-[30rem] w-[30rem] rounded-full blur-[120px]" />
@@ -91,11 +83,11 @@ export function CierreSection() {
               Sigue explorando
             </span>
             <h2 className="text-enel-navy mt-6 text-4xl leading-[1.05] font-semibold tracking-tight md:text-6xl">
-              Accesos rápidos al equipo <span className="texto-gradiente-azul">Enel</span>
+              Accesos Rápidos
             </h2>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-neutral-500 md:text-lg">
               Accede en un solo lugar a los recursos y herramientas que usas a diario: manuales,
-              normas de seguridad, contactos y todo lo que necesitas para tu trabajo en Enel.
+              normas de seguridad, contactos y todo lo que necesitas para tu trabajo.
             </p>
           </div>
         </Reveal>
@@ -114,6 +106,8 @@ export function CierreSection() {
                   <img
                     src={fotoMUT}
                     alt="Enel Distribución"
+                    loading="lazy"
+                    decoding="async"
                     className="aspect-[4/3] w-full object-cover"
                   />
                   <div className="from-enel-navy/15 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
@@ -151,16 +145,6 @@ export function CierreSection() {
                   }}
                 >
                   <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(1rem-2px)] bg-white p-5">
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 opacity-30 mix-blend-multiply"
-                      style={{
-                        backgroundImage:
-                          'radial-gradient(rgba(10, 25, 47, 0.35) 1px, transparent 1px)',
-                        backgroundSize: '12px 12px',
-                      }}
-                    />
-
                     <div className="relative z-10 flex flex-1 items-start gap-4">
                       <div
                         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${recurso.color} text-white shadow-md`}
