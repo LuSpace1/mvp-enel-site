@@ -11,6 +11,8 @@ import {
 import { motion, useReducedMotion } from 'motion/react'
 
 import { Reveal } from '@/components/ui/Reveal'
+import { RevealTexto } from '@/components/ui/RevealTexto'
+import { Parallax } from '@/components/ui/Parallax'
 import { track } from '@/lib/analytics'
 
 import fotoMUT from '@/assets/images/MUT-02.jpg'
@@ -77,14 +79,17 @@ export function CierreSection() {
         viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
       >
-        <Reveal>
+        <Reveal y={0}>
           <div className="max-w-3xl">
             <span className="text-enel-blue border-enel-blue/20 bg-enel-blue/5 rounded-full border px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] uppercase">
               Sigue explorando
             </span>
-            <h2 className="text-enel-navy mt-6 text-4xl leading-[1.05] font-semibold tracking-tight md:text-6xl">
+            <RevealTexto
+              as="h2"
+              className="text-enel-navy mt-6 text-4xl leading-[1.05] font-semibold tracking-tight md:text-6xl"
+            >
               Accesos Rápidos
-            </h2>
+            </RevealTexto>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-neutral-500 md:text-lg">
               Accede en un solo lugar a los recursos y herramientas que usas a diario: manuales,
               normas de seguridad, contactos y todo lo que necesitas para tu trabajo.
@@ -102,16 +107,18 @@ export function CierreSection() {
                 viewport={{ once: true, amount: 0.1, margin: '0px 0px -50px 0px' }}
                 transition={{ type: 'spring', stiffness: 40, damping: 14, mass: 1.5 }}
               >
-                <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_80px_rgba(10,25,47,0.18)]">
-                  <img
-                    src={fotoMUT}
-                    alt="Enel Distribución"
-                    loading="lazy"
-                    decoding="async"
-                    className="aspect-[4/3] w-full object-cover"
-                  />
-                  <div className="from-enel-navy/15 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
-                </div>
+                <Parallax distancia={45}>
+                  <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_80px_rgba(10,25,47,0.18)]">
+                    <img
+                      src={fotoMUT}
+                      alt="Enel Distribución"
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-[4/3] w-full object-cover"
+                    />
+                    <div className="from-enel-navy/15 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
+                  </div>
+                </Parallax>
 
                 <div
                   aria-hidden="true"

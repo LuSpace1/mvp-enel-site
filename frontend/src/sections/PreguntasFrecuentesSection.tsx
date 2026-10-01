@@ -12,6 +12,8 @@ import {
 import { motion, useReducedMotion } from 'motion/react'
 import { clsx } from 'clsx'
 
+import { RevealTexto } from '@/components/ui/RevealTexto'
+
 interface PreguntaFrecuente {
   id: string
   titulo: string
@@ -44,7 +46,8 @@ const PREGUNTAS_FRECUENTES: PreguntaFrecuente[] = [
       'Tus accesos a SAP, Salesforce, Microsoft 365 y la VPN corporativa se configuran a través del portal de TI y autenticación multifactor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.',
     icono: Laptop,
     estilo: {
-      icono: 'bg-enel-naranja/10 text-enel-naranja group-hover:bg-enel-naranja group-hover:text-white',
+      icono:
+        'bg-enel-naranja/10 text-enel-naranja group-hover:bg-enel-naranja group-hover:text-white',
       dot: 'bg-enel-naranja',
     },
     etiquetas: ['Sistemas', 'TI', 'Accesos'],
@@ -70,7 +73,8 @@ const PREGUNTAS_FRECUENTES: PreguntaFrecuente[] = [
       'Contamos con esquemas híbridos según el rol, seguro complementario de salud, convenios y programas continuos de bienestar. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada.',
     icono: CalendarCheck,
     estilo: {
-      icono: 'bg-enel-celeste/10 text-enel-celeste group-hover:bg-enel-celeste group-hover:text-white',
+      icono:
+        'bg-enel-celeste/10 text-enel-celeste group-hover:bg-enel-celeste group-hover:text-white',
       dot: 'bg-enel-celeste',
     },
     etiquetas: ['Bienestar', 'Flexibilidad', 'Beneficios'],
@@ -123,7 +127,7 @@ function PreguntaFila({
         data-analytics-faq={item.id}
         className="grid w-full cursor-pointer grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-x-3 py-4 text-left md:grid-cols-[2.5rem_minmax(0,1.2fr)_minmax(0,1fr)_auto] md:gap-x-6 md:py-5"
       >
-        <span className="text-xs font-mono font-medium tracking-tight text-neutral-400 tabular-nums">
+        <span className="font-mono text-xs font-medium tracking-tight text-neutral-400 tabular-nums">
           {String(indice + 1).padStart(2, '0')}
         </span>
 
@@ -131,12 +135,10 @@ function PreguntaFila({
           <h3 className="text-enel-navy text-base font-semibold tracking-tight md:text-lg">
             {item.titulo}
           </h3>
-          <p className="mt-0.5 text-xs leading-snug text-neutral-500 md:hidden">
-            {item.resumen}
-          </p>
+          <p className="mt-0.5 text-xs leading-snug text-neutral-500 md:hidden">{item.resumen}</p>
         </span>
 
-        <p className="hidden max-w-sm text-xs md:text-sm leading-snug text-neutral-500 md:block">
+        <p className="hidden max-w-sm text-xs leading-snug text-neutral-500 md:block md:text-sm">
           {item.resumen}
         </p>
 
@@ -169,7 +171,7 @@ function PreguntaFila({
                 <Icono size={16} weight="regular" />
               </span>
               <div>
-                <p className="max-w-2xl text-xs md:text-sm leading-relaxed text-neutral-600">
+                <p className="max-w-2xl text-xs leading-relaxed text-neutral-600 md:text-sm">
                   {item.detalle}
                 </p>
                 <ul className="mt-4 flex flex-wrap gap-2">
@@ -209,13 +211,17 @@ export function PreguntasFrecuentesSection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-6 md:mb-10">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4 md:mb-10">
           <div className="max-w-2xl">
-            <h2 className="text-enel-navy text-2xl font-semibold tracking-tight md:text-4xl">
+            <RevealTexto
+              as="h2"
+              className="text-enel-navy text-2xl font-semibold tracking-tight md:text-4xl"
+            >
               Preguntas Frecuentes
-            </h2>
-            <p className="mt-2 max-w-[65ch] text-xs md:text-sm leading-relaxed text-neutral-600">
-              Respuestas directas a las consultas habituales sobre tu integración y el funcionamiento de la compañía.
+            </RevealTexto>
+            <p className="mt-2 max-w-[65ch] text-xs leading-relaxed text-neutral-600 md:text-sm">
+              Respuestas directas a las consultas habituales sobre tu integración y el
+              funcionamiento de la compañía.
             </p>
           </div>
         </div>

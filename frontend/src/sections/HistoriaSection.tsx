@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { ArrowUpRight, Lightbulb } from '@phosphor-icons/react'
 import { Reveal } from '@/components/ui/Reveal'
+import { RevealTexto } from '@/components/ui/RevealTexto'
+import { Parallax } from '@/components/ui/Parallax'
 import { SectionShell } from '@/components/ui/SectionShell'
 
 const filiales = [
@@ -79,10 +81,13 @@ export function HistoriaSection() {
 
   return (
     <SectionShell id="historia" className="relative overflow-hidden bg-white">
-      <Reveal className="relative z-10 mx-auto max-w-3xl text-center">
-        <h2 className="text-enel-navy text-3xl font-semibold tracking-tight md:text-5xl">
+      <Reveal y={0} className="relative z-10 mx-auto max-w-3xl text-center">
+        <RevealTexto
+          as="h2"
+          className="text-enel-navy text-3xl font-semibold tracking-tight md:text-5xl"
+        >
           Grupo Enel
-        </h2>
+        </RevealTexto>
         <p className="mt-5 text-base leading-relaxed text-neutral-600 md:text-lg">
           Enel es una empresa multinacional de energía y uno de los principales operadores
           integrados globales en los sectores de la energía y el gas. Está presente en 27 países de
@@ -120,64 +125,66 @@ export function HistoriaSection() {
         transition={{ type: 'spring', stiffness: 25, damping: 16, mass: 1.5 }}
       >
         {/* CARD PADRE */}
-        <div
-          className="border-enel-navy/80 relative mx-auto w-full max-w-6xl overflow-hidden rounded-[2.5rem] border-4 bg-white p-10 shadow-2xl md:p-16"
-          style={{ animation: 'float-subtle 4s ease-in-out infinite' }}
-        >
-          <div className="relative z-10 grid gap-10 pt-8 sm:grid-cols-2 md:gap-6 md:pt-14 lg:grid-cols-4">
-            {timelineSteps.map((step, idx) => {
-              const stat = statCards[idx]
-              return (
-                <motion.div
-                  key={step.titulo}
-                  initial={reduce ? false : { opacity: 0, y: 24 }}
-                  whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ delay: idx * 0.12, duration: 0.55 }}
-                >
-                  <div
-                    className="float-subtle flex flex-col items-center"
-                    onMouseEnter={() => setIsBulbOn(true)}
-                    onMouseLeave={() => setIsBulbOn(false)}
-                    onTouchStart={() => setIsBulbOn(true)}
-                    onTouchEnd={() => setIsBulbOn(false)}
+        <Parallax distancia={35}>
+          <div
+            className="border-enel-navy/80 relative mx-auto w-full max-w-6xl overflow-hidden rounded-[2.5rem] border-4 bg-white p-10 shadow-2xl md:p-16"
+            style={{ animation: 'float-subtle 4s ease-in-out infinite' }}
+          >
+            <div className="relative z-10 grid gap-10 pt-8 sm:grid-cols-2 md:gap-6 md:pt-14 lg:grid-cols-4">
+              {timelineSteps.map((step, idx) => {
+                const stat = statCards[idx]
+                return (
+                  <motion.div
+                    key={step.titulo}
+                    initial={reduce ? false : { opacity: 0, y: 24 }}
+                    whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ delay: idx * 0.12, duration: 0.55 }}
                   >
-                    {stat && (
-                      <div
-                        className={`flex w-full max-w-[200px] flex-col items-center justify-center rounded-2xl border-2 ${stat.borderColor} ${stat.bgColor} px-4 py-6 text-center shadow-xl transition-all duration-300 hover:-translate-y-1.5 ${stat.glow}`}
-                      >
-                        <p
-                          className={`text-4xl font-extrabold tracking-tight drop-shadow-md ${stat.color}`}
+                    <div
+                      className="float-subtle flex flex-col items-center"
+                      onMouseEnter={() => setIsBulbOn(true)}
+                      onMouseLeave={() => setIsBulbOn(false)}
+                      onTouchStart={() => setIsBulbOn(true)}
+                      onTouchEnd={() => setIsBulbOn(false)}
+                    >
+                      {stat && (
+                        <div
+                          className={`flex w-full max-w-[200px] flex-col items-center justify-center rounded-2xl border-2 ${stat.borderColor} ${stat.bgColor} px-4 py-6 text-center shadow-xl transition-all duration-300 hover:-translate-y-1.5 ${stat.glow}`}
                         >
-                          {stat.statVal}
-                          {stat.statUnit ? (
-                            <span className="ml-1 text-2xl">{stat.statUnit}</span>
-                          ) : null}
-                        </p>
-                        <p className="text-enel-navy mt-2 text-[11px] font-bold tracking-wider uppercase drop-shadow-sm">
-                          {stat.statDesc}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
+                          <p
+                            className={`text-4xl font-extrabold tracking-tight drop-shadow-md ${stat.color}`}
+                          >
+                            {stat.statVal}
+                            {stat.statUnit ? (
+                              <span className="ml-1 text-2xl">{stat.statUnit}</span>
+                            ) : null}
+                          </p>
+                          <p className="text-enel-navy mt-2 text-[11px] font-bold tracking-wider uppercase drop-shadow-sm">
+                            {stat.statDesc}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
 
-          {/* Bombilla Interactiva (Se enciende al hacer hover en los objetos) */}
-          <div className="absolute top-6 right-6 z-20 h-10 w-10 md:top-10 md:right-10 md:h-14 md:w-14">
-            <Lightbulb
-              size="100%"
-              weight={isBulbOn ? 'fill' : 'duotone'}
-              className={`transition-all duration-500 ${
-                isBulbOn
-                  ? 'scale-125 text-[#ff4687] drop-shadow-[0_0_45px_rgba(255,70,135,0.9)]'
-                  : 'text-neutral-300'
-              }`}
-            />
+            {/* Bombilla Interactiva (Se enciende al hacer hover en los objetos) */}
+            <div className="absolute top-6 right-6 z-20 h-10 w-10 md:top-10 md:right-10 md:h-14 md:w-14">
+              <Lightbulb
+                size="100%"
+                weight={isBulbOn ? 'fill' : 'duotone'}
+                className={`transition-all duration-500 ${
+                  isBulbOn
+                    ? 'scale-125 text-[#ff4687] drop-shadow-[0_0_45px_rgba(255,70,135,0.9)]'
+                    : 'text-neutral-300'
+                }`}
+              />
+            </div>
           </div>
-        </div>
+        </Parallax>
       </motion.div>
     </SectionShell>
   )

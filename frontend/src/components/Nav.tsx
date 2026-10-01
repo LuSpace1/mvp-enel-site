@@ -129,6 +129,7 @@ export function Nav() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
+            data-lenis-prevent
             className="border-enel-fog/70 absolute top-16 right-0 left-0 z-30 flex max-h-[70vh] flex-col overflow-y-auto border-b bg-white p-4 shadow-2xl lg:hidden"
           >
             {ITEMS.map((item) => (
@@ -156,7 +157,7 @@ export function Nav() {
                 setMenuAbierto(false)
               }}
               className={clsx(
-                'w-full rounded-xl border-t border-black/10 mt-1 px-5 py-4 text-left text-base font-semibold flex items-center justify-between transition-colors',
+                'mt-1 flex w-full items-center justify-between rounded-xl border-t border-black/10 px-5 py-4 text-left text-base font-semibold transition-colors',
                 pasoActual === 'faq'
                   ? 'bg-enel-blue/10 text-enel-blue'
                   : 'text-enel-navy hover:bg-white/50',

@@ -14,6 +14,7 @@ import type { Icon } from '@phosphor-icons/react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import type { Variants } from 'motion/react'
 import { Reveal } from '@/components/ui/Reveal'
+import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { VideoEmbed } from '@/components/ui/VideoEmbed'
 import { areasStaff, gerenteGeneral, subgerencias } from '@/lib/data/organizacion'
@@ -85,21 +86,20 @@ export function OrganigramaSection() {
   }, [])
 
   return (
-    <SectionShell
-      id="organigrama"
-      className="bg-white pt-10 md:pt-14"
-      innerClassName="py-12"
-    >
+    <SectionShell id="organigrama" className="bg-white pt-10 md:pt-14" innerClassName="py-12">
       <motion.div
         initial={reduce ? false : { opacity: 0, clipPath: 'inset(8% 8% 8% 8%)' }}
         whileInView={reduce ? undefined : { opacity: 1, clipPath: 'inset(0% 0% 0% 0%)' }}
         viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 1.0, ease: [0.23, 1, 0.32, 1] }}
       >
-        <Reveal className="mx-auto mb-16 max-w-2xl text-center">
-          <h2 className="text-enel-navy text-3xl leading-[1.1] font-semibold tracking-[-0.02em] md:text-5xl md:tracking-[-0.025em]">
+        <Reveal y={0} className="mx-auto mb-16 max-w-2xl text-center">
+          <RevealTexto
+            as="h2"
+            className="text-enel-navy text-3xl leading-[1.1] font-semibold tracking-[-0.02em] md:text-5xl md:tracking-[-0.025em]"
+          >
             Equipos y Gerencia
-          </h2>
+          </RevealTexto>
           <p className="mt-4 text-[15px] text-neutral-500">
             Conoce a quienes hacen posible la energía en nuestra red
           </p>
@@ -391,6 +391,7 @@ export function OrganigramaSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            data-lenis-prevent
             className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/75 p-4 py-10 backdrop-blur-sm lg:hidden"
             onClick={() => setNodoAbierto(null)}
           >
@@ -484,6 +485,7 @@ export function OrganigramaSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            data-lenis-prevent
             className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/85 p-4 py-10 backdrop-blur-sm"
             onClick={() => setVideoActivo(null)}
           >
@@ -524,6 +526,7 @@ export function OrganigramaSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            data-lenis-prevent
             className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/75 p-4 py-10 backdrop-blur-sm"
             onClick={() => setGgAbierto(false)}
           >
@@ -577,6 +580,7 @@ export function OrganigramaSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            data-lenis-prevent
             className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/75 p-4 py-10 backdrop-blur-sm"
             onClick={() => setStaffActivo(null)}
           >

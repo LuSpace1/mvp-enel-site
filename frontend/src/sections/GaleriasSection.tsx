@@ -10,6 +10,7 @@ import {
 import { motion, useInView, useReducedMotion } from 'motion/react'
 
 import { Reveal } from '@/components/ui/Reveal'
+import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { EquiposGaleria } from '@/components/EquiposGaleria'
 import { MeOfficeShowcase } from '@/components/MeOfficeShowcase'
@@ -104,7 +105,7 @@ export function GaleriasSection() {
         transition={{ duration: 1.1, ease: [0.23, 1, 0.32, 1] }}
       >
         {/* Herramienta Me Office */}
-        <Reveal className="mx-auto flex max-w-3xl flex-col items-center text-center">
+        <Reveal y={0} className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <img
             src={meOfficeLogo}
             alt="Me Office"
@@ -114,9 +115,12 @@ export function GaleriasSection() {
             loading="lazy"
             decoding="async"
           />
-          <h2 className="text-enel-navy 3xl:mt-5 3xl:text-6xl mt-4 text-4xl font-bold tracking-tight md:text-5xl">
+          <RevealTexto
+            as="h2"
+            className="text-enel-navy 3xl:mt-5 3xl:text-6xl mt-4 text-4xl font-bold tracking-tight md:text-5xl"
+          >
             Herramienta Me-Office
-          </h2>
+          </RevealTexto>
           <p className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg">
             Recorre la herramienta en cinco presentaciones: elige una pestaña y mira cómo se usa en
             el día a día.
@@ -127,12 +131,15 @@ export function GaleriasSection() {
           <MeOfficeShowcase />
         </Reveal>
 
-        <Reveal id="personas" delay={0.1} className="3xl:mt-36 relative mt-24">
+        <Reveal id="personas" y={0} delay={0.1} className="3xl:mt-36 relative mt-24">
           <div className="3xl:mb-10 mb-8 flex flex-col justify-between gap-6 px-6 md:flex-row md:items-end md:px-12">
             <div>
-              <h2 className="text-enel-navy 3xl:text-5xl text-3xl font-bold tracking-tight md:text-4xl">
+              <RevealTexto
+                as="h2"
+                className="text-enel-navy 3xl:text-5xl text-3xl font-bold tracking-tight md:text-4xl"
+              >
                 Descubre a los equipos
-              </h2>
+              </RevealTexto>
               <p className="3xl:text-lg mt-4 font-medium text-neutral-600">
                 La energía que mueve a Chile tiene rostros e historias.
               </p>
@@ -240,9 +247,12 @@ export function GaleriasSection() {
             transition={{ type: 'spring', stiffness: 70, damping: 18 }}
             style={{ transformOrigin: 'bottom center' }}
           >
-            <h2 className="text-enel-navy 3xl:text-6xl text-4xl font-bold tracking-tight md:text-5xl">
+            <RevealTexto
+              as="h2"
+              className="text-enel-navy 3xl:text-6xl text-4xl font-bold tracking-tight md:text-5xl"
+            >
               Conoce nuestras instalaciones
-            </h2>
+            </RevealTexto>
             <p className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg">
               Los espacios donde trabaja la energía que mueve a Chile, desde el centro de formación
               hasta las oficinas de operación.

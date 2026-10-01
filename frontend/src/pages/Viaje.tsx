@@ -1,5 +1,6 @@
 import { lazy, memo, Suspense, useEffect, useRef } from 'react'
 import { Nav } from '@/components/Nav'
+import { SmoothScroll } from '@/components/SmoothScroll'
 import { Indice } from '@/components/Indice'
 import { PasoHeader } from '@/components/PasoPantalla'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -145,6 +146,7 @@ export function Viaje() {
 
   return (
     <div className="text-enel-navy min-h-svh bg-white font-sans">
+      <SmoothScroll />
       <Nav />
       <Indice />
       <Suspense fallback={null}>

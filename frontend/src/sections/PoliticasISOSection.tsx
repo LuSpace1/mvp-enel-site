@@ -2,6 +2,7 @@ import { ArrowUpRight, Certificate } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 
 import { Reveal } from '@/components/ui/Reveal'
+import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { track } from '@/lib/analytics'
 import { politicasExtra, politicasISO } from '@/lib/data/iso'
@@ -28,10 +29,13 @@ export function PoliticasISOSection() {
         transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
         style={{ perspective: 1200 }}
       >
-        <Reveal className="relative z-10 max-w-2xl">
-          <h2 className="text-enel-navy text-3xl font-semibold tracking-tight md:text-5xl">
+        <Reveal y={0} className="relative z-10 max-w-2xl">
+          <RevealTexto
+            as="h2"
+            className="text-enel-navy text-3xl font-semibold tracking-tight md:text-5xl"
+          >
             Nuestro marco de actuación
-          </h2>
+          </RevealTexto>
           <p className="mt-4 text-base leading-relaxed text-neutral-600 md:text-lg">
             Cinco políticas que orientan la forma en que trabajamos cada día. Accede a la versión
             completa en SharePoint.

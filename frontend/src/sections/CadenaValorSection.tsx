@@ -9,6 +9,7 @@ import {
   type Icon,
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence, useMotionValue, useReducedMotion } from 'motion/react'
+import { RevealTexto } from '@/components/ui/RevealTexto'
 import { etapasCadena } from '@/lib/data/organizacion'
 import type { EtapaCadena } from '@/types/api'
 
@@ -72,8 +73,7 @@ export function CadenaValorSection() {
 
   const [activa, setActiva] = useState<string>(primeraEtapa.id)
 
-  const etapaActual: EtapaCadena =
-    etapasCadena.find((e) => e.id === activa) ?? primeraEtapa
+  const etapaActual: EtapaCadena = etapasCadena.find((e) => e.id === activa) ?? primeraEtapa
 
   const toggle = useCallback((id: string) => {
     setActiva(id)
@@ -117,10 +117,13 @@ export function CadenaValorSection() {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Título Superior */}
-        <div className="text-center mb-8 md:mb-10">
-          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
+        <div className="mb-8 text-center md:mb-10">
+          <RevealTexto
+            as="h2"
+            className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-4xl"
+          >
             Cadena de Valor
-          </h2>
+          </RevealTexto>
         </div>
 
         {/* Cadena Continua en Movimiento (Avance hacia la derecha con animación de electricidad horizontal) */}
@@ -134,8 +137,8 @@ export function CadenaValorSection() {
           }}
         >
           {/* Atenuaciones laterales para difuminar bordes */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 md:w-28 z-30 bg-gradient-to-r from-white to-transparent" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 md:w-28 z-30 bg-gradient-to-l from-white to-transparent" />
+          <div className="pointer-events-none absolute top-0 bottom-0 left-0 z-30 w-16 bg-gradient-to-r from-white to-transparent md:w-28" />
+          <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-30 w-16 bg-gradient-to-l from-white to-transparent md:w-28" />
 
           {/* Barrido de onda / pulso de corriente eléctrica continua horizontal de izquierda a derecha */}
           {!reduce && (
@@ -161,7 +164,7 @@ export function CadenaValorSection() {
           {/* Cinta continua de Chevrons en movimiento hacia la derecha */}
           <motion.div
             ref={cintaRef}
-            className="flex items-center gap-2 w-max cursor-pointer relative z-20"
+            className="relative z-20 flex w-max cursor-pointer items-center gap-2"
             style={{ x: cintaX }}
           >
             {etapasDuplicadas.map((etapa, idx) => {
@@ -179,34 +182,28 @@ export function CadenaValorSection() {
                       'polygon(0% 0%, calc(100% - 24px) 0%, 100% 50%, calc(100% - 24px) 100%, 0% 100%, 24px 50%)',
                   }}
                   aria-pressed={estaActiva}
-                  className={`
-                    ${config.colorFondo} ${config.colorTexto}
-                    group relative shrink-0 w-[210px] md:w-[230px] h-[115px]
-                    flex flex-col items-center justify-center text-center px-6
-                    transition-all duration-300 ease-out outline-none overflow-hidden
-                    ${
-                      estaActiva
-                        ? 'scale-105 z-20 shadow-md ring-2 ring-slate-900/40 brightness-105'
-                        : 'opacity-85 hover:opacity-100 hover:scale-[1.02]'
-                    }
-                  `}
+                  className={` ${config.colorFondo} ${config.colorTexto} group relative flex h-[115px] w-[210px] shrink-0 flex-col items-center justify-center overflow-hidden px-6 text-center transition-all duration-300 ease-out outline-none md:w-[230px] ${
+                    estaActiva
+                      ? 'z-20 scale-105 shadow-md ring-2 ring-slate-900/40 brightness-105'
+                      : 'opacity-85 hover:scale-[1.02] hover:opacity-100'
+                  } `}
                 >
                   {/* Chispa / flujo eléctrico tenue continuo dentro de cada tarjeta */}
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.4)_0%,_rgba(56,189,248,0.15)_60%,_transparent_100%)]"
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.4)_0%,_rgba(56,189,248,0.15)_60%,_transparent_100%)] opacity-20"
                   />
 
                   {/* Destello eléctrico tenue en hover */}
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.5)_0%,_rgba(56,189,248,0.3)_45%,_transparent_75%)]"
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.5)_0%,_rgba(56,189,248,0.3)_45%,_transparent_75%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                   />
-                  
+
                   {/* Arco tenue de corriente eléctrica */}
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute -inset-full group-hover:animate-[pulse_1.2s_ease-in-out_infinite] opacity-0 group-hover:opacity-60 bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,rgba(186,230,253,0.3)_60deg,transparent_120deg)]"
+                    className="pointer-events-none absolute -inset-full bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,rgba(186,230,253,0.3)_60deg,transparent_120deg)] opacity-0 group-hover:animate-[pulse_1.2s_ease-in-out_infinite] group-hover:opacity-60"
                   />
 
                   <Icono
@@ -217,7 +214,7 @@ export function CadenaValorSection() {
                     }`}
                     aria-hidden="true"
                   />
-                  <span className="relative z-10 text-xs md:text-sm font-semibold leading-tight max-w-[140px]">
+                  <span className="relative z-10 max-w-[140px] text-xs leading-tight font-semibold md:text-sm">
                     {etapa.titulo}
                   </span>
                 </button>
@@ -227,7 +224,7 @@ export function CadenaValorSection() {
         </div>
 
         {/* Panel Informativo Minimalista & Clean */}
-        <div className="mt-10 md:mt-14 max-w-4xl mx-auto">
+        <div className="mx-auto mt-10 max-w-4xl md:mt-14">
           <AnimatePresence mode="wait">
             <motion.div
               key={etapaActual.id}
@@ -235,35 +232,35 @@ export function CadenaValorSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={reduce ? undefined : { opacity: 0, y: -10 }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="px-4 flex flex-col md:flex-row md:items-start justify-between gap-8 border-t border-slate-900/10 pt-8"
+              className="flex flex-col justify-between gap-8 border-t border-slate-900/10 px-4 pt-8 md:flex-row md:items-start"
             >
               {/* Información Principal */}
               <div className="md:max-w-xl">
-                <p className="text-xs font-semibold tracking-wider text-teal-800 uppercase mb-1">
+                <p className="mb-1 text-xs font-semibold tracking-wider text-teal-800 uppercase">
                   {etapaActual.descripcion}
                 </p>
 
-                <h3 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 mb-2">
+                <h3 className="mb-2 text-xl font-bold tracking-tight text-slate-900 md:text-2xl">
                   {etapaActual.titulo}
                 </h3>
 
-                <p className="text-xs md:text-sm leading-relaxed text-slate-600 font-normal">
+                <p className="text-xs leading-relaxed font-normal text-slate-600 md:text-sm">
                   {etapaActual.detalle}
                 </p>
               </div>
 
               {/* Actividades Relevantes */}
               <div className="flex flex-col md:min-w-[220px]">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
+                <span className="mb-2.5 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
                   Actividades
                 </span>
                 <ul className="flex flex-col gap-2">
                   {etapaActual.actividades.map((actividad) => (
                     <li
                       key={actividad}
-                      className="text-xs md:text-sm text-slate-700 font-medium leading-normal flex items-baseline gap-2"
+                      className="flex items-baseline gap-2 text-xs leading-normal font-medium text-slate-700 md:text-sm"
                     >
-                      <span className="h-1.5 w-1.5 rounded-full bg-teal-600 shrink-0 self-center" />
+                      <span className="h-1.5 w-1.5 shrink-0 self-center rounded-full bg-teal-600" />
                       <span>{actividad}</span>
                     </li>
                   ))}

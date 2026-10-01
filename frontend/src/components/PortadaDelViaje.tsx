@@ -3,6 +3,7 @@ import { ArrowDown, PlayCircle } from '@phosphor-icons/react'
 
 import { motion, useInView, useReducedMotion } from 'motion/react'
 import { VideoEmbed } from '@/components/ui/VideoEmbed'
+import { RevealTexto } from '@/components/ui/RevealTexto'
 import { track } from '@/lib/analytics'
 import { videoDeSeccion } from '@/lib/data/videos'
 
@@ -51,16 +52,15 @@ export function PortadaDelViaje() {
       </div>
 
       <div className="relative mx-auto flex w-full max-w-5xl flex-col items-center px-5 text-center md:px-8">
-        <motion.div
-          initial={reduce ? false : { opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.3, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center"
-        >
-          <h1 className="w-full text-4xl leading-[1.05] font-semibold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem]">
+        <div className="flex flex-col items-center">
+          <RevealTexto
+            as="h1"
+            delay={0.7}
+            className="w-full text-4xl leading-[1.05] font-semibold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem]"
+          >
             Conoce <span className="texto-gradiente-azul">Enel Distribución</span>
-          </h1>
-        </motion.div>
+          </RevealTexto>
+        </div>
 
         {video && (
           <motion.div

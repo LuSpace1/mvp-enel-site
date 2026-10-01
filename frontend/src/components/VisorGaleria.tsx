@@ -66,6 +66,7 @@ export function VisorGaleria({
       {fotoActiva && indice !== null && (
         <motion.div
           ref={scrollRef}
+          data-lenis-prevent
           className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

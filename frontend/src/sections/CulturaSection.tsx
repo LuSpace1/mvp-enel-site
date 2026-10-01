@@ -3,6 +3,7 @@ import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import { Lightning, CaretLeft, CaretRight } from '@phosphor-icons/react'
 
 import { Reveal } from '@/components/ui/Reveal'
+import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { pilaresCultura, valoresCultura } from '@/lib/data/cultura'
 
@@ -60,10 +61,13 @@ export function CulturaSection() {
         viewport={{ once: true, amount: 0.15 }}
         transition={{ type: 'spring', stiffness: 50, damping: 15, mass: 1.2 }}
       >
-        <Reveal className="relative z-10 mx-auto max-w-2xl text-center">
-          <h2 className="text-enel-navy text-3xl font-semibold tracking-tight md:text-5xl">
+        <Reveal y={0} className="relative z-10 mx-auto max-w-2xl text-center">
+          <RevealTexto
+            as="h2"
+            className="text-enel-navy text-3xl font-semibold tracking-tight md:text-5xl"
+          >
             Cómo trabajamos
-          </h2>
+          </RevealTexto>
           <p className="mt-4 text-base leading-relaxed text-neutral-600 md:text-lg">
             Nuestra cultura se construye día a día a través de acciones, decisiones y
             comportamientos que compartimos como equipo.

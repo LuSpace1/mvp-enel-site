@@ -4,6 +4,7 @@ import { ArrowLeft, MapPin } from '@phosphor-icons/react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
 import { Reveal } from '@/components/ui/Reveal'
+import { RevealTexto } from '@/components/ui/RevealTexto'
 import { COMUNAS_SVG, FUENTE_BASE, VIEWBOX, ZONAS_SVG } from '@/lib/data/comunas-svg'
 import type { ComunaSvg } from '@/lib/data/comunas-svg'
 import { ZONAS_CONCESION, ZONA_POR_ID } from '@/lib/data/zonas'
@@ -399,10 +400,7 @@ export function VistaConcesionSection() {
   )
 
   return (
-    <section
-      id="concesion-detalle"
-      className="relative overflow-hidden bg-white py-14 md:py-20"
-    >
+    <section id="concesion-detalle" className="relative overflow-hidden bg-white py-14 md:py-20">
       <motion.div
         className="relative z-10 mx-auto w-full max-w-5xl px-5 md:px-8 lg:max-w-6xl"
         initial={reduce ? false : { opacity: 0, y: -100 }}
@@ -411,14 +409,17 @@ export function VistaConcesionSection() {
         transition={{ type: 'spring', stiffness: 35, damping: 14, mass: 1.4 }}
       >
         <div className="flex flex-col items-center text-center">
-          <Reveal className="mb-12 max-w-2xl">
+          <Reveal y={0} className="mb-12 max-w-2xl">
             <p className="text-enel-blue text-sm font-bold tracking-[0.2em] uppercase">
               Concesión en detalle
             </p>
-            <h2 className="text-enel-navy mt-4 text-3xl font-bold tracking-tight md:text-5xl">
+            <RevealTexto
+              as="h2"
+              className="text-enel-navy mt-4 text-3xl font-bold tracking-tight md:text-5xl"
+            >
               Nuestro territorio,{' '}
               <span className="text-enel-blue font-serif italic">trazo a trazo</span>
-            </h2>
+            </RevealTexto>
             <p className="mt-5 text-base leading-relaxed font-medium text-neutral-600">
               Organizamos nuestra red en 4 secciones de concesión —Chacabuco, Cordillera, Pacífico y
               Florida— que cubren gran parte de la Región Metropolitana. Toca una zona para explorar
