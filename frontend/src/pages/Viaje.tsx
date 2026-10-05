@@ -45,11 +45,6 @@ const GaleriasSection = lazy(() =>
     default: modulo.GaleriasSection,
   })),
 )
-const PreguntasFrecuentesSection = lazy(() =>
-  import('@/sections/PreguntasFrecuentesSection').then((modulo) => ({
-    default: modulo.PreguntasFrecuentesSection,
-  })),
-)
 const CierreSection = lazy(() =>
   import('@/sections/CierreSection').then((modulo) => ({ default: modulo.CierreSection })),
 )
@@ -122,10 +117,7 @@ const Secciones = memo(function Secciones() {
         <CierreSection />
       </div>
 
-      <div data-seccion="faq" className="scroll-mt-32">
-        <PreguntasFrecuentesSection />
-        <Footer />
-      </div>
+      <Footer />
     </div>
   )
 })

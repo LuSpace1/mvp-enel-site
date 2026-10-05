@@ -110,7 +110,6 @@ export function GaleriasSection() {
         viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 1.1, ease: [0.23, 1, 0.32, 1] }}
       >
-        {/* Herramienta Me Office */}
         <Reveal y={0} className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <img
             src={meOfficeLogo}
@@ -152,7 +151,6 @@ export function GaleriasSection() {
             </div>
           </div>
 
-          {/* Galería interactiva de equipos (bajo demanda) */}
           {galeriaVisible ? (
             <motion.div
               initial={reduce ? false : { opacity: 0, y: 40, scale: 0.98 }}
@@ -164,7 +162,6 @@ export function GaleriasSection() {
             </motion.div>
           ) : (
             <div className="3xl:pb-20 flex flex-col items-center gap-8 px-6 pb-14 md:px-12">
-              {/* Mosaico de polaroids: vista previa interactiva de los equipos */}
               <div className="3xl:h-[460px] relative flex h-[320px] w-full max-w-3xl items-center justify-center md:h-[380px]">
                 {fotosEquipos.slice(0, 3).map((foto, indice) => {
                   const pos = TEASER_POS[indice] || { x: 0, rotate: 0 }
@@ -243,7 +240,6 @@ export function GaleriasSection() {
           )}
         </Reveal>
 
-        {/* Conoce nuestras instalaciones */}
         <div className="3xl:mt-32 mt-24">
           <motion.div
             ref={instalacionesRef}

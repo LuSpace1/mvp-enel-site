@@ -49,7 +49,7 @@ const RECURSOS = [
   {
     icono: Lifebuoy,
     titulo: 'Centro de Ayuda',
-    descripcion: 'FAQs, soporte técnico y canales de atención.',
+    descripcion: 'Soporte técnico y canales de atención.',
     url: 'https://enelchile.sharepoint.com/sites/ayuda',
     color: 'from-enel-pink to-rose-500',
   },

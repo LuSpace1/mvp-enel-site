@@ -44,10 +44,6 @@ export const PASOS_VIAJE: PasoViaje[] = [
     id: 'cierre',
     nombre: 'Cierre',
   },
-  {
-    id: 'faq',
-    nombre: 'Preguntas frecuentes',
-  },
 ]
 
 export const PASO_INICIAL = 'portada'

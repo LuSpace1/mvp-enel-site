@@ -82,7 +82,6 @@ export function VisorGaleria({
             if (Math.abs(delta) > 50) onNavegar(delta < 0 ? 1 : -1)
           }}
         >
-          {/* Barra superior fija */}
           <div className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between gap-4 bg-gradient-to-b from-white/90 to-transparent px-4 py-3 md:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <span className="text-xl font-bold tracking-tight text-[#d97757] md:text-2xl">
@@ -120,7 +119,6 @@ export function VisorGaleria({
             </div>
           </div>
 
-          {/* Contenido que cambia con la foto */}
           <AnimatePresence initial={false} custom={direccion} mode="wait">
             <motion.div
               key={indice}
@@ -130,7 +128,6 @@ export function VisorGaleria({
               animate="center"
               exit="exit"
             >
-              {/* Primer apartado: imagen a pantalla completa */}
               <div className="relative flex min-h-dvh items-center justify-center px-4 py-16 md:px-20">
                 <img
                   src={fotoActiva.src}
@@ -154,7 +151,6 @@ export function VisorGaleria({
                 </button>
               </div>
 
-              {/* Segundo apartado: descripción */}
               <section ref={descripcionRef} className="bg-[#191919] px-4 pt-16 pb-24 md:px-6">
                 <div className="mx-auto max-w-3xl">
                   <p className="text-xs font-bold tracking-[0.2em] text-[#d97757] uppercase">

@@ -20,7 +20,6 @@ import { VideoEmbed } from '@/components/ui/VideoEmbed'
 import { areasStaff, gerenteGeneral, subgerencias } from '@/lib/data/organizacion'
 import { videoDeSeccion } from '@/lib/data/videos'
 
-// Aparecer escalonado: cada card entra con blur y un resorte críticamente amortiguado.
 const cardsPadre: Variants = {
   hidden: {},
   show: { transition: { delayChildren: 0.15, staggerChildren: 0.1 } },
@@ -40,7 +39,6 @@ const cardsSubgerencias: Variants = {
   show: { transition: { staggerChildren: 0.08 } },
 }
 
-// Primera carga de la sección Staff: entrada con desenfoque, spring críticamente amortiguado
 const cardsStaff: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
@@ -70,7 +68,6 @@ export function OrganigramaSection() {
   const [ggAbierto, setGgAbierto] = useState(false)
   const [videoActivo, setVideoActivo] = useState<{ url: string; titulo: string } | null>(null)
   const reduce = useReducedMotion()
-  // Detalle de subgerencia activo: alimenta el modal centrado en móvil/tablet
   const subAbierta = subgerencias.find((sub) => sub.id === nodoAbierto) ?? null
 
   useEffect(() => {
@@ -105,7 +102,6 @@ export function OrganigramaSection() {
           </p>
         </Reveal>
 
-        {/* Árbol del Organigrama */}
         <motion.div
           className="flex w-full flex-col items-center pt-4 pb-10"
           variants={cardsPadre}
@@ -113,7 +109,6 @@ export function OrganigramaSection() {
           whileInView={reduce ? undefined : 'show'}
           viewport={{ once: true, amount: 0.15 }}
         >
-          {/* Nodo Raíz: Gerente General */}
           <motion.div variants={cardHija} className="z-10">
             <div
               onClick={() => {
@@ -145,21 +140,17 @@ export function OrganigramaSection() {
             </div>
           </motion.div>
 
-          {/* Tronco Principal */}
           <div className="bg-enel-fog/80 h-8 w-0.5" />
 
-          {/* Tronco hacia las subgerencias */}
           <div className="bg-enel-fog/80 relative hidden h-10 w-0.5 md:block">
             {/* Línea Horizontal que conecta las subgerencias (ajustada para no desbordar) */}
             <div className="bg-enel-fog/80 absolute bottom-0 left-1/2 h-0.5 w-[calc(100vw-4rem)] max-w-[850px] -translate-x-1/2" />
           </div>
 
-          {/* Ramas de Subgerencias */}
           <motion.div
             variants={cardsSubgerencias}
             className="relative mt-8 flex w-full max-w-[1000px] flex-col items-center justify-between gap-8 md:mt-0 md:flex-row md:gap-2"
           >
-            {/* Tronco vertical central para móvil */}
             <div className="bg-enel-fog/80 absolute top-0 bottom-0 left-1/2 -z-10 block w-0.5 -translate-x-1/2 md:hidden" />
 
             {subgerencias.map((sub, idx) => (
@@ -168,10 +159,8 @@ export function OrganigramaSection() {
                 variants={cardHija}
                 className={`relative flex w-44 flex-col items-center ${nodoAbierto === sub.id ? 'z-50' : 'z-10'}`}
               >
-                {/* Tallo Vertical de cada Nodo (Desktop) */}
                 <div className="bg-enel-fog/80 hidden h-8 w-0.5 md:block" />
 
-                {/* Nodo Subgerencia */}
                 <div
                   onClick={() => {
                     setNodoAbierto(nodoAbierto === sub.id ? null : sub.id)
@@ -203,7 +192,6 @@ export function OrganigramaSection() {
                   </p>
                 </div>
 
-                {/* Detalle de Subgerencia: popover anclado solo en escritorio (lg+) */}
                 <div
                   onClick={(e) => e.stopPropagation()}
                   role="dialog"
@@ -220,7 +208,6 @@ export function OrganigramaSection() {
                       : 'pointer-events-none invisible scale-95 opacity-0'
                   }`}
                 >
-                  {/* Encabezado del Popover */}
                   <div className="bg-enel-navy relative flex items-start gap-4 rounded-t-[23px] p-5 text-left">
                     <button
                       onClick={() => setNodoAbierto(null)}
@@ -248,7 +235,6 @@ export function OrganigramaSection() {
                     </div>
                   </div>
 
-                  {/* Cuerpo del Hover Modal */}
                   <div className="p-5 text-left">
                     {videoDeSeccion(sub.videoSection) && (
                       <button
@@ -293,7 +279,6 @@ export function OrganigramaSection() {
           </motion.div>
         </motion.div>
 
-        {/* ─── Áreas Staff: Sección aparte, fuera del organigrama ─── */}
         <div className="mx-auto mb-14 flex w-full max-w-5xl items-center gap-5 px-4">
           <motion.div
             initial={reduce ? false : { scaleX: 0 }}
@@ -384,7 +369,6 @@ export function OrganigramaSection() {
         </motion.div>
       </motion.div>
 
-      {/* Modal de Detalle de Subgerencia: centrado en móvil/tablet (en lg+ se usa el popover anclado) */}
       <AnimatePresence>
         {subAbierta && (
           <motion.div
@@ -405,7 +389,6 @@ export function OrganigramaSection() {
               role="dialog"
               aria-modal="true"
             >
-              {/* Encabezado */}
               <div className="bg-enel-navy relative flex items-start gap-4 p-5 text-left">
                 <button
                   onClick={() => setNodoAbierto(null)}
@@ -434,7 +417,6 @@ export function OrganigramaSection() {
                 </div>
               </div>
 
-              {/* Cuerpo */}
               <div className="p-5 text-left">
                 {videoDeSeccion(subAbierta.videoSection) && (
                   <button
@@ -478,7 +460,6 @@ export function OrganigramaSection() {
         )}
       </AnimatePresence>
 
-      {/* Modal de Video (Pop-up) */}
       <AnimatePresence>
         {videoActivo && (
           <motion.div
@@ -497,7 +478,6 @@ export function OrganigramaSection() {
               className="relative w-full max-w-3xl shrink-0 overflow-hidden rounded-[28px] border border-white/10 bg-neutral-950/90 p-3 shadow-2xl backdrop-blur-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Botón Cerrar */}
               <button
                 onClick={() => setVideoActivo(null)}
                 className="absolute top-4 right-4 z-50 rounded-full bg-black/60 p-2 text-white/70 transition hover:bg-black/80 hover:text-white"
@@ -519,7 +499,6 @@ export function OrganigramaSection() {
         )}
       </AnimatePresence>
 
-      {/* Modal de Detalle: Gerencia General */}
       <AnimatePresence>
         {ggAbierto && (
           <motion.div
@@ -573,7 +552,6 @@ export function OrganigramaSection() {
         )}
       </AnimatePresence>
 
-      {/* Modal de Detalle de Área Staff (Pop-up) */}
       <AnimatePresence>
         {staffActivo && (
           <motion.div
@@ -592,7 +570,6 @@ export function OrganigramaSection() {
               className="relative w-full max-w-lg shrink-0 overflow-hidden rounded-[28px] border border-white/60 bg-white/85 p-6 shadow-2xl backdrop-blur-2xl sm:p-8"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Botón Cerrar */}
               <button
                 onClick={() => setStaffActivo(null)}
                 className="absolute top-4 right-4 z-50 rounded-full bg-black/[0.04] p-2 text-neutral-500 transition hover:bg-black/[0.08] hover:text-neutral-800"

@@ -38,10 +38,3 @@ export interface PoliticaISO {
   resumen: string
   url: string
 }
-
-export interface Comuna {
-  id: string
-  nombre: string
-  path: string
-  esEnel?: boolean
-}

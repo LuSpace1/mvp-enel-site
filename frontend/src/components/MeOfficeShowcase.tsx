@@ -82,7 +82,6 @@ export function MeOfficeShowcase() {
 
   return (
     <div className="w-full">
-      {/* Pestañas */}
       <div
         className="mb-4 flex justify-center px-1 md:mb-6"
         onMouseEnter={alEntrar}
@@ -129,7 +128,6 @@ export function MeOfficeShowcase() {
               )
             })}
 
-            {/* Progreso de la presentación */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px]"
@@ -148,7 +146,6 @@ export function MeOfficeShowcase() {
         </div>
       </div>
 
-      {/* Escenario MacBook */}
       <div
         role="tabpanel"
         id={`meoffice-panel-${presentacion.id}`}
@@ -157,7 +154,6 @@ export function MeOfficeShowcase() {
         onMouseLeave={alSalir}
         className="3xl:max-w-5xl relative mx-auto w-full max-w-4xl"
       >
-        {/* Tapa y pantalla */}
         <div className="relative rounded-[16px] border border-[#101013] bg-gradient-to-b from-[#2b2b30] via-[#1b1b1f] to-[#141416] p-3 shadow-[0_40px_90px_-32px_rgba(10,25,47,0.6),0_10px_30px_-18px_rgba(10,25,47,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]">
           <div
             aria-hidden="true"
@@ -178,7 +174,6 @@ export function MeOfficeShowcase() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Reflejo del cristal */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.07] via-transparent to-transparent"
@@ -186,7 +181,6 @@ export function MeOfficeShowcase() {
           </div>
         </div>
 
-        {/* Base */}
         <div className="relative -mt-px h-4">
           <div className="absolute inset-x-[-2%] top-0 h-full rounded-b-[14px] bg-gradient-to-b from-[#b7b7c0] via-[#67676f] to-[#33333a] shadow-[0_26px_50px_-24px_rgba(10,25,47,0.55),inset_0_1px_0_rgba(255,255,255,0.45)] md:inset-x-[-3.5%]">
             <div

@@ -12,11 +12,6 @@ class PublicVideoListView(generics.ListAPIView):
     queryset = VideoLink.objects.all()
     serializer_class = VideoLinkSerializer
 
-    def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-        response.data["count"] = len(response.data)
-        return response
-
 
 class AdminVideoListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsPlatformAdmin]

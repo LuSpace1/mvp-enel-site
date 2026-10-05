@@ -14,8 +14,7 @@ Portal interactivo de Enel Distribución Chile. Es una sola página que se recor
 8. Políticas ISO
 9. Me Office
 10. Rostros
-11. Preguntas frecuentes
-12. Cierre
+11. Cierre
 
 ## Tecnologías
 

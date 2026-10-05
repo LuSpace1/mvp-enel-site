@@ -124,7 +124,6 @@ export function HistoriaSection() {
         viewport={{ once: true, amount: 0.1, margin: '0px 0px -50px 0px' }}
         transition={{ type: 'spring', stiffness: 25, damping: 16, mass: 1.5 }}
       >
-        {/* CARD PADRE */}
         <Parallax distancia={35}>
           <div
             className="border-enel-navy/80 relative mx-auto w-full max-w-6xl overflow-hidden rounded-[2.5rem] border-4 bg-white p-10 shadow-2xl md:p-16"
@@ -171,7 +170,6 @@ export function HistoriaSection() {
               })}
             </div>
 
-            {/* Bombilla Interactiva (Se enciende al hacer hover en los objetos) */}
             <div className="absolute top-6 right-6 z-20 h-10 w-10 md:top-10 md:right-10 md:h-14 md:w-14">
               <Lightbulb
                 size="100%"

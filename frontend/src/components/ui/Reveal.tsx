@@ -6,8 +6,6 @@ interface RevealProps {
   delay?: number
   className?: string
   y?: number
-  blur?: number
-  escala?: number
   style?: CSSProperties
 }
 
@@ -17,24 +15,12 @@ export function Reveal({
   delay = 0,
   className,
   y = 28,
-  blur = 0,
-  escala = 1,
   style,
 }: PropsWithChildren<RevealProps>) {
   const reduce = useReducedMotion()
 
-  const inicial = {
-    opacity: 0,
-    y,
-    ...(blur ? { filter: `blur(${blur}px)` } : {}),
-    ...(escala !== 1 ? { scale: escala } : {}),
-  }
-  const visible = {
-    opacity: 1,
-    y: 0,
-    ...(blur ? { filter: 'blur(0px)' } : {}),
-    ...(escala !== 1 ? { scale: 1 } : {}),
-  }
+  const inicial = { opacity: 0, y }
+  const visible = { opacity: 1, y: 0 }
 
   return (
     <motion.div

@@ -79,11 +79,8 @@ export function CadenaValorSection() {
     setActiva(id)
   }, [])
 
-  // Arreglo duplicado para la cinta continua infinita hacia la derecha
   const etapasDuplicadas = [...etapasCadena, ...etapasCadena]
 
-  // Cinta continua: animación imperativa infinita que NUNCA se reinicia;
-  // el hover solo cambia la velocidad (los tags se pueden alcanzar).
   const cintaRef = useRef<HTMLDivElement>(null)
   const cintaX = useMotionValue(0)
   const velocidadRef = useRef(1)
@@ -116,7 +113,6 @@ export function CadenaValorSection() {
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Título Superior */}
         <div className="mb-8 text-center md:mb-10">
           <RevealTexto
             as="h2"
@@ -126,7 +122,6 @@ export function CadenaValorSection() {
           </RevealTexto>
         </div>
 
-        {/* Cadena Continua en Movimiento (Avance hacia la derecha con animación de electricidad horizontal) */}
         <div
           className="relative w-full overflow-hidden py-4 select-none"
           onMouseEnter={() => {
@@ -136,11 +131,9 @@ export function CadenaValorSection() {
             velocidadRef.current = 1
           }}
         >
-          {/* Atenuaciones laterales para difuminar bordes */}
           <div className="pointer-events-none absolute top-0 bottom-0 left-0 z-30 w-16 bg-gradient-to-r from-white to-transparent md:w-28" />
           <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-30 w-16 bg-gradient-to-l from-white to-transparent md:w-28" />
 
-          {/* Barrido de onda / pulso de corriente eléctrica continua horizontal de izquierda a derecha */}
           {!reduce && (
             <motion.div
               aria-hidden="true"
@@ -161,7 +154,6 @@ export function CadenaValorSection() {
             />
           )}
 
-          {/* Cinta continua de Chevrons en movimiento hacia la derecha */}
           <motion.div
             ref={cintaRef}
             className="relative z-20 flex w-max cursor-pointer items-center gap-2"
@@ -188,19 +180,16 @@ export function CadenaValorSection() {
                       : 'opacity-85 hover:scale-[1.02] hover:opacity-100'
                   } `}
                 >
-                  {/* Chispa / flujo eléctrico tenue continuo dentro de cada tarjeta */}
                   <span
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.4)_0%,_rgba(56,189,248,0.15)_60%,_transparent_100%)] opacity-20"
                   />
 
-                  {/* Destello eléctrico tenue en hover */}
                   <span
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.5)_0%,_rgba(56,189,248,0.3)_45%,_transparent_75%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                   />
 
-                  {/* Arco tenue de corriente eléctrica */}
                   <span
                     aria-hidden="true"
                     className="pointer-events-none absolute -inset-full bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,rgba(186,230,253,0.3)_60deg,transparent_120deg)] opacity-0 group-hover:animate-[pulse_1.2s_ease-in-out_infinite] group-hover:opacity-60"
@@ -223,7 +212,6 @@ export function CadenaValorSection() {
           </motion.div>
         </div>
 
-        {/* Panel Informativo Minimalista & Clean */}
         <div className="mx-auto mt-10 max-w-4xl md:mt-14">
           <AnimatePresence mode="wait">
             <motion.div
@@ -234,7 +222,6 @@ export function CadenaValorSection() {
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-col justify-between gap-8 border-t border-slate-900/10 px-4 pt-8 md:flex-row md:items-start"
             >
-              {/* Información Principal */}
               <div className="md:max-w-xl">
                 <p className="mb-1 text-xs font-semibold tracking-wider text-teal-800 uppercase">
                   {etapaActual.descripcion}
@@ -249,7 +236,6 @@ export function CadenaValorSection() {
                 </p>
               </div>
 
-              {/* Actividades Relevantes */}
               <div className="flex flex-col md:min-w-[220px]">
                 <span className="mb-2.5 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
                   Actividades

@@ -70,7 +70,6 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
 
   return (
     <div className="relative">
-      {/* Grid asimétrico paginado */}
       <AnimatePresence initial={false} custom={dirPagina} mode="wait">
         <motion.div
           key={pagina}
@@ -118,7 +117,6 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
                   )}
                 />
 
-                {/* Sheen: barrido de luz sobre la tarjeta */}
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 z-20 overflow-hidden rounded-2xl"
@@ -133,7 +131,6 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
                   />
                 </div>
 
-                {/* Título siempre visible */}
                 <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/75 via-black/35 to-transparent px-4 pt-14 pb-3 md:px-5 md:pb-4">
                   <div className="flex items-center gap-3">
                     <span className="text-enel-blue text-xl font-bold tracking-tight drop-shadow-sm md:text-2xl">
@@ -145,7 +142,6 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
                   </div>
                 </figcaption>
 
-                {/* Indicador de zoom en hover */}
                 <span
                   aria-hidden="true"
                   className={clsx(
@@ -159,7 +155,6 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
             )
           })}
 
-          {/* Spotlight que sigue al cursor */}
           <div
             aria-hidden="true"
             className={clsx(
@@ -175,7 +170,6 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
         </motion.div>
       </AnimatePresence>
 
-      {/* Controles de paginación */}
       <div className="mt-10 flex flex-col items-center justify-center gap-4">
         <div className="flex items-center gap-4">
           <button
@@ -216,7 +210,6 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
         </div>
       </div>
 
-      {/* Lightbox compartido con las galerías de instalaciones */}
       <VisorGaleria
         fotos={fotosEquipos}
         indice={abierto}

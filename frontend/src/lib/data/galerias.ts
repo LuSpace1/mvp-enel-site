@@ -1,18 +1,6 @@
 import fotoCEO from '@/assets/images/centro_de_exelencia_enel.jpg'
 import fotoMUT from '@/assets/images/torre_enel_mut.jpeg'
 
-export const fotosMeOffice = [
-  { src: 'https://picsum.photos/seed/meoffice-lobby/900/600', alt: 'Lobby de Me Office' },
-  { src: 'https://picsum.photos/seed/meoffice-sala/900/600', alt: 'Sala de reuniones Me Office' },
-  { src: 'https://picsum.photos/seed/meoffice-cocina/900/600', alt: 'Cocina Me Office' },
-  { src: 'https://picsum.photos/seed/meoffice-terraza/900/600', alt: 'Terraza Me Office' },
-  { src: 'https://picsum.photos/seed/meoffice-auditorio/900/600', alt: 'Auditorio Me Office' },
-  {
-    src: 'https://picsum.photos/seed/meoffice-trabajo/900/600',
-    alt: 'Zona de trabajo colaborativo',
-  },
-]
-
 const DESCRIPCIONES_EQUIPOS = [
   'El equipo que mantiene la red eléctrica en marcha, día y noche.',
   'Especialistas en la operación segura de la infraestructura crítica.',

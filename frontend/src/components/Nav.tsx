@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
-import { List, X, Question } from '@phosphor-icons/react'
+import { List, X } from '@phosphor-icons/react'
 
 import { track } from '@/lib/analytics'
 import { desplazarASeccion } from '@/lib/scroll'
@@ -90,27 +90,8 @@ export function Nav() {
               </button>
             </li>
           ))}
-
-          {/* Ícono de signo de pregunta para FAQ al lado de Cierre */}
-          <li>
-            <button
-              type="button"
-              onClick={() => irA('faq')}
-              className={clsx(
-                'flex items-center justify-center rounded-full p-1.5 text-[13px] font-medium transition-colors',
-                pasoActual === 'faq'
-                  ? 'bg-enel-blue/10 text-enel-blue'
-                  : 'hover:text-enel-navy text-neutral-600',
-              )}
-              aria-label="Preguntas Frecuentes"
-              aria-current={pasoActual === 'faq' ? 'page' : undefined}
-            >
-              <Question size={16} weight="bold" />
-            </button>
-          </li>
         </ul>
 
-        {/* Botón menú hamburguesa (móvil/tablet) */}
         <button
           type="button"
           onClick={() => setMenuAbierto(!menuAbierto)}
@@ -121,7 +102,6 @@ export function Nav() {
         </button>
       </nav>
 
-      {/* Dropdown Móvil */}
       <AnimatePresence>
         {menuAbierto && (
           <motion.div
@@ -149,23 +129,6 @@ export function Nav() {
                 {item.etiqueta}
               </button>
             ))}
-
-            {/* Opción FAQ en menú móvil */}
-            <button
-              onClick={() => {
-                irA('faq')
-                setMenuAbierto(false)
-              }}
-              className={clsx(
-                'mt-1 flex w-full items-center justify-between rounded-xl border-t border-black/10 px-5 py-4 text-left text-base font-semibold transition-colors',
-                pasoActual === 'faq'
-                  ? 'bg-enel-blue/10 text-enel-blue'
-                  : 'text-enel-navy hover:bg-white/50',
-              )}
-            >
-              <span>Preguntas Frecuentes</span>
-              <Question size={20} weight="bold" />
-            </button>
           </motion.div>
         )}
       </AnimatePresence>

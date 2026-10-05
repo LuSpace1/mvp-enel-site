@@ -4,26 +4,11 @@
 @theme {
   --color-enel-blue: #006fbb;
   --color-enel-blue-dark: #005a94;
+  --color-enel-blue-light: #2f9be2;
   --color-enel-navy: #141413;
-  --color-enel-navy-soft: #1e1e1c;
   --color-enel-mist: #eef1f5;
   --color-enel-fog: #d9dfe8;
   --color-enel-pink: #eb0053;
-  --color-enel-violeta: #cec4f8;
-  --color-enel-violeta-soft: #b1a3f0;
-
-  /* Colores del gradiente oficial de la marca Enel (logo flux) */
-  --color-enel-rojo: #e41f13;
-  --color-enel-naranja: #ea561f;
-  --color-enel-naranja-dark: #c04a12;
-  --color-enel-blue-light: #2f9be2;
-  --color-enel-celeste: #00a9dd;
-  --color-enel-verde: #009767;
-
-  /* Regla de radios (shape lock): interactivos = full-pill,
-     tarjetas = 16px (rounded-2xl), bandas destacadas = 24px (rounded-3xl). */
-  --radius-card: 1rem;
-  --radius-banda: 1.5rem;
 
   --font-sans:
     'Outfit Variable', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
@@ -31,29 +16,6 @@
   /* Breakpoint para pantallas grandes de escritorio (>=1600px). Por debajo,
      las secciones compactan tamaños y espaciados. */
   --breakpoint-3xl: 100rem;
-
-  --animate-fade-up: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-fade-in: fade-in 0.5s ease both;
-
-  @keyframes fade-up {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
 }
 
 html {
@@ -152,19 +114,6 @@ body {
   }
 }
 
-/* Barra de progreso del carrusel de cultura (se pausa con hover/presión) */
-@keyframes barra-cultura {
-  from {
-    width: 0%;
-  }
-  to {
-    width: 100%;
-  }
-}
-.barra-cultura {
-  animation: barra-cultura 7s linear forwards;
-}
-
 /* Progreso de las pestañas de Me Office (mismo compás que la barra de cultura) */
 @keyframes barra-meoffice {
   from {
@@ -179,159 +128,10 @@ body {
   animation: barra-meoffice 10s linear forwards;
 }
 
-/* Flujo de la cadena de valor: guiones que avanzan hacia el cliente */
-@keyframes cadena-flujo {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 28px 0;
-  }
-}
-.cadena-flujo {
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(0, 111, 187, 0.75) 0 8px,
-    transparent 8px 28px
-  );
-  background-size: 28px 100%;
-  background-repeat: repeat-x;
-  animation: cadena-flujo 1.4s linear infinite;
-}
-
-/* Pulso eléctrico en los nodos de unión */
-@keyframes nodo-pulso {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.4);
-    opacity: 0.5;
-  }
-}
-.animate-nodo-pulso {
-  animation: nodo-pulso 2.4s ease-in-out infinite;
-}
-
-/* Chispa amarilla que recorre el sendero de la ruta */
-@keyframes sendero-chispa {
-  from {
-    offset-distance: 0%;
-  }
-  to {
-    offset-distance: 100%;
-  }
-}
-/* Corriente punteada que fluye sobre el sendero completo (fondo) */
-@keyframes march-sendero {
-  from {
-    stroke-dashoffset: 17;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-.animate-march-sendero {
-  animation: march-sendero 1.2s linear infinite;
-}
-
-/* Parpadeo eléctrico de la descarga */
-@keyframes chispa-flicker {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.15;
-  }
-}
-.chispa-sendero-sat {
-  animation:
-    sendero-chispa 4.5s linear infinite,
-    chispa-flicker 0.16s steps(2, end) infinite;
-  filter: drop-shadow(0 0 8px rgba(255, 208, 47, 0.95));
-}
-.chispa-sendero-sat-rev {
-  animation:
-    sendero-chispa 6s linear infinite reverse,
-    chispa-flicker 0.22s steps(2, end) infinite;
-  filter: drop-shadow(0 0 8px rgba(255, 208, 47, 0.95));
-}
-
-/* Parpadeo de los rayos de la descarga del intro (solo opacidad: barato) */
-.rayo-descarga {
-  animation: chispa-flicker 0.18s steps(2, end) infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .rayo-descarga {
-    animation: none;
-  }
-}
-
 /* Diferir render de items fuera de pantalla (carruseles largos) */
 .cv-auto {
   content-visibility: auto;
   contain-intrinsic-size: auto 360px;
-}
-
-/* Flicker eléctrico amarillo: parpadeo agresivo + glow cálido */
-@keyframes electricidad-flicker {
-  0% {
-    filter: drop-shadow(0 0 3px rgba(255, 200, 0, 0.9)) drop-shadow(0 0 10px rgba(255, 200, 0, 0.7));
-    opacity: 1;
-  }
-  5% {
-    filter: drop-shadow(0 0 8px #ffd700) drop-shadow(0 0 26px rgba(255, 200, 0, 1));
-    opacity: 0.82;
-  }
-  9% {
-    filter: drop-shadow(0 0 3px rgba(255, 200, 0, 0.9)) drop-shadow(0 0 10px rgba(255, 200, 0, 0.7));
-    opacity: 1;
-  }
-  15% {
-    filter: drop-shadow(0 0 10px #ffd700) drop-shadow(0 0 32px rgba(255, 200, 0, 1));
-    opacity: 0.78;
-  }
-  20% {
-    filter: drop-shadow(0 0 3px rgba(255, 200, 0, 0.9)) drop-shadow(0 0 10px rgba(255, 200, 0, 0.7));
-    opacity: 1;
-  }
-  50% {
-    filter: drop-shadow(0 0 4px #ffd700) drop-shadow(0 0 15px rgba(255, 200, 0, 0.85));
-    opacity: 0.88;
-  }
-  55% {
-    filter: drop-shadow(0 0 2px rgba(255, 200, 0, 0.7)) drop-shadow(0 0 8px rgba(255, 200, 0, 0.5));
-    opacity: 1;
-  }
-  70% {
-    filter: drop-shadow(0 0 7px #ffd700) drop-shadow(0 0 24px rgba(255, 200, 0, 1));
-    opacity: 0.8;
-  }
-  75% {
-    filter: drop-shadow(0 0 3px rgba(255, 200, 0, 0.9)) drop-shadow(0 0 10px rgba(255, 200, 0, 0.7));
-    opacity: 1;
-  }
-}
-
-/* Descarga: una sección de borde amarillo recorre el contorno (pathLength="1") */
-@keyframes electricidad-descarga {
-  from {
-    stroke-dashoffset: 0;
-  }
-  to {
-    stroke-dashoffset: -1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .comuna-electricidad-svg {
-    animation: none;
-    filter: drop-shadow(0 0 8px rgba(255, 200, 0, 0.8))
-      drop-shadow(0 0 18px rgba(255, 200, 0, 0.55));
-  }
 }
 
 /* ---------- Mapa SVG: Vista Concesión ---------- */
@@ -374,15 +174,6 @@ body {
     opacity 0.3s ease;
   pointer-events: none;
   user-select: none;
-}
-
-/* Descarga eléctrica sobre el contorno de la comuna en hover */
-.comuna-electricidad-svg {
-  stroke-dasharray: 0.35 0.65;
-  animation:
-    electricidad-flicker 1.3s ease-in-out infinite,
-    electricidad-descarga 0.8s linear infinite;
-  pointer-events: none;
 }
 
 /* Nombres de zonas sobre el mapa; en zoom se reducen y suben a la franja superior */

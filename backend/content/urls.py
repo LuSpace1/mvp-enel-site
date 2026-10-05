@@ -1,5 +1,4 @@
 from django.urls import path
-from django.views.generic import TemplateView
 
 from .views import AdminVideoDetailView, AdminVideoListCreateView, PublicVideoListView
 
@@ -15,5 +14,4 @@ urlpatterns = [
         AdminVideoDetailView.as_view(),
         name="admin_video_detail",
     ),
-    path("info/", TemplateView.as_view(template_name="info.html"), name="info"),
 ]

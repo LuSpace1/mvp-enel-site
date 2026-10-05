@@ -75,7 +75,3 @@ export const ZONAS_CONCESION: ZonaConcesion[] = [
 ]
 
 export const ZONA_POR_ID = new Map(ZONAS_CONCESION.map((z) => [z.id, z]))
-
-export function zonaDeComuna(id: string): ZonaConcesion | undefined {
-  return ZONAS_CONCESION.find((z) => z.comunas.includes(id))
-}

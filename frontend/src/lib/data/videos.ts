@@ -4,7 +4,7 @@ import { useVideosStore } from '@/store/useVideosStore'
 
 const VIDEO_MUESTRA = 'https://www.youtube.com/watch?v=EQeBgrPs_-Y'
 
-export const videosMock: VideoLink[] = [
+const videosMock: VideoLink[] = [
   {
     id: 1,
     title: 'Mensaje de la Gerente General Mónica Hodor',

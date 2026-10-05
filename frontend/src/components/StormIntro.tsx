@@ -140,7 +140,6 @@ export function StormIntro() {
     >
       <motion.div className="sticky top-0 h-dvh overflow-hidden" style={{ y: yTelon }}>
         <motion.div className="absolute inset-0">
-          {/* Video de fondo: Santiago en loop, al 100% */}
           <video
             ref={videoRef}
             poster={posterPortada}
@@ -153,14 +152,12 @@ export function StormIntro() {
             className="absolute inset-0 h-full w-full object-cover"
           />
 
-          {/* Contenido central: el logo se arma pieza a pieza */}
           <motion.div
             className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
             style={{ opacity: opCont, scale: scaleCont, y: yCont }}
           >
             <motion.div style={{ scale: escalaLogo }} className="relative w-[min(84vw,540px)]">
               <div className="relative">
-                {/* Esqueleto que se dibuja con el scroll */}
                 <motion.svg
                   viewBox="0 0 400 144"
                   aria-hidden="true"
@@ -171,7 +168,6 @@ export function StormIntro() {
                     <PiezaLazo key={i} prog={prog} config={pieza} />
                   ))}
                 </motion.svg>
-                {/* Logo oficial iluminado al completarse */}
                 <motion.img
                   src={logoEnel}
                   alt="Logo Enel"
@@ -197,7 +193,6 @@ export function StormIntro() {
             </motion.p>
           </motion.div>
 
-          {/* Indicador de scroll – estilo Apple, solo tras completar la intro */}
           {introCompletado && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -237,7 +232,6 @@ export function StormIntro() {
           )}
         </motion.div>
 
-        {/* Escape */}
         <button
           type="button"
           onClick={saltar}
