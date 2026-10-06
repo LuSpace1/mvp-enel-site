@@ -175,7 +175,7 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
           <button
             onClick={() => irPagina(-1)}
             aria-label="Ver 10 equipos anteriores"
-            className="border-enel-fog/50 text-enel-navy hover:border-enel-blue hover:text-enel-blue rounded-full border bg-white/50 p-3 text-white shadow-sm backdrop-blur-sm transition-all hover:bg-white"
+            className="border-neutral-300 text-neutral-400 hover:border-enel-blue hover:text-enel-blue rounded-full border bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-95"
           >
             <CaretLeft size={20} weight="bold" />
           </button>
@@ -185,7 +185,7 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
           <button
             onClick={() => irPagina(1)}
             aria-label="Ver 10 equipos siguientes"
-            className="border-enel-fog/50 text-enel-navy hover:border-enel-blue hover:text-enel-blue rounded-full border bg-white/50 p-3 text-white shadow-sm backdrop-blur-sm transition-all hover:bg-white"
+            className="border-neutral-300 text-neutral-400 hover:border-enel-blue hover:text-enel-blue rounded-full border bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-95"
           >
             <CaretRight size={20} weight="bold" />
           </button>
