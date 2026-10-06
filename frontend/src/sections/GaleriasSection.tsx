@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import {
   ArrowUpRight,
   CaretLeft,
@@ -30,6 +30,54 @@ const TEASER_POS = [
 const DESCRIPCION_INSTALACIONES_EXTRA =
   'Espacios pensados para el trabajo seguro y colaborativo de los equipos, con estándares de eficiencia energética y confort para quienes los visitan a diario.'
 
+/**
+ * Carrusel centrado al estilo HomeWorks: calcula en cada card su cercanía al centro
+ * del viewport y la expone como `--centro` (1 = centro, 0 = borde) para que el CSS
+ * escale la card activa y atenúe las laterales.
+ */
+function useCarruselCentrado(ref: RefObject<HTMLDivElement | null>, activo: boolean) {
+  const reduce = useReducedMotion()
+
+  useEffect(() => {
+    const contenedor = ref.current
+    if (!contenedor) return
+
+    const hijos = Array.from(contenedor.children) as HTMLElement[]
+
+    if (reduce || !activo) {
+      hijos.forEach((hijo) => hijo.style.setProperty('--centro', '1'))
+      return
+    }
+
+    let raf = 0
+    const aplicar = () => {
+      raf = 0
+      const caja = contenedor.getBoundingClientRect()
+      const centroVista = caja.left + caja.width / 2
+      const mitad = caja.width / 2 || 1
+      hijos.forEach((hijo) => {
+        const rect = hijo.getBoundingClientRect()
+        const centroHijo = rect.left + rect.width / 2
+        const t = Math.max(0, Math.min(1, 1 - Math.abs(centroHijo - centroVista) / mitad))
+        hijo.style.setProperty('--centro', t.toFixed(3))
+      })
+    }
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(aplicar)
+    }
+
+    aplicar()
+    contenedor.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      contenedor.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      cancelAnimationFrame(raf)
+    }
+  }, [ref, reduce, activo])
+}
+
 export function GaleriasSection() {
   const instalacionesRef = useRef<HTMLDivElement>(null)
   const carruselRef = useRef<HTMLDivElement>(null)
@@ -43,6 +91,8 @@ export function GaleriasSection() {
   const reduce = useReducedMotion()
   const instalacionesInView = useInView(instalacionesRef, { once: true, amount: 0.15 })
   const navegar = useViajeStore((estado) => estado.navegar)
+
+  useCarruselCentrado(carruselRef, instalacionesInView)
 
   useEffect(() => {
     const nodo = document.getElementById('personas')
@@ -126,10 +176,14 @@ export function GaleriasSection() {
           >
             Herramienta Me-Office
           </RevealTexto>
-          <p className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg">
+          <RevealTexto
+            as="p"
+            variante="parrafo"
+            className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
+          >
             Recorre la herramienta en cinco presentaciones: elige una pestaña y mira cómo se usa en
             el día a día.
-          </p>
+          </RevealTexto>
         </Reveal>
 
         <Reveal delay={0.1} className="3xl:mt-14 mt-10">
@@ -145,9 +199,13 @@ export function GaleriasSection() {
               >
                 Descubre a los equipos
               </RevealTexto>
-              <p className="3xl:text-lg mt-4 font-medium text-neutral-600">
+              <RevealTexto
+                as="p"
+                variante="parrafo"
+                className="3xl:text-lg mt-4 font-medium text-neutral-600"
+              >
                 La energía que mueve a Chile tiene rostros e historias.
-              </p>
+              </RevealTexto>
             </div>
           </div>
 
@@ -255,10 +313,14 @@ export function GaleriasSection() {
             >
               Conoce nuestras instalaciones
             </RevealTexto>
-            <p className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg">
+            <RevealTexto
+              as="p"
+              variante="parrafo"
+              className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
+            >
               Los espacios donde trabaja la energía que mueve a Chile, desde el centro de formación
               hasta las oficinas de operación.
-            </p>
+            </RevealTexto>
           </motion.div>
 
           <div className="3xl:mt-12 mt-10 flex items-center gap-2 md:gap-4">
@@ -284,7 +346,7 @@ export function GaleriasSection() {
                 >
                   <article
                     onClick={() => abrirGaleriaInstalacion(indice)}
-                    className="group 3xl:h-[24rem] relative h-[20rem] cursor-pointer overflow-hidden rounded-[2rem] border-4 border-white/70 shadow-[0_20px_45px_-15px_rgba(10,25,47,0.55)]"
+                    className="group carrusel-centrado 3xl:h-[24rem] relative h-[20rem] cursor-pointer overflow-hidden rounded-[2rem] border-4 border-white/70 shadow-[0_20px_45px_-15px_rgba(10,25,47,0.55)]"
                   >
                     <img
                       src={instalacion.imagen}
@@ -294,6 +356,10 @@ export function GaleriasSection() {
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.06]"
                     />
                     <div className="from-enel-navy via-enel-navy/55 absolute inset-0 bg-gradient-to-t to-transparent" />
+                    <div
+                      aria-hidden="true"
+                      className="carrusel-centrado-velo pointer-events-none absolute inset-0"
+                    />
 
                     <button
                       type="button"

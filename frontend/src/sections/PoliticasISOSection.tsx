@@ -36,10 +36,14 @@ export function PoliticasISOSection() {
           >
             Nuestro marco de actuación
           </RevealTexto>
-          <p className="mt-4 text-base leading-relaxed text-neutral-600 md:text-lg">
+          <RevealTexto
+            as="p"
+            variante="parrafo"
+            className="mt-4 text-base leading-relaxed text-neutral-600 md:text-lg"
+          >
             Cinco políticas que orientan la forma en que trabajamos cada día. Accede a la versión
             completa en SharePoint.
-          </p>
+          </RevealTexto>
         </Reveal>
 
         <div className="3xl:mt-14 3xl:grid-cols-[minmax(0,1.15fr)_3.5rem_minmax(0,0.72fr)_minmax(0,0.72fr)] 3xl:gap-6 relative z-10 mt-10 grid w-full grid-cols-1 gap-4 md:mt-10 md:grid-cols-[minmax(0,1.15fr)_2.75rem_minmax(0,0.72fr)_minmax(0,0.72fr)] md:grid-rows-2 md:gap-4">

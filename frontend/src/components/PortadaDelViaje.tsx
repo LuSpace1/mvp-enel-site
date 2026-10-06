@@ -79,11 +79,15 @@ export function PortadaDelViaje() {
           transition={{ duration: 1.3, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
           className="mt-8 flex flex-col items-center"
         >
-          <p className="max-w-2xl text-base leading-relaxed text-white/70 md:text-lg">
+          <RevealTexto
+            as="p"
+            variante="parrafo"
+            className="max-w-2xl text-base leading-relaxed text-white/70 md:text-lg"
+          >
             En este sitio, encontrarás todo lo que necesitas saber sobre el negocio, nuestra cultura
             organizacional, quiénes somos y cómo trabajamos para ser la empresa de distribución de
             energía eléctrica más grande de Chile.
-          </p>
+          </RevealTexto>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <motion.button
               type="button"

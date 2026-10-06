@@ -90,10 +90,14 @@ export function CierreSection() {
             >
               Accesos Rápidos
             </RevealTexto>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-neutral-500 md:text-lg">
+            <RevealTexto
+              as="p"
+              variante="parrafo"
+              className="mt-6 max-w-xl text-base leading-relaxed text-neutral-500 md:text-lg"
+            >
               Accede en un solo lugar a los recursos y herramientas que usas a diario: manuales,
               normas de seguridad, contactos y todo lo que necesitas para tu trabajo.
-            </p>
+            </RevealTexto>
           </div>
         </Reveal>
 

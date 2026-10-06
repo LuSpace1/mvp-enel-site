@@ -134,6 +134,31 @@ body {
   contain-intrinsic-size: auto 360px;
 }
 
+/* Carrusel centrado: la card del centro se agranda y las laterales se reducen.
+   `--centro` (1 en el centro, 0 en los bordes) lo calcula useCarruselCentrado. */
+.carrusel-centrado {
+  transform: translateY(calc((1 - var(--centro, 1)) * 12px))
+    scale(calc(0.9 + 0.1 * var(--centro, 1)));
+  transform-origin: center center;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.carrusel-centrado-velo {
+  background: #0a192f;
+  opacity: calc((1 - var(--centro, 1)) * 0.45);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carrusel-centrado {
+    transform: none;
+  }
+  .carrusel-centrado-velo {
+    opacity: 0;
+  }
+}
+
 /* ---------- Mapa SVG: Vista Concesión ---------- */
 
 /* Trazo tipo "lápiz": se dibuja al entrar en view */

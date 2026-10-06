@@ -97,9 +97,9 @@ export function OrganigramaSection() {
           >
             Equipos y Gerencia
           </RevealTexto>
-          <p className="mt-4 text-[15px] text-neutral-500">
+          <RevealTexto as="p" variante="parrafo" className="mt-4 text-[15px] text-neutral-500">
             Conoce a quienes hacen posible la energía en nuestra red
-          </p>
+          </RevealTexto>
         </Reveal>
 
         <motion.div
@@ -314,10 +314,14 @@ export function OrganigramaSection() {
           <h3 className="text-enel-navy mt-5 text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.02em] md:text-4xl md:tracking-[-0.025em]">
             Especialistas que impulsan a toda la organización
           </h3>
-          <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-neutral-500">
+          <RevealTexto
+            as="p"
+            variante="parrafo"
+            className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-neutral-500"
+          >
             Pertenecen a Enel Chile y entregan apoyo transversal a las líneas de negocio, sin
             integrar las gerencias.
-          </p>
+          </RevealTexto>
         </Reveal>
 
         <motion.div

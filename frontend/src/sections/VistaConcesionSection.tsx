@@ -420,11 +420,15 @@ export function VistaConcesionSection() {
               Nuestro territorio,{' '}
               <span className="text-enel-blue font-serif italic">trazo a trazo</span>
             </RevealTexto>
-            <p className="mt-5 text-base leading-relaxed font-medium text-neutral-600">
+            <RevealTexto
+              as="p"
+              variante="parrafo"
+              className="mt-5 text-base leading-relaxed font-medium text-neutral-600"
+            >
               Organizamos nuestra red en 4 secciones de concesión —Chacabuco, Cordillera, Pacífico y
               Florida— que cubren gran parte de la Región Metropolitana. Toca una zona para explorar
               sus comunas.
-            </p>
+            </RevealTexto>
 
             <div className="text-enel-navy mx-auto mt-8 flex max-w-xs items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white/70 px-4 py-3 text-sm shadow-sm backdrop-blur-sm">
               <MapPin size={18} className="text-enel-blue shrink-0" weight="fill" />
