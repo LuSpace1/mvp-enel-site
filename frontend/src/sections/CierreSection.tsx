@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   ArrowUp,
   ArrowUpRight,
@@ -14,6 +15,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { Parallax } from '@/components/ui/Parallax'
 import { track } from '@/lib/analytics'
+import { desplazarASeccion } from '@/lib/scroll'
 
 import fotoMUT from '@/assets/images/MUT-02.jpg'
 
@@ -64,6 +66,15 @@ const RECURSOS = [
 
 export function CierreSection() {
   const reduce = useReducedMotion()
+  const [subiendo, setSubiendo] = useState(false)
+
+  const volverAlInicio = () => {
+    track('cierre.volver')
+    desplazarASeccion('portada', 1.8)
+    if (reduce) return
+    setSubiendo(true)
+    window.setTimeout(() => setSubiendo(false), 900)
+  }
 
   return (
     <section id="cierre" className="relative overflow-hidden bg-white py-24 md:py-36">
@@ -192,17 +203,32 @@ export function CierreSection() {
             <p className="text-sm text-neutral-400 italic">
               "La energía de un equipo se multiplica cuando todos trabajan con el mismo propósito."
             </p>
-            <a
-              href="#portada"
-              onClick={() => track('cierre.volver')}
-              className="group bg-enel-navy hover:bg-enel-blue inline-flex h-12 items-center gap-3 rounded-full px-7 text-sm font-semibold text-white shadow-lg transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.97]"
+            <motion.button
+              type="button"
+              onClick={volverAlInicio}
+              className="group bg-enel-navy hover:bg-enel-blue inline-flex h-12 items-center gap-3 rounded-full px-7 text-sm font-semibold text-white shadow-lg transition-colors duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:shadow-xl"
+              whileHover={reduce ? undefined : { y: -2 }}
+              whileTap={reduce ? undefined : { scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 26 }}
             >
-              <ArrowUp size={16} weight="bold" />
+              <motion.span
+                aria-hidden="true"
+                className="flex items-center"
+                animate={subiendo ? { y: [0, -7, 0] } : { y: 0 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <ArrowUp size={16} weight="bold" />
+              </motion.span>
               Volver al inicio
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:bg-white/15">
+              <motion.span
+                aria-hidden="true"
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10"
+                animate={subiendo ? { y: [0, -4, 0], opacity: [1, 0.45, 1] } : { y: 0, opacity: 1 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <ArrowUpRight size={13} weight="bold" />
-              </span>
-            </a>
+              </motion.span>
+            </motion.button>
           </div>
         </Reveal>
       </motion.div>
