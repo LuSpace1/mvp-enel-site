@@ -23,26 +23,24 @@ interface RevealTextoProps {
 }
 
 const CHAR_TITULO: Variants = {
-  hidden: { x: '2em', opacity: 0 },
+  hidden: { opacity: 0, transform: 'translate3d(2em, 0, 0)' },
   visible: {
-    x: '0em',
     opacity: 1,
+    transform: 'translate3d(0em, 0, 0)',
     transition: {
-      x: { duration: 1.2, ease: [0.19, 1, 0.22, 1] },
+      transform: { duration: 1.2, ease: [0.19, 1, 0.22, 1] },
       opacity: { duration: 0.7, ease: [0.455, 0.03, 0.515, 0.955] },
     },
   },
 }
 
 const CHAR_PARRAFO: Variants = {
-  hidden: { y: '110%', rotate: 3, opacity: 0 },
+  hidden: { opacity: 0, transform: 'translate3d(0, 110%, 0) rotate(3deg)' },
   visible: {
-    y: '0%',
-    rotate: 0,
     opacity: 1,
+    transform: 'translate3d(0, 0%, 0) rotate(0deg)',
     transition: {
-      y: { duration: 1, ease: [0.215, 0.61, 0.355, 1] },
-      rotate: { duration: 1, ease: [0.215, 0.61, 0.355, 1] },
+      transform: { duration: 1, ease: [0.215, 0.61, 0.355, 1] },
       opacity: { duration: 0.7, ease: [0.455, 0.03, 0.515, 0.955] },
     },
   },
