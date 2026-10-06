@@ -280,3 +280,13 @@ body {
     stroke-dashoffset: 0;
   }
 }
+
+/* Conectores del modo "Rayos X": guiones que fluyen hacia la tarjeta */
+@keyframes rayos-flujo {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+.rayos-flujo {
+  animation: rayos-flujo 1.1s linear infinite;
+}
