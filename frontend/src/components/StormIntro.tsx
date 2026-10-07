@@ -17,16 +17,20 @@ import videoIntro from '@/assets/videos/portada.webm'
 import posterPortada from '@/assets/images/portada-poster.jpg'
 
 // Esqueleto del logo Enel: cada pieza se dibuja por trazo conforme avanza el scroll.
+// Las coordenadas se derivan de la geometría real del logo (viewBox 0 0 400 143.59):
+// grosor de trazo 16.82, anillos con radio medio 47.66 y barras de 16.82 de alto.
+const GROSOR_LOGO = 16.82
+
 const PIEZAS_LAZO: { d: string; ancho: number; tramo: [number, number] }[] = [
-  { d: 'M 16 79.5 A 40 40 0 1 1 15.9 79.5', ancho: 15, tramo: [0.14, 0.22] }, // anillo izquierdo
-  { d: 'M 257 79.5 A 40 40 0 1 1 256.9 79.5', ancho: 15, tramo: [0.17, 0.25] }, // anillo derecho
-  { d: 'M 155 84 A 52 52 0 0 1 259 84', ancho: 15, tramo: [0.2, 0.28] }, // arco central
-  { d: 'M 54 80 L 108 80', ancho: 12, tramo: [0.22, 0.3] }, // conector horizontal izq
-  { d: 'M 293 80 L 349 80', ancho: 12, tramo: [0.24, 0.32] }, // conector horizontal der
-  { d: 'M 127 40 L 127 94', ancho: 12, tramo: [0.26, 0.34] }, // viga izq
-  { d: 'M 184 84 L 184 140', ancho: 12, tramo: [0.28, 0.36] }, // viga central
-  { d: 'M 368 2 L 368 56', ancho: 12, tramo: [0.3, 0.38] }, // viga der
-  { d: 'M 368 58 L 385 58 L 385 106 L 401 128', ancho: 12, tramo: [0.32, 0.4] }, // cola verde
+  { d: 'M 56 31.8 A 47.66 47.66 0 1 1 55.99 31.8', ancho: GROSOR_LOGO, tramo: [0.12, 0.2] }, // anillo "e" izq
+  { d: 'M 56 87.34 L 102.6 87.34', ancho: GROSOR_LOGO, tramo: [0.15, 0.22] }, // barra "e" izq
+  { d: 'M 135.21 46.26 L 135.21 87.85', ancho: GROSOR_LOGO, tramo: [0.2, 0.27] }, // pata izq de la "n"
+  { d: 'M 135.21 46.26 C 150 20 205 30 217.91 91.75', ancho: GROSOR_LOGO, tramo: [0.22, 0.31] }, // arco "n"
+  { d: 'M 217.91 91.75 L 217.91 133.34', ancho: GROSOR_LOGO, tramo: [0.28, 0.35] }, // pata der de la "n"
+  { d: 'M 297 31.8 A 47.66 47.66 0 1 1 296.99 31.8', ancho: GROSOR_LOGO, tramo: [0.26, 0.34] }, // anillo "e" der
+  { d: 'M 297 87.34 L 343.6 87.34', ancho: GROSOR_LOGO, tramo: [0.29, 0.36] }, // barra "e" der
+  { d: 'M 376.3 8.41 L 376.3 50', ancho: GROSOR_LOGO, tramo: [0.32, 0.38] }, // asta de la "l"
+  { d: 'M 376.3 50 L 376.3 98 C 376.3 118 382 130 390 136', ancho: GROSOR_LOGO, tramo: [0.34, 0.41] }, // cola de la "l"
 ]
 
 // Una pieza del esqueleto del logo: se dibuja por trazo conforme avanza el scroll.
