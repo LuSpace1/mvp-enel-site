@@ -8,7 +8,7 @@ export const gerenteGeneral = {
   nombre: 'Paolo Leidi',
   cargo: 'Gerente General',
   empresa: 'Enel Distribución Chile',
-  foto: fotoMujer,
+  foto: fotoHombre,
 }
 
 export const subgerencias: Subgerencia[] = [
