@@ -7,7 +7,7 @@ const VIDEO_MUESTRA = 'https://www.youtube.com/watch?v=EQeBgrPs_-Y'
 const videosMock: VideoLink[] = [
   {
     id: 1,
-    title: 'Mensaje de la Gerente General Mónica Hodor',
+    title: 'Mensaje del Gerente General Paolo Leidi',
     youtube_url: VIDEO_MUESTRA,
     section_identifier: 'hero_main',
     created_at: '',

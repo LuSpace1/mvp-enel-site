@@ -5,7 +5,7 @@ import fotoMujer from '@/assets/images/placeholder_mujer.jpg'
 
 export const gerenteGeneral = {
   id: 'gerente',
-  nombre: 'Mónica Hodor',
+  nombre: 'Paolo Leidi',
   cargo: 'Gerente General',
   empresa: 'Enel Distribución Chile',
   foto: fotoMujer,
