@@ -88,7 +88,7 @@ export function VistaConcesionSection() {
                 variante="parrafo"
                 className="mt-5 text-base leading-relaxed font-medium text-neutral-600"
               >
-                Organizamos nuestra red en 4 secciones de concesión —Chacabuco, Cordillera, Pacífico
+                Organizamos nuestra red en 4 zonas de concesión —Chacabuco, Cordillera, Pacífico
                 y Florida— que cubren gran parte de la Región Metropolitana. Toca una zona para
                 explorar sus comunas y activa el Modo Rayos X para ver las cifras clave de un
                 vistazo.
