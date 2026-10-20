@@ -24,8 +24,9 @@ const ITEMS: NavItem[] = [
   { id: 'concesion-detalle', etiqueta: 'Concesión' },
   { id: 'cadena', etiqueta: 'Cadena' },
   { id: 'politicas', etiqueta: 'SIG' },
-  { id: 'galerias', etiqueta: 'Me Office' },
+  { id: 'galerias', etiqueta: 'Me' },
   { id: 'personas', etiqueta: 'Rostros' },
+  { id: 'espacios', etiqueta: 'Espacios' },
   { id: 'cierre', etiqueta: 'Cierre' },
 ]
 
