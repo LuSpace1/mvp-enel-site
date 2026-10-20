@@ -36,9 +36,6 @@ export const politicasISO: PoliticaISO[] = [
       'Continuidad operativa asegurada mediante la gestión de riesgos y la preparación ante eventos disruptivos en procesos críticos.',
     url: 'https://sharepoint.example.com/iso-continuidad',
   },
-]
-
-export const politicasExtra: PoliticaISO[] = [
   {
     id: 'antisoborno',
     nombre: 'Antisoborno',
