@@ -2,65 +2,55 @@ import { useState } from 'react'
 import {
   ArrowUp,
   ArrowUpRight,
-  BookOpenText,
-  HardHat,
-  UsersThree,
-  Lightbulb,
-  Lifebuoy,
-  Compass,
+  AddressBook,
+  CursorClick,
+  HandPalm,
+  Megaphone,
+  ShieldCheck,
 } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 
 import { Reveal } from '@/components/ui/Reveal'
 import { RevealTexto } from '@/components/ui/RevealTexto'
-import { Parallax } from '@/components/ui/Parallax'
 import { track } from '@/lib/analytics'
 import { desplazarASeccion } from '@/lib/scroll'
 
-import fotoMUT from '@/assets/images/MUT-02.jpg'
-
 const RECURSOS = [
   {
-    icono: BookOpenText,
-    titulo: 'Manual del Empleado',
-    descripcion: 'Políticas, beneficios y procedimientos para nuevos ingresados.',
-    url: 'https://enelchile.sharepoint.com/sites/manual-empleado',
-    color: 'from-blue-500 to-blue-600',
-  },
-  {
-    icono: HardHat,
-    titulo: 'Normas de Seguridad',
-    descripcion: 'Protocolos de seguridad industrial y prevención de riesgos.',
-    url: 'https://enelchile.sharepoint.com/sites/normas-seguridad',
+    icono: HandPalm,
+    titulo: 'Política Stop Work',
+    descripcion:
+      'Detén la tarea ante cualquier condición de riesgo para la seguridad de las personas.',
+    url: 'https://enelchile.sharepoint.com/sites/politica-stop-work',
     color: 'from-amber-500 to-orange-500',
   },
   {
-    icono: UsersThree,
-    titulo: 'Directorio de Equipos',
-    descripcion: 'Contactos clave de cada área y gerencia.',
+    icono: ShieldCheck,
+    titulo: 'Contacto ICT / Política Incidente ciber',
+    descripcion: 'Reporta incidentes de ciberseguridad y contacta al equipo ICT.',
+    url: 'https://enelchile.sharepoint.com/sites/seguridad-informacion',
+    color: 'from-enel-navy to-enel-blue',
+  },
+  {
+    icono: AddressBook,
+    titulo: 'Contactos clave',
+    descripcion: 'Directorio de contactos de cada área y gerencia.',
     url: 'https://enelchile.sharepoint.com/sites/directorio',
-    color: 'from-emerald-500 to-green-500',
+    color: 'from-sky-500 to-cyan-500',
   },
   {
-    icono: Lightbulb,
-    titulo: 'Capacitaciones',
-    descripcion: 'Cursos obligatorios, certificaciones y desarrollo.',
-    url: 'https://enelchile.sharepoint.com/sites/capacitaciones',
-    color: 'from-purple-500 to-violet-500',
-  },
-  {
-    icono: Lifebuoy,
-    titulo: 'Centro de Ayuda',
-    descripcion: 'Soporte técnico y canales de atención.',
-    url: 'https://enelchile.sharepoint.com/sites/ayuda',
+    icono: Megaphone,
+    titulo: 'Canales de denuncia',
+    descripcion: 'Reporta conductas contrarias al Código Ético de forma confidencial.',
+    url: 'https://enelchile.sharepoint.com/sites/canales-denuncia',
     color: 'from-enel-pink to-rose-500',
   },
   {
-    icono: Compass,
-    titulo: 'Innovación',
-    descripcion: 'Proyectos estratégicos y transformación digital.',
-    url: 'https://enelchile.sharepoint.com/sites/innovacion',
-    color: 'from-enel-blue to-red-600',
+    icono: CursorClick,
+    titulo: 'One Click',
+    descripcion: 'Accede a la intranet y a las herramientas que usas a diario.',
+    url: 'https://enelchile.sharepoint.com/sites/one-click',
+    color: 'from-emerald-500 to-green-500',
   },
 ]
 
@@ -106,96 +96,62 @@ export function CierreSection() {
               variante="parrafo"
               className="mt-6 max-w-xl text-base leading-relaxed text-neutral-500 md:text-lg"
             >
-              Accede en un solo lugar a los recursos y herramientas que usas a diario: manuales,
-              normas de seguridad, contactos y todo lo que necesitas para tu trabajo.
+              Accede en un solo lugar a las políticas, contactos y canales que necesitas para tu
+              trabajo.
             </RevealTexto>
           </div>
         </Reveal>
 
-        <div className="mt-20 flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:gap-16">
-          <div className="w-full lg:w-[42%]">
-            <div className="flex justify-center">
-              <motion.div
-                className="relative w-full max-w-lg"
-                initial={reduce ? false : { opacity: 0, y: 40 }}
-                whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.1, margin: '0px 0px -50px 0px' }}
-                transition={{ type: 'spring', stiffness: 40, damping: 14, mass: 1.5 }}
-              >
-                <Parallax distancia={45}>
-                  <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_80px_rgba(10,25,47,0.18)]">
-                    <img
-                      src={fotoMUT}
-                      alt="Enel Distribución"
-                      loading="lazy"
-                      decoding="async"
-                      className="aspect-[4/3] w-full object-cover"
-                    />
-                    <div className="from-enel-navy/15 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
+        <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {RECURSOS.map((recurso, indice) => (
+            <motion.a
+              key={recurso.titulo}
+              href={recurso.url}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => track('cierre.recurso', { recurso: recurso.titulo })}
+              initial={reduce ? false : { opacity: 0, y: 16 }}
+              whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{
+                duration: 0.45,
+                delay: 0.15 + indice * 0.06,
+                ease: [0.23, 1, 0.32, 1],
+              }}
+              className="group hover:ring-enel-blue/20 relative flex flex-col rounded-2xl bg-black/[0.03] p-[2px] ring-1 ring-black/5 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(235,0,83,0.08)]"
+              style={{
+                animation: 'float-subtle 4s ease-in-out infinite',
+                animationDelay: `${indice * 0.4}s`,
+              }}
+            >
+              <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(1rem-2px)] bg-white p-6">
+                <div className="relative z-10 flex flex-1 items-start gap-4">
+                  <div
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${recurso.color} text-white shadow-md`}
+                  >
+                    <recurso.icono size={20} weight="duotone" />
                   </div>
-                </Parallax>
-
-                <div
-                  aria-hidden="true"
-                  className="bg-enel-navy/10 mx-auto mt-5 h-4 w-[60%] rounded-full blur-lg"
-                />
-              </motion.div>
-            </div>
-          </div>
-
-          <div className="w-full lg:w-[58%]">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {RECURSOS.map((recurso, indice) => (
-                <motion.a
-                  key={recurso.titulo}
-                  href={recurso.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={() => track('cierre.recurso', { recurso: recurso.titulo })}
-                  initial={reduce ? false : { opacity: 0, y: 16 }}
-                  whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.45,
-                    delay: 0.15 + indice * 0.06,
-                    ease: [0.23, 1, 0.32, 1],
-                  }}
-                  className="group hover:ring-enel-blue/20 relative flex flex-col rounded-2xl bg-black/[0.03] p-[2px] ring-1 ring-black/5 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(235,0,83,0.08)]"
-                  style={{
-                    animation: 'float-subtle 4s ease-in-out infinite',
-                    animationDelay: `${indice * 0.4}s`,
-                  }}
-                >
-                  <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(1rem-2px)] bg-white p-5">
-                    <div className="relative z-10 flex flex-1 items-start gap-4">
-                      <div
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${recurso.color} text-white shadow-md`}
-                      >
-                        <recurso.icono size={20} weight="duotone" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-enel-navy text-sm font-semibold tracking-tight">
-                          {recurso.titulo}
-                        </h3>
-                        <p className="mt-1 text-xs leading-relaxed text-neutral-500">
-                          {recurso.descripcion}
-                        </p>
-                      </div>
-                    </div>
-
-                    <span className="text-enel-blue relative z-10 mt-auto inline-flex items-center gap-1 pt-3 text-[10px] font-bold tracking-[0.15em] uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                      Abrir
-                      <ArrowUpRight
-                        size={12}
-                        weight="bold"
-                        className="transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                      />
-                    </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-enel-navy text-base leading-snug font-semibold tracking-tight">
+                      {recurso.titulo}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">
+                      {recurso.descripcion}
+                    </p>
                   </div>
-                </motion.a>
-              ))}
-            </div>
-          </div>
+                </div>
+
+                <span className="text-enel-blue relative z-10 mt-auto inline-flex items-center gap-1 pt-4 text-[10px] font-bold tracking-[0.15em] uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                  Abrir
+                  <ArrowUpRight
+                    size={12}
+                    weight="bold"
+                    className="transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  />
+                </span>
+              </div>
+            </motion.a>
+          ))}
         </div>
 
         <Reveal delay={0.2}>
