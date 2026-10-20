@@ -7,14 +7,18 @@ import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { MeOfficeHerramientas } from '@/components/MeOfficeHerramientas'
 import { VisorGaleria } from '@/components/VisorGaleria'
-import { fotosEquipos, instalaciones } from '@/lib/data/galerias'
+import { instalaciones } from '@/lib/data/galerias'
 import { track } from '@/lib/analytics'
 import { useViajeStore } from '@/store/useViajeStore'
 
 import meOfficeLogo from '@/assets/images/me_office_logo.png'
+import portalMockup from '@/assets/images/portal-mockup.svg'
 
-// La polaroid de la intranet reutiliza una de las fotos de equipos.
-const FOTO_INTRANET = fotosEquipos[1]!
+// La polaroid de la intranet muestra una vista del portal Me.
+const PORTAL_INTRANET = {
+  src: portalMockup,
+  titulo: 'Portal Me',
+}
 
 const DESCRIPCION_INSTALACIONES_EXTRA =
   'Espacios pensados para el trabajo seguro y colaborativo de los equipos, con estándares de eficiencia energética y confort para quienes los visitan a diario.'
@@ -200,8 +204,8 @@ export function GaleriasSection() {
             >
               <div className="bg-enel-mist relative aspect-[16/10] overflow-hidden rounded-sm shadow-inner">
                 <img
-                  src={FOTO_INTRANET.src}
-                  alt={FOTO_INTRANET.titulo}
+                  src={PORTAL_INTRANET.src}
+                  alt={PORTAL_INTRANET.titulo}
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.04]"
@@ -209,7 +213,7 @@ export function GaleriasSection() {
               </div>
               <figcaption className="text-enel-navy absolute right-0 bottom-4 left-0 flex items-baseline justify-center gap-1.5 px-3">
                 <span className="text-enel-blue text-sm font-bold tabular-nums">02</span>
-                <span className="font-serif text-lg font-medium italic">{FOTO_INTRANET.titulo}</span>
+                <span className="font-serif text-lg font-medium italic">{PORTAL_INTRANET.titulo}</span>
               </figcaption>
             </motion.figure>
 
@@ -229,7 +233,7 @@ export function GaleriasSection() {
                 y recursos para tu día a día.
               </RevealTexto>
               <a
-                href="https://www.enel.cl/"
+                href="https://enelcom.sharepoint.com/sites/globalintranet/SitePages/es/Home.aspx"
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => track('personas.intranet')}
