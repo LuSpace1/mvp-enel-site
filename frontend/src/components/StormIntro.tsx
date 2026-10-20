@@ -8,7 +8,7 @@ import { prefiereAhorrarDatos } from '@/lib/conexion'
 import { obtenerLenis } from '@/lib/smoothScroll'
 import { useViajeStore } from '@/store/useViajeStore'
 import logoEnel from '@/assets/icons/Enel_Group_logo_blanco.png'
-import videoIntro from '@/assets/videos/portada.mp4'
+import videoIntro from '@/assets/videos/portada.webm'
 import posterPortada from '@/assets/images/portada-poster.jpg'
 
 // La intro ya no depende del scroll: se reproduce sola al entrar y levanta el
