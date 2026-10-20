@@ -2,25 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { useReducedMotion } from 'motion/react'
 
+import { MarcaMe } from '@/components/MarcasMe'
 import { herramientasMeOffice } from '@/lib/data/meOffice'
 import { track } from '@/lib/analytics'
-
-const INICIALES: Record<string, string> = {
-  'portal-me': 'PM',
-  'tell-me': 'TM',
-  'me-learning': 'ML',
-  'me-office': 'MO',
-  'next-move': 'NM',
-}
-
-/** Marca tipográfica propia de cada herramienta, sin iconografía genérica. */
-function MarcaHerramienta({ id }: { id: string }) {
-  return (
-    <span className="bg-enel-blue flex h-14 w-14 items-center justify-center rounded-2xl text-[15px] font-bold tracking-[0.02em] text-white">
-      {INICIALES[id] ?? 'ME'}
-    </span>
-  )
-}
 
 /**
  * Carrusel horizontal de accesos directos a las herramientas ME. Las flechas
@@ -76,62 +60,53 @@ export function MeOfficeHerramientas() {
 
   return (
     <div className="w-full">
-      <div className="flex items-end justify-between gap-6">
-        <div>
-          <span className="text-enel-blue text-[11px] font-bold tracking-[0.18em] uppercase">
-            Accesos directos
-          </span>
-          <h3 className="text-enel-navy mt-2 text-2xl font-bold tracking-tight md:text-3xl">
-            Explora el ecosistema ME
-          </h3>
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <div
-          ref={carruselRef}
-          className="no-scrollbar flex min-w-0 snap-x snap-mandatory scroll-px-1 gap-5 overflow-x-auto px-1 py-3"
-        >
-          {herramientasMeOffice.map((herramienta) => (
-            <a
-              key={herramienta.id}
-              href={herramienta.url || '#'}
-              target={herramienta.url ? '_blank' : undefined}
-              rel={herramienta.url ? 'noreferrer' : undefined}
-              onClick={(e) => {
-                if (!herramienta.url) {
-                  e.preventDefault()
-                  return
-                }
-                track('meoffice.acceso.abrir', { herramienta: herramienta.nombre })
-              }}
-              className="group border-enel-navy/[0.08] hover:border-enel-blue/30 flex min-h-[17rem] w-[86%] shrink-0 snap-start flex-col rounded-[1.75rem] border bg-white p-7 shadow-[0_14px_40px_-30px_rgba(10,25,47,0.45)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_30px_60px_-30px_rgba(10,25,47,0.4)] sm:w-[58%] md:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-2.5rem)/3)]"
-            >
-              <MarcaHerramienta id={herramienta.id} />
-
-              <div className="mt-8 flex flex-1 flex-col">
-                <span
-                  aria-hidden="true"
-                  className="bg-enel-pink mb-4 block h-1 w-10 rounded-full"
+      <div
+        ref={carruselRef}
+        className="no-scrollbar flex min-w-0 snap-x snap-mandatory scroll-px-1 gap-5 overflow-x-auto px-1 py-3"
+      >
+        {herramientasMeOffice.map((herramienta) => (
+          <a
+            key={herramienta.id}
+            href={herramienta.url || '#'}
+            target={herramienta.url ? '_blank' : undefined}
+            rel={herramienta.url ? 'noreferrer' : undefined}
+            onClick={(e) => {
+              if (!herramienta.url) {
+                e.preventDefault()
+                return
+              }
+              track('meoffice.acceso.abrir', { herramienta: herramienta.nombre })
+            }}
+            className="group block w-[86%] shrink-0 snap-start sm:w-[58%] md:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-2.5rem)/3)]"
+          >
+            <div className="bg-enel-navy/[0.05] ring-enel-navy/10 group-hover:ring-enel-blue/25 h-full rounded-[1.75rem] p-1.5 ring-1 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:-translate-y-1">
+              <div className="bg-enel-navy flex h-full min-h-[17rem] flex-col rounded-[calc(1.75rem-0.375rem)] p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-colors duration-500 group-hover:bg-[#1d1d1b]">
+                <MarcaMe
+                  id={herramienta.id}
+                  size={46}
+                  className="group-hover:text-enel-blue-light text-white/90 transition-colors duration-500"
                 />
-                <h4 className="text-enel-navy text-2xl font-bold tracking-tight">
-                  {herramienta.nombre}
-                </h4>
-                <p className="mt-2.5 max-w-[27ch] text-sm leading-relaxed text-neutral-500">
-                  {herramienta.descripcion}
-                </p>
-                <span className="text-enel-blue mt-auto inline-flex items-center gap-2 pt-6 text-[11px] font-bold tracking-[0.16em] uppercase">
-                  Abrir herramienta
-                  <ArrowUpRight
-                    size={15}
-                    weight="bold"
-                    className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-                  />
-                </span>
+
+                <div className="mt-7">
+                  <h4 className="text-[1.35rem] leading-tight font-semibold tracking-tight text-white">
+                    {herramienta.nombre}
+                  </h4>
+                  <p className="mt-2.5 max-w-[27ch] text-sm leading-relaxed text-white/55">
+                    {herramienta.descripcion}
+                  </p>
+                </div>
+                <div className="mt-auto pt-8">
+                  <span className="inline-flex items-center gap-2.5 rounded-full bg-white/[0.06] py-1.5 pr-1.5 pl-4 text-[11px] font-bold tracking-[0.14em] text-white/75 uppercase transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
+                    Abrir herramienta
+                    <span className="bg-enel-blue flex h-7 w-7 items-center justify-center rounded-full text-white transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                      <ArrowUpRight size={13} weight="bold" />
+                    </span>
+                  </span>
+                </div>
               </div>
-            </a>
-          ))}
-        </div>
+            </div>
+          </a>
+        ))}
       </div>
 
       <div className="mt-2 flex items-center gap-4">

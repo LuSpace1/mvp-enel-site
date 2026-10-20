@@ -12,31 +12,31 @@ export const herramientasMeOffice: HerramientaMeOffice[] = [
   {
     id: 'portal-me',
     nombre: 'Portal ME',
-    descripcion: 'El punto de entrada a las novedades y servicios del ecosistema ME.',
+    descripcion: 'Novedades, servicios y accesos del ecosistema ME.',
     url: '',
   },
   {
     id: 'tell-me',
     nombre: 'Tell ME',
-    descripcion: 'Comparte ideas, consultas y feedback con la compañía.',
+    descripcion: 'Ideas, consultas y feedback para la compañía.',
     url: '',
   },
   {
     id: 'me-learning',
     nombre: 'ME Learning',
-    descripcion: 'Cursos y rutas de formación para impulsar tu desarrollo.',
+    descripcion: 'Cursos y rutas de formación para tu desarrollo.',
     url: '',
   },
   {
     id: 'me-office',
     nombre: 'ME Office',
-    descripcion: 'Reserva de puestos, beneficios y gestión del día a día.',
+    descripcion: 'Reserva de puestos, beneficios y trámites.',
     url: '',
   },
   {
     id: 'next-move',
     nombre: 'Next Move',
-    descripcion: 'Movilidad interna y nuevas oportunidades dentro de Enel.',
+    descripcion: 'Movilidad interna y nuevas oportunidades en Enel.',
     url: '',
   },
 ]
