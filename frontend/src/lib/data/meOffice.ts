@@ -7,7 +7,6 @@ export interface HerramientaMeOffice {
 }
 
 // Accesos directos a las herramientas del ecosistema ME.
-// Completar `url` en cada elemento cuando estén disponibles los enlaces.
 export const herramientasMeOffice: HerramientaMeOffice[] = [
   {
     id: 'portal-me',
@@ -19,7 +18,7 @@ export const herramientasMeOffice: HerramientaMeOffice[] = [
     id: 'tell-me',
     nombre: 'Tell ME',
     descripcion: 'Ideas, consultas y feedback para la compañía.',
-    url: '',
+    url: 'https://enel.service-now.com/TellMe.aspx',
   },
   {
     id: 'me-learning',
@@ -37,6 +36,6 @@ export const herramientasMeOffice: HerramientaMeOffice[] = [
     id: 'next-move',
     nombre: 'Next Move',
     descripcion: 'Movilidad interna y nuevas oportunidades en Enel.',
-    url: '',
+    url: 'https://enel.service-now.com/NextMove.aspx',
   },
 ]
