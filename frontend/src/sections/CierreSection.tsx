@@ -118,7 +118,7 @@ export function CierreSection() {
                 delay: 0.15 + indice * 0.06,
                 ease: [0.23, 1, 0.32, 1],
               }}
-              className="group hover:ring-enel-blue/20 relative flex flex-col rounded-2xl bg-black/[0.03] p-[2px] ring-1 ring-black/5 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(235,0,83,0.08)]"
+              className="group hover:ring-enel-blue/30 relative flex flex-col rounded-2xl bg-black/[0.03] p-[2px] ring-1 ring-black/10 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(235,0,83,0.08)]"
               style={{
                 animation: 'float-subtle 4s ease-in-out infinite',
                 animationDelay: `${indice * 0.4}s`,
