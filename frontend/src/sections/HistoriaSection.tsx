@@ -9,13 +9,6 @@ import { CHILE_MARKER, CHILE_PATH, CHILE_VIEWBOX } from '@/lib/data/chile-svg'
 
 import fotoHistoria from '@/assets/images/enel_oficinas.jpg'
 
-const lineasDeNegocio = [
-  'Enel Green Power Chile',
-  'Enel Generación Chile',
-  'Enel Distribución',
-  'Enel X Chile',
-]
-
 const statCards = [
   {
     statVal: '14,5',
@@ -133,36 +126,7 @@ export function HistoriaSection() {
           Enel Distribución Chile en cifras
         </span>
 
-        <div className="mt-6 grid grid-cols-2 gap-y-8 md:mt-8 md:grid-cols-4">
-          {statCards.map((stat, indice) => (
-            <motion.div
-              key={stat.statDesc}
-              initial={reduce ? false : { opacity: 0, y: 20 }}
-              whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.5, delay: indice * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className={
-                indice > 0 ? 'border-l border-[#141413]/15 px-4 md:px-6' : 'px-4 md:px-6 md:pr-6'
-              }
-            >
-              <p
-                className={`text-3xl leading-none font-extrabold tracking-tight md:text-4xl ${stat.color}`}
-              >
-                {stat.statVal}
-                {stat.statUnit ? (
-                  <span className="ml-1 text-xl md:text-2xl">{stat.statUnit}</span>
-                ) : null}
-              </p>
-              <p className="text-enel-navy mt-2 text-[11px] font-bold tracking-wider uppercase">
-                {stat.statDesc}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="mt-12 grid items-center gap-10 md:mt-16 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-8">
-          <div className="hidden md:block" />
-
+        <div className="mt-6 grid items-center gap-10 md:mt-10 md:max-w-[58rem] md:grid-cols-[minmax(0,1fr)_minmax(0,19rem)] md:gap-12">
           <div className="flex justify-center">
             <Parallax distancia={18}>
               <motion.div
@@ -206,7 +170,7 @@ export function HistoriaSection() {
             </Parallax>
           </div>
 
-          <div className="max-w-sm md:pl-4">
+          <div>
             <RevealTexto
               as="p"
               variante="parrafo"
@@ -216,20 +180,29 @@ export function HistoriaSection() {
               en Chile.
             </RevealTexto>
 
-            <div className="mt-6">
-              <span className="text-[10px] font-bold tracking-[0.24em] text-[#8f3a16] uppercase">
-                Líneas de negocio
-              </span>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {lineasDeNegocio.map((filial) => (
-                  <span
-                    key={filial}
-                    className="text-enel-navy rounded-full border border-[#141413]/10 bg-white/70 px-3.5 py-1.5 text-xs font-medium shadow-sm"
+            <div className="mt-7 border-t border-[#141413]/12">
+              {statCards.map((stat, indice) => (
+                <motion.div
+                  key={stat.statDesc}
+                  initial={reduce ? false : { opacity: 0, y: 20 }}
+                  whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.4 }}
+                  transition={{ duration: 0.5, delay: indice * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  className="border-b border-[#141413]/12 py-4"
+                >
+                  <p
+                    className={`text-3xl leading-none font-extrabold tracking-tight md:text-[2rem] ${stat.color}`}
                   >
-                    {filial}
-                  </span>
-                ))}
-              </div>
+                    {stat.statVal}
+                    {stat.statUnit ? (
+                      <span className="ml-1 text-xl md:text-2xl">{stat.statUnit}</span>
+                    ) : null}
+                  </p>
+                  <p className="text-enel-navy mt-2 text-[11px] font-bold tracking-wider uppercase">
+                    {stat.statDesc}
+                  </p>
+                </motion.div>
+              ))}
             </div>
           </div>
         </div>
