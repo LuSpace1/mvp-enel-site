@@ -45,6 +45,15 @@ export function CulturaSection() {
           >
             Nuestros valores
           </RevealTexto>
+          <RevealTexto
+            as="p"
+            variante="parrafo"
+            delay={0.15}
+            className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-neutral-600 md:text-lg"
+          >
+            Nuestra cultura se construye día a día a través de acciones, decisiones y
+            comportamientos que compartimos como equipo.
+          </RevealTexto>
         </div>
 
         <div className="relative z-10 flex flex-col items-center pb-10">
