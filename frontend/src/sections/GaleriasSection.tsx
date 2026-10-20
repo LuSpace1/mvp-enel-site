@@ -17,7 +17,7 @@ import portalMockup from '@/assets/images/portal-mockup.svg'
 // La polaroid de la intranet muestra una vista del portal Me.
 const PORTAL_INTRANET = {
   src: portalMockup,
-  titulo: 'Portal Me',
+  alt: 'Vista del portal Me de Enel',
 }
 
 const DESCRIPCION_INSTALACIONES_EXTRA =
@@ -205,15 +205,14 @@ export function GaleriasSection() {
               <div className="bg-enel-mist relative aspect-[16/10] overflow-hidden rounded-sm shadow-inner">
                 <img
                   src={PORTAL_INTRANET.src}
-                  alt={PORTAL_INTRANET.titulo}
+                  alt={PORTAL_INTRANET.alt}
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.04]"
                 />
               </div>
-              <figcaption className="text-enel-navy absolute right-0 bottom-4 left-0 flex items-baseline justify-center gap-1.5 px-3">
-                <span className="text-enel-blue text-sm font-bold tabular-nums">02</span>
-                <span className="font-serif text-lg font-medium italic">{PORTAL_INTRANET.titulo}</span>
+              <figcaption className="text-enel-navy absolute right-0 bottom-4 left-0 flex items-baseline justify-center px-3">
+                <span className="font-serif text-lg font-medium italic">Intranet</span>
               </figcaption>
             </motion.figure>
 
