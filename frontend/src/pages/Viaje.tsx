@@ -3,14 +3,12 @@ import { Nav } from '@/components/Nav'
 import { SmoothScroll } from '@/components/SmoothScroll'
 import { Indice } from '@/components/Indice'
 import { PasoHeader } from '@/components/PasoPantalla'
+import { StormIntro } from '@/components/StormIntro'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useVideosStore } from '@/store/useVideosStore'
 import { useViajeStore } from '@/store/useViajeStore'
 import { PASOS_VIAJE } from '@/lib/data/viaje'
 
-const StormIntro = lazy(() =>
-  import('@/components/StormIntro').then((modulo) => ({ default: modulo.StormIntro })),
-)
 const PortadaDelViaje = lazy(() =>
   import('@/components/PortadaDelViaje').then((modulo) => ({ default: modulo.PortadaDelViaje })),
 )
@@ -141,9 +139,7 @@ export function Viaje() {
       <SmoothScroll />
       <Nav />
       <Indice />
-      <Suspense fallback={null}>
-        <StormIntro />
-      </Suspense>
+      <StormIntro />
       <main className="min-h-dvh pt-16">
         {paso && <PasoHeader paso={paso} />}
         <Suspense fallback={null}>

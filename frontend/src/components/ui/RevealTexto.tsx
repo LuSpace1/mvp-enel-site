@@ -20,6 +20,11 @@ interface RevealTextoProps {
   delay?: number
   once?: boolean
   variante?: Variante
+  /**
+   * Si se define, el texto se revela cuando el valor pasa a `true`, sin
+   * depender del scroll. Útil cuando una intro controla la entrada.
+   */
+  activar?: boolean
 }
 
 const CHAR_TITULO: Variants = {
@@ -116,6 +121,7 @@ export function RevealTexto({
   delay = 0,
   once = true,
   variante = 'titulo',
+  activar,
 }: RevealTextoProps) {
   const reduce = useReducedMotion()
 
@@ -135,19 +141,21 @@ export function RevealTexto({
     visible: { transition: { staggerChildren: stagger, delayChildren: delay } },
   }
 
+  const activacion =
+    activar === undefined
+      ? {
+          initial: 'hidden' as const,
+          whileInView: 'visible' as const,
+          viewport: { once, amount: variante === 'titulo' ? 0.4 : 0.25 },
+        }
+      : { initial: 'hidden' as const, animate: activar ? 'visible' : 'hidden' }
+
   return createElement(
     as,
     { className },
     <>
       <span className="sr-only">{children}</span>
-      <motion.span
-        aria-hidden="true"
-        className="block"
-        variants={contenedor}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once, amount: variante === 'titulo' ? 0.4 : 0.25 }}
-      >
+      <motion.span aria-hidden="true" className="block" variants={contenedor} {...activacion}>
         {contenido}
       </motion.span>
     </>,

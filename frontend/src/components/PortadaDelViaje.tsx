@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowDown, PlayCircle } from '@phosphor-icons/react'
 
 import { motion, useInView, useReducedMotion } from 'motion/react'
@@ -6,6 +6,7 @@ import { VideoEmbed } from '@/components/ui/VideoEmbed'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { track } from '@/lib/analytics'
 import { videoDeSeccion } from '@/lib/data/videos'
+import { useViajeStore } from '@/store/useViajeStore'
 
 import videoPortada from '@/assets/videos/hero.webm'
 import posterPortada from '@/assets/images/hero-poster.jpg'
@@ -15,19 +16,40 @@ export function PortadaDelViaje() {
   const reduce = useReducedMotion()
   const videoRef = useRef<HTMLVideoElement>(null)
   const enVista = useInView(videoRef, { amount: 0.1 })
+  const yaIniciado = useRef(false)
 
+  const introTerminada = useViajeStore((estado) => estado.introTerminada)
+  const [entradaForzada, setEntradaForzada] = useState(false)
+
+  // La portada se revela cuando la intro lo indica; el timeout es una red de
+  // seguridad para que nunca quede oculta si la intro no llega a montarse.
+  useEffect(() => {
+    const temporizador = window.setTimeout(() => setEntradaForzada(true), 7000)
+    return () => window.clearTimeout(temporizador)
+  }, [])
+
+  const entrada = Boolean(reduce) || introTerminada || entradaForzada
+
+  // El video de fondo arranca al entrar en la página, sin esperar al scroll.
   useEffect(() => {
     const el = videoRef.current
     if (!el || reduce) return
     const ahorraDatos = (navigator as Navigator & { connection?: { saveData?: boolean } })
       .connection?.saveData
-    if (enVista && !ahorraDatos) {
-      if (!el.getAttribute('src')) el.setAttribute('src', videoPortada)
-      void el.play().catch(() => {})
-    } else {
-      el.pause()
-    }
-  }, [enVista, reduce])
+    if (ahorraDatos) return
+    if (!el.getAttribute('src')) el.setAttribute('src', videoPortada)
+    yaIniciado.current = true
+    void el.play().catch(() => {})
+  }, [reduce])
+
+  // Solo pausa cuando la portada sale de pantalla; nunca condiciona el inicio.
+  useEffect(() => {
+    if (!yaIniciado.current) return
+    const el = videoRef.current
+    if (!el) return
+    if (enVista) void el.play().catch(() => {})
+    else el.pause()
+  }, [enVista])
 
   return (
     <section
@@ -38,7 +60,7 @@ export function PortadaDelViaje() {
         <motion.video
           ref={videoRef}
           poster={posterPortada}
-          preload="none"
+          preload="auto"
           muted
           loop
           playsInline
@@ -55,7 +77,8 @@ export function PortadaDelViaje() {
         <div className="flex flex-col items-center">
           <RevealTexto
             as="h1"
-            delay={0.7}
+            delay={0.15}
+            activar={entrada}
             className="w-full text-4xl leading-[1.05] font-semibold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem]"
           >
             Conoce <span className="texto-gradiente-azul">Enel Distribución</span>
@@ -65,8 +88,8 @@ export function PortadaDelViaje() {
         {video && (
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.3, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            animate={reduce || entrada ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 1.2, delay: entrada ? 0.5 : 0, ease: [0.16, 1, 0.3, 1] }}
             className="mx-auto mt-8 w-full max-w-3xl"
           >
             <VideoEmbed youtubeUrl={video.youtube_url} titulo={video.title} />
@@ -75,13 +98,15 @@ export function PortadaDelViaje() {
 
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.3, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
+          animate={reduce || entrada ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 1.2, delay: entrada ? 0.7 : 0, ease: [0.16, 1, 0.3, 1] }}
           className="mt-8 flex flex-col items-center"
         >
           <RevealTexto
             as="p"
             variante="parrafo"
+            activar={entrada}
+            delay={0.35}
             className="max-w-2xl text-base leading-relaxed text-white/70 md:text-lg"
           >
             En este sitio, encontrarás todo lo que necesitas saber sobre el negocio, nuestra cultura
