@@ -1,51 +1,42 @@
-export type TipoMedia = 'video' | 'gif' | 'imagen'
-
-export interface PresentacionMeOffice {
+export interface HerramientaMeOffice {
   id: string
-  etiqueta: string
-  titulo: string
-  media: {
-    tipo: TipoMedia
-    src: string
-    poster?: string
-  }
+  nombre: string
+  descripcion: string
+  /** URL de destino. Vacía mientras el enlace esté pendiente. */
+  url: string
 }
 
-// Presentaciones de la sección «Herramienta Me Office».
-// Para publicar cada video o gif: coloca el archivo en frontend/src/assets y
-// reemplaza el `src` de la presentación correspondiente, por ejemplo:
-//   import videoReservas from '@/assets/videos/meoffice-reservas.mp4'
-//   media: { tipo: 'video', src: videoReservas }
-// Mientras `src` esté vacío, la pantalla muestra un placeholder.
-export const presentacionesMeOffice: PresentacionMeOffice[] = [
+// Accesos directos a las herramientas del ecosistema ME.
+// Completar `url` en cada elemento cuando estén disponibles los enlaces.
+export const herramientasMeOffice: HerramientaMeOffice[] = [
   {
-    id: 'reserva-de-puestos',
-    etiqueta: 'Reserva de puestos',
-    titulo: 'Reserva tu puesto de trabajo',
-    media: { tipo: 'video', src: '' },
+    id: 'portal-me',
+    nombre: 'Portal ME',
+    descripcion: 'El punto de entrada a las novedades y servicios del ecosistema ME.',
+    url: '',
+  },
+  {
+    id: 'tell-me',
+    nombre: 'Tell ME',
+    descripcion: 'Comparte ideas, consultas y feedback con la compañía.',
+    url: '',
   },
   {
     id: 'me-learning',
-    etiqueta: 'Me learning (formación)',
-    titulo: 'Me learning: formación y desarrollo',
-    media: { tipo: 'video', src: '' },
+    nombre: 'ME Learning',
+    descripcion: 'Cursos y rutas de formación para impulsar tu desarrollo.',
+    url: '',
   },
   {
-    id: 'beneficios',
-    etiqueta: 'Beneficios',
-    titulo: 'Conoce tus beneficios',
-    media: { tipo: 'video', src: '' },
+    id: 'me-office',
+    nombre: 'ME Office',
+    descripcion: 'Reserva de puestos, beneficios y gestión del día a día.',
+    url: '',
   },
   {
-    id: 'sueldo-y-liquidaciones',
-    etiqueta: 'Sueldo y liquidaciones',
-    titulo: 'Consulta y descarga tus liquidaciones',
-    media: { tipo: 'video', src: '' },
-  },
-  {
-    id: 'tramites-y-solicitudes',
-    etiqueta: 'Trámites y solicitudes',
-    titulo: 'Vacaciones, permisos y certificados',
-    media: { tipo: 'video', src: '' },
+    id: 'next-move',
+    nombre: 'Next Move',
+    descripcion: 'Movilidad interna y nuevas oportunidades dentro de Enel.',
+    url: '',
   },
 ]

@@ -13,7 +13,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { EquiposGaleria } from '@/components/EquiposGaleria'
-import { MeOfficeShowcase } from '@/components/MeOfficeShowcase'
+import { MeOfficeHerramientas } from '@/components/MeOfficeHerramientas'
 import { VisorGaleria } from '@/components/VisorGaleria'
 import { fotosEquipos, instalaciones } from '@/lib/data/galerias'
 import { track } from '@/lib/analytics'
@@ -181,13 +181,13 @@ export function GaleriasSection() {
             variante="parrafo"
             className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
-            Recorre la herramienta en cinco presentaciones: elige una pestaña y mira cómo se usa en
-            el día a día.
+            Todo el ecosistema ME en un solo lugar: accede directo a tus herramientas, formación y
+            beneficios.
           </RevealTexto>
         </Reveal>
 
-        <Reveal delay={0.1} className="3xl:mt-14 mt-10">
-          <MeOfficeShowcase />
+        <Reveal delay={0.1} className="3xl:mt-16 mt-12">
+          <MeOfficeHerramientas />
         </Reveal>
 
         <Reveal id="personas" y={0} delay={0.1} className="3xl:mt-36 relative mt-24">

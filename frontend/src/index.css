@@ -114,20 +114,6 @@ body {
   }
 }
 
-/* Progreso de las pestañas de Me Office (mismo compás que la barra de cultura) */
-@keyframes barra-meoffice {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-.barra-meoffice {
-  transform-origin: left;
-  animation: barra-meoffice 10s linear forwards;
-}
-
 /* Diferir render de items fuera de pantalla (carruseles largos) */
 .cv-auto {
   content-visibility: auto;
