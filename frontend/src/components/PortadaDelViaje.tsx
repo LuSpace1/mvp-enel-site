@@ -1,22 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowDown, PlayCircle } from '@phosphor-icons/react'
 
-import { motion, useInView, useReducedMotion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { VideoEmbed } from '@/components/ui/VideoEmbed'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { track } from '@/lib/analytics'
 import { videoDeSeccion } from '@/lib/data/videos'
 import { useViajeStore } from '@/store/useViajeStore'
 
-import videoPortada from '@/assets/videos/hero.webm'
-import posterPortada from '@/assets/images/hero-poster.jpg'
-
 export function PortadaDelViaje() {
   const video = videoDeSeccion('hero_main')
   const reduce = useReducedMotion()
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const enVista = useInView(videoRef, { amount: 0.1 })
-  const yaIniciado = useRef(false)
 
   const introTerminada = useViajeStore((estado) => estado.introTerminada)
   const [entradaForzada, setEntradaForzada] = useState(false)
@@ -30,56 +24,18 @@ export function PortadaDelViaje() {
 
   const entrada = Boolean(reduce) || introTerminada || entradaForzada
 
-  // El video de fondo arranca al entrar en la página, sin esperar al scroll.
-  useEffect(() => {
-    const el = videoRef.current
-    if (!el || reduce) return
-    const ahorraDatos = (navigator as Navigator & { connection?: { saveData?: boolean } })
-      .connection?.saveData
-    if (ahorraDatos) return
-    if (!el.getAttribute('src')) el.setAttribute('src', videoPortada)
-    yaIniciado.current = true
-    void el.play().catch(() => {})
-  }, [reduce])
-
-  // Solo pausa cuando la portada sale de pantalla; nunca condiciona el inicio.
-  useEffect(() => {
-    if (!yaIniciado.current) return
-    const el = videoRef.current
-    if (!el) return
-    if (enVista) void el.play().catch(() => {})
-    else el.pause()
-  }, [enVista])
-
   return (
     <section
       id="portada"
-      className="bg-enel-navy relative flex min-h-[72dvh] items-center overflow-hidden py-16 md:min-h-[80dvh] md:py-24"
+      className="relative flex min-h-[72dvh] items-center overflow-hidden bg-white py-16 md:min-h-[80dvh] md:py-24"
     >
-      <div className="pointer-events-none absolute inset-0">
-        <motion.video
-          ref={videoRef}
-          poster={posterPortada}
-          preload="auto"
-          muted
-          loop
-          playsInline
-          disableRemotePlayback
-          aria-hidden="true"
-          className="h-full w-full object-cover opacity-70"
-          initial={reduce ? false : { scale: 1.15, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.7 }}
-          transition={{ duration: 2.0, ease: [0.25, 1, 0.5, 1] }}
-        />
-      </div>
-
       <div className="relative mx-auto flex w-full max-w-5xl flex-col items-center px-5 text-center md:px-8">
         <div className="flex flex-col items-center">
           <RevealTexto
             as="h1"
             delay={0.15}
             activar={entrada}
-            className="w-full text-4xl leading-[1.05] font-semibold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem]"
+            className="text-enel-navy w-full text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-[4rem]"
           >
             Conoce <span className="texto-gradiente-azul">Enel Distribución</span>
           </RevealTexto>
@@ -107,7 +63,7 @@ export function PortadaDelViaje() {
             variante="parrafo"
             activar={entrada}
             delay={0.35}
-            className="max-w-2xl text-base leading-relaxed text-white/70 md:text-lg"
+            className="max-w-2xl text-base leading-relaxed text-neutral-600 md:text-lg"
           >
             En este sitio, encontrarás todo lo que necesitas saber sobre el negocio, nuestra cultura
             organizacional, quiénes somos y cómo trabajamos para ser la empresa de distribución de
@@ -160,7 +116,7 @@ export function PortadaDelViaje() {
                 const el = document.getElementById('organigrama')
                 if (el) el.scrollIntoView({ behavior: 'smooth' })
               }}
-              className="inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
+              className="border-enel-navy/15 text-enel-navy hover:border-enel-navy/40 hover:bg-enel-navy/5 inline-flex h-12 items-center gap-2 rounded-full border px-6 text-sm font-semibold transition"
               data-analytics-component="portada"
               data-analytics-accion="conocer-equipo"
             >
