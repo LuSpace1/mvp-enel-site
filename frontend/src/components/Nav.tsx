@@ -23,7 +23,7 @@ const ITEMS: NavItem[] = [
   { id: 'organigrama', etiqueta: 'Equipos' },
   { id: 'concesion-detalle', etiqueta: 'Concesión' },
   { id: 'cadena', etiqueta: 'Cadena' },
-  { id: 'politicas', etiqueta: 'Políticas' },
+  { id: 'politicas', etiqueta: 'SIG' },
   { id: 'galerias', etiqueta: 'Me Office' },
   { id: 'personas', etiqueta: 'Rostros' },
   { id: 'cierre', etiqueta: 'Cierre' },

@@ -30,7 +30,7 @@ export const PASOS_VIAJE: PasoViaje[] = [
   },
   {
     id: 'politicas',
-    nombre: 'Políticas del negocio',
+    nombre: 'Políticas del SIG',
   },
   {
     id: 'galerias',
