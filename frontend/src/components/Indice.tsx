@@ -38,25 +38,45 @@ export const Indice = memo(function Indice() {
 
   useEffect(() => {
     let frame = 0
+    let geometriaValida = false
+    let tops: (number | null)[] = []
+    let linea = 0
+    let altoDocumento = 0
+    let finPortada = 0
+    let hayPortada = false
+
+    // Los tops de las secciones se miden una sola vez (y cuando cambia el
+    // layout). Así el scroll no fuerza 11 reflows por frame.
+    function recalcularGeometria() {
+      linea = window.innerHeight * 0.35 + 64
+      tops = ITEMS.map((item) => {
+        const elemento = document.getElementById(item.id)
+        return elemento ? elemento.getBoundingClientRect().top + window.scrollY : null
+      })
+      altoDocumento = document.documentElement.scrollHeight
+
+      const portada = document.getElementById('portada')
+      hayPortada = Boolean(portada)
+      finPortada = portada ? portada.getBoundingClientRect().bottom + window.scrollY : 0
+      geometriaValida = true
+    }
 
     function medir() {
       frame = 0
-      const linea = window.innerHeight * 0.35 + 64
+      if (!geometriaValida) recalcularGeometria()
+
+      const scroll = window.scrollY
+      const umbral = scroll + linea
       let indice = 0
-      ITEMS.forEach((item, i) => {
-        const elemento = document.getElementById(item.id)
-        if (!elemento) return
-        if (elemento.getBoundingClientRect().top <= linea) indice = i
-      })
-      const fondoAlcanzado =
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
+      for (let i = 0; i < tops.length; i++) {
+        const top = tops[i] ?? null
+        if (top !== null && top <= umbral) indice = i
+      }
+      const fondoAlcanzado = window.innerHeight + scroll >= altoDocumento - 2
       if (fondoAlcanzado) indice = ITEMS.length - 1
       setActivo(indice)
 
-      const portada = document.getElementById('portada')
-      const enHero = portada
-        ? portada.getBoundingClientRect().bottom > window.innerHeight * 0.25
-        : true
+      const enHero = hayPortada ? finPortada - scroll > window.innerHeight * 0.25 : true
       setMostrar(!enHero)
     }
 
@@ -64,13 +84,26 @@ export const Indice = memo(function Indice() {
       if (!frame) frame = requestAnimationFrame(medir)
     }
 
+    function invalidar() {
+      geometriaValida = false
+      alScrollear()
+    }
+
     medir()
     window.addEventListener('scroll', alScrollear, { passive: true })
-    window.addEventListener('resize', alScrollear)
+    window.addEventListener('resize', invalidar)
+
+    // Recalibra cuando el contenido cambia de alto (imágenes, secciones lazy,
+    // fuentes), sin volver a medir en cada frame de scroll.
+    const observador = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(invalidar) : null
+    observador?.observe(document.body)
+    void document.fonts?.ready.then(invalidar)
+
     return () => {
       cancelAnimationFrame(frame)
+      observador?.disconnect()
       window.removeEventListener('scroll', alScrollear)
-      window.removeEventListener('resize', alScrollear)
+      window.removeEventListener('resize', invalidar)
     }
   }, [])
 

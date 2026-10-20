@@ -2,7 +2,7 @@ import { obtenerLenis } from '@/lib/smoothScroll'
 
 const ALTURA_HEADER = 128
 
-export function desplazarASeccion(id: string, duracion = 1.3) {
+export function desplazarASeccion(id: string, duracion?: number) {
   const elemento = document.getElementById(id)
   if (!elemento) return
   const top = elemento.getBoundingClientRect().top + window.scrollY
@@ -12,7 +12,13 @@ export function desplazarASeccion(id: string, duracion = 1.3) {
 
   const lenis = obtenerLenis()
   if (lenis) {
-    lenis.scrollTo(destino, { duration: duracion, easing: (t) => 1 - Math.pow(1 - t, 3) })
+    const distancia = Math.abs(destino - window.scrollY)
+    // Los saltos cortos se sienten más ágiles; los largos conservan el paseo.
+    const duracionFinal = duracion ?? Math.min(1.25, Math.max(0.6, distancia / 2400))
+    lenis.scrollTo(destino, {
+      duration: duracionFinal,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
+    })
     return
   }
   window.scrollTo({ top: destino, behavior: 'smooth' })

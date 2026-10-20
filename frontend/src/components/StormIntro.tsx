@@ -4,10 +4,11 @@ import type { MotionValue } from 'motion/react'
 import { CaretRight } from '@phosphor-icons/react'
 
 import { track } from '@/lib/analytics'
+import { prefiereAhorrarDatos } from '@/lib/conexion'
 import { obtenerLenis } from '@/lib/smoothScroll'
 import { useViajeStore } from '@/store/useViajeStore'
 import logoEnel from '@/assets/icons/Enel_Group_logo_blanco.png'
-import videoIntro from '@/assets/videos/portada.webm'
+import videoIntro from '@/assets/videos/portada.mp4'
 import posterPortada from '@/assets/images/portada-poster.jpg'
 
 // La intro ya no depende del scroll: se reproduce sola al entrar y levanta el
@@ -74,6 +75,7 @@ export function StormIntro() {
 
   const marcarIntroTerminada = useViajeStore((estado) => estado.marcarIntroTerminada)
 
+  const ahorraDatos = prefiereAhorrarDatos()
   const prog = useMotionValue(0)
   // El logo entra con un resorte propio para que frene con un pequeño rebote.
   const escalaLogo = useMotionValue(4.5)
@@ -88,14 +90,9 @@ export function StormIntro() {
 
   // El video de fondo parte apenas se entra, sin esperar al scroll.
   useEffect(() => {
-    const video = videoRef.current
-    if (!video || reduce) return
-    const ahorraDatos = (navigator as Navigator & { connection?: { saveData?: boolean } })
-      .connection?.saveData
-    if (ahorraDatos) return
-    if (!video.getAttribute('src')) video.setAttribute('src', videoIntro)
-    void video.play().catch(() => {})
-  }, [reduce])
+    if (reduce || ahorraDatos) return
+    void videoRef.current?.play().catch(() => {})
+  }, [reduce, ahorraDatos])
 
   // Timeline automático: dibuja el logo, lo completa y levanta el telón.
   useEffect(() => {
@@ -185,8 +182,10 @@ export function StormIntro() {
       <motion.div className="absolute inset-0" style={{ transform: yTelon }}>
         <video
           ref={videoRef}
+          src={ahorraDatos ? undefined : videoIntro}
           poster={posterPortada}
           preload="auto"
+          autoPlay
           muted
           loop
           playsInline
