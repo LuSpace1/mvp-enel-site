@@ -19,7 +19,9 @@ export function VisorGaleria({
   fotos,
   indice,
   direccion = 0,
+  titulo,
   etiqueta,
+  descripcion,
   descripcionExtra,
   nombreEntidad = 'foto',
   onCerrar,
@@ -28,7 +30,11 @@ export function VisorGaleria({
   fotos: FotoVisor[]
   indice: number | null
   direccion?: number
+  /** Título fijo de la galería; no cambia al navegar entre fotos. */
+  titulo: string
   etiqueta: string
+  /** Texto fijo de la galería; se mantiene mientras cambian las fotos. */
+  descripcion?: string
   descripcionExtra?: string
   nombreEntidad?: string
   onCerrar: () => void
@@ -38,6 +44,9 @@ export function VisorGaleria({
   const touchX = useRef<number | null>(null)
 
   const fotoActiva = indice !== null ? fotos[indice] : null
+  const parrafos = [descripcion, descripcionExtra]
+    .filter((texto): texto is string => Boolean(texto))
+    .flatMap((texto) => texto.split(/\n{2,}/))
 
   // `useEffectEvent` permite leer los callbacks más recientes sin volver a
   // suscribir el listener ni re-bloquear el scroll en cada render del padre.
@@ -146,40 +155,32 @@ export function VisorGaleria({
               </AnimatePresence>
             </div>
 
-            {/* Descripción */}
+            {/* Banner fijo: la información no cambia al pasar las fotos */}
             <aside className="relative flex shrink-0 flex-col justify-center bg-[#191919] px-6 py-10 md:w-[38%] md:max-w-[540px] md:overflow-y-auto md:px-10 md:py-20 lg:px-12">
-              <AnimatePresence initial={false} custom={direccion} mode="wait">
-                <motion.div
-                  key={indice}
-                  custom={direccion}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-                >
-                  <p className="text-[11px] font-bold tracking-[0.24em] text-[#d97757] uppercase">
-                    {etiqueta}
-                  </p>
-                  <h3 className="mt-4 font-serif text-2xl leading-tight font-medium text-white italic md:text-3xl">
-                    {fotoActiva.titulo}
-                  </h3>
-                  <span aria-hidden="true" className="mt-6 block h-px w-12 bg-white/20" />
+              <p className="text-[11px] font-bold tracking-[0.24em] text-[#d97757] uppercase">
+                {etiqueta}
+              </p>
+              <h3 className="mt-4 font-serif text-2xl leading-tight font-medium text-white italic md:text-3xl">
+                {titulo || fotos[0]?.titulo}
+              </h3>
+              <span aria-hidden="true" className="mt-6 block h-px w-12 bg-white/20" />
 
-                  <div className="mt-6 space-y-4">
-                    {fotoActiva.descripcion && (
-                      <p className="text-[15px] leading-relaxed text-[#d8d4c9]">
-                        {fotoActiva.descripcion}
-                      </p>
-                    )}
-                    {descripcionExtra && (
-                      <p className="text-[15px] leading-relaxed text-[#a09b92]">
-                        {descripcionExtra}
-                      </p>
-                    )}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+              {parrafos.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  {parrafos.map((parrafo, i) => (
+                    <p
+                      key={i}
+                      className={
+                        i === 0
+                          ? 'text-[15px] leading-relaxed text-[#d8d4c9]'
+                          : 'text-[15px] leading-relaxed text-[#a09b92]'
+                      }
+                    >
+                      {parrafo}
+                    </p>
+                  ))}
+                </div>
+              )}
             </aside>
           </div>
         </motion.div>

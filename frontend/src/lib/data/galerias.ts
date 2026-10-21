@@ -42,7 +42,7 @@ export const instalaciones = [
     titulo: 'Centro de Excelencia Operacional',
     subtitulo: 'Seguridad e innovación en acción',
     descripcion:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      'Un centro de formación y capacitación donde nuestros equipos perfeccionan sus conocimientos técnicos y refuerzan la cultura de seguridad.',
     url: 'https://www.enel.cl/es/conoce-enel/ceo-centro-de-excelencia-operacional-enel-distribucion.html',
     imagen: fotoCEO,
     alt: 'Centro de Excelencia Operacional',
@@ -53,7 +53,7 @@ export const instalaciones = [
     titulo: 'Edificio Corporativo MUT',
     subtitulo: 'Nuestro hogar en el Mercado Urbano Tobalaba',
     descripcion:
-      'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      'Nuestro edificio corporativo en el Mercado Urbano Tobalaba, un espacio de trabajo colaborativo conectado con el centro de Santiago.',
     url: 'https://www.enel.cl/es/conoce-enel/prensa/press-enel-chile/d202404-enel-inicio-traslado-a-edificio-corporativo-en-mut.html',
     imagen: fotoMUT,
     alt: 'Edificio corporativo Enel en el MUT',
@@ -64,7 +64,7 @@ export const instalaciones = [
     titulo: 'Oficinas Comerciales',
     subtitulo: 'Atención presencial cerca de ti',
     descripcion:
-      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+      'Puntos de atención presencial donde clientes y vecinos realizan trámites, reciben asesoría y conocen nuestros servicios.',
     url: 'https://www.enel.cl/es/clientes/empalmes-y-proyectos-electricos/agenda-visita.html',
     imagen: 'https://picsum.photos/seed/enel-comercial/1200/800',
     alt: 'Oficinas comerciales Enel',
@@ -75,7 +75,7 @@ export const instalaciones = [
     titulo: 'Oficinas Victoria',
     subtitulo: 'Operación y servicio en la zona sur',
     descripcion:
-      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      'Oficinas de operación y atención que acompañan a los clientes y equipos de la zona sur de la Región Metropolitana.',
     url: 'https://www.enel.cl/es/historias/a201803-victoria-612.html',
     imagen: 'https://picsum.photos/seed/enel-victoria/1200/800',
     alt: 'Oficinas Enel Victoria',
@@ -86,7 +86,7 @@ export const instalaciones = [
     titulo: 'Oficinas Marathon',
     subtitulo: 'Equipos administrativos y operativos',
     descripcion:
-      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.',
+      'Espacios de trabajo para los equipos administrativos y operativos que coordinan la gestión diaria de la compañía.',
     url: 'https://www.enel.cl/',
     imagen: 'https://picsum.photos/seed/enel-marathon/1200/800',
     alt: 'Oficinas Enel Marathon',

@@ -378,7 +378,11 @@ export function GaleriasSection() {
         fotos={instalacionActiva !== null ? instalaciones[instalacionActiva]!.galeria : []}
         indice={instalacionActiva !== null ? fotoInstalacion : null}
         direccion={dirInstalacion}
+        titulo={instalacionActiva !== null ? instalaciones[instalacionActiva]!.titulo : ''}
         etiqueta="La instalación"
+        descripcion={
+          instalacionActiva !== null ? instalaciones[instalacionActiva]!.descripcion : undefined
+        }
         descripcionExtra={DESCRIPCION_INSTALACIONES_EXTRA}
         onCerrar={() => setInstalacionActiva(null)}
         onNavegar={navegarGaleriaInstalacion}

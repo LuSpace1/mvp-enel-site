@@ -175,7 +175,7 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
           <button
             onClick={() => irPagina(-1)}
             aria-label="Ver 10 equipos anteriores"
-            className="border-neutral-300 text-neutral-400 hover:border-enel-blue hover:text-enel-blue rounded-full border bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-95"
+            className="hover:border-enel-blue hover:text-enel-blue rounded-full border border-neutral-300 bg-white/60 p-3 text-neutral-400 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-95"
           >
             <CaretLeft size={20} weight="bold" />
           </button>
@@ -185,7 +185,7 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
           <button
             onClick={() => irPagina(1)}
             aria-label="Ver 10 equipos siguientes"
-            className="border-neutral-300 text-neutral-400 hover:border-enel-blue hover:text-enel-blue rounded-full border bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-95"
+            className="hover:border-enel-blue hover:text-enel-blue rounded-full border border-neutral-300 bg-white/60 p-3 text-neutral-400 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white active:scale-95"
           >
             <CaretRight size={20} weight="bold" />
           </button>
@@ -214,6 +214,7 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
         fotos={fotosEquipos}
         indice={abierto}
         direccion={direccion}
+        titulo="Equipos Enel"
         etiqueta="El equipo"
         descripcionExtra={DESCRIPCION_EXTRA}
         nombreEntidad="equipo"
