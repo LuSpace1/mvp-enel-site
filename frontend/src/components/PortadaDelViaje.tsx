@@ -37,7 +37,14 @@ export function PortadaDelViaje() {
             activar={entrada}
             className="text-enel-navy w-full text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-[4rem]"
           >
-            Conoce <span className="texto-gradiente-azul">Enel Distribución</span>
+            Conoce{' '}
+            <motion.span
+              className="inline-block"
+              animate={reduce ? undefined : { y: [0, -8, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <span className="texto-gradiente-azul">Enel Distribución</span>
+            </motion.span>
           </RevealTexto>
         </div>
 
