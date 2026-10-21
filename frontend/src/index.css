@@ -48,32 +48,39 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Cursor de mano en todos los elementos interactivos (los botones nativos
-   de Tailwind v4 usan `cursor: default`). */
-button:not(:disabled),
-a[href],
-area[href],
-summary,
-select:not(:disabled),
-label[for],
-input[type='checkbox']:not(:disabled),
-input[type='radio']:not(:disabled),
-input[type='file']:not(:disabled),
-input[type='submit']:not(:disabled),
-input[type='button']:not(:disabled),
-input[type='reset']:not(:disabled),
-[role='button']:not([aria-disabled='true']),
-[role='link'],
-[role='tab']:not([aria-disabled='true']),
-[tabindex='0'] {
-  cursor: pointer;
-}
+/* Cursor de mano en elementos interactivos (Tailwind v4 deja los botones con
+   `cursor: default`). Va en `@layer base` y con `:where()` para que cualquier
+   utilidad `cursor-*` pueda sobrescribirlo. */
+@layer base {
+  :where(
+    button:not(:disabled),
+    a[href],
+    area[href],
+    summary,
+    select:not(:disabled),
+    label[for],
+    input[type='checkbox']:not(:disabled),
+    input[type='radio']:not(:disabled),
+    input[type='file']:not(:disabled),
+    input[type='submit']:not(:disabled),
+    input[type='button']:not(:disabled),
+    input[type='reset']:not(:disabled),
+    [role='button']:not([aria-disabled='true']),
+    [role='link'],
+    [role='tab']:not([aria-disabled='true'])
+  ) {
+    cursor: pointer;
+  }
 
-button:disabled,
-input:disabled,
-select:disabled,
-[aria-disabled='true'] {
-  cursor: not-allowed;
+  :where(
+    button:disabled,
+    input:disabled,
+    select:disabled,
+    textarea:disabled,
+    [aria-disabled='true']
+  ) {
+    cursor: not-allowed;
+  }
 }
 
 /* Títulos grandes con gradiente azul celeste (Enel Blue → celeste) */

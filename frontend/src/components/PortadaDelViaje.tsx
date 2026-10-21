@@ -84,8 +84,8 @@ export function PortadaDelViaje() {
             className="max-w-2xl text-base leading-relaxed text-neutral-600 md:text-lg"
           >
             Descubre quiénes somos, cómo funciona nuestro negocio y qué nos mueve cada día. Un
-            espacio para conocer nuestra operación, los principios que nos guían y nuestro rol en
-            la distribución de energía eléctrica en Chile.
+            espacio para conocer nuestra operación, los principios que nos guían y nuestro rol en la
+            distribución de energía eléctrica en Chile.
           </RevealTexto>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <motion.button

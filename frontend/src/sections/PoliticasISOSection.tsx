@@ -123,7 +123,6 @@ export function PoliticasISOSection() {
             )
           })}
         </div>
-
       </motion.div>
     </SectionShell>
   )

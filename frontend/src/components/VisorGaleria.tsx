@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import { AnimatePresence, motion } from 'motion/react'
@@ -39,21 +39,24 @@ export function VisorGaleria({
 
   const fotoActiva = indice !== null ? fotos[indice] : null
 
+  // `useEffectEvent` permite leer los callbacks más recientes sin volver a
+  // suscribir el listener ni re-bloquear el scroll en cada render del padre.
+  const alPresionarTecla = useEffectEvent((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onCerrar()
+    if (e.key === 'ArrowRight') onNavegar(1)
+    if (e.key === 'ArrowLeft') onNavegar(-1)
+  })
+
   useEffect(() => {
     if (indice === null) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCerrar()
-      if (e.key === 'ArrowRight') onNavegar(1)
-      if (e.key === 'ArrowLeft') onNavegar(-1)
-    }
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    window.addEventListener('keydown', onKey)
+    window.addEventListener('keydown', alPresionarTecla)
     return () => {
-      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('keydown', alPresionarTecla)
       document.body.style.overflow = prevOverflow
     }
-  }, [indice, onCerrar, onNavegar])
+  }, [indice])
 
   useEffect(() => {
     if (indice === null) return
