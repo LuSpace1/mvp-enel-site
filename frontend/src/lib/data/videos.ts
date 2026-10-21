@@ -53,6 +53,14 @@ const videosMock: VideoLink[] = [
     created_at: '',
     updated_at: '',
   },
+  {
+    id: 7,
+    title: 'Mensaje de Paolo Leidi · Gerencia General',
+    youtube_url: VIDEO_MUESTRA,
+    section_identifier: 'gerencia_general',
+    created_at: '',
+    updated_at: '',
+  },
 ]
 
 const VIDEO_POR_SECCION = new Map(videosMock.map((video) => [video.section_identifier, video]))

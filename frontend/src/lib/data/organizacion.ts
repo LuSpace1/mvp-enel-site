@@ -9,6 +9,7 @@ export const gerenteGeneral = {
   cargo: 'Gerente General',
   empresa: 'Enel Distribución Chile',
   foto: fotoHombre,
+  videoSection: 'gerencia_general',
 }
 
 export const subgerencias: Subgerencia[] = [

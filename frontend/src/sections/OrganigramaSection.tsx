@@ -551,6 +551,25 @@ export function OrganigramaSection() {
                   soporte transversal de las áreas staff de la compañía.
                 </p>
               </div>
+
+              {videoDeSeccion(gerenteGeneral.videoSection) && (
+                <button
+                  onClick={() =>
+                    setVideoActivo({
+                      url: videoDeSeccion(gerenteGeneral.videoSection)!.youtube_url,
+                      titulo: videoDeSeccion(gerenteGeneral.videoSection)!.title,
+                    })
+                  }
+                  className="group/btn bg-enel-blue hover:bg-enel-blue-dark mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-semibold tracking-wide text-white shadow-sm transition-[background-color,box-shadow,transform] duration-300 ease-out hover:shadow-md active:scale-[0.98] active:duration-100"
+                >
+                  <Play
+                    size={14}
+                    weight="fill"
+                    className="text-white transition-transform duration-300 group-hover/btn:scale-115"
+                  />
+                  Ver Video de Bienvenida
+                </button>
+              )}
             </motion.div>
           </motion.div>
         )}
