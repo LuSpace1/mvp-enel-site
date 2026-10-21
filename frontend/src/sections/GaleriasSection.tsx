@@ -12,11 +12,11 @@ import { track } from '@/lib/analytics'
 import { useViajeStore } from '@/store/useViajeStore'
 
 import meOfficeLogo from '@/assets/images/me_office_logo.png'
-import portalMockup from '@/assets/images/portal-mockup.svg'
+import portalMe from '@/assets/images/portal-me.png'
 
 // La polaroid de la intranet muestra una vista del portal Me.
 const PORTAL_INTRANET = {
-  src: portalMockup,
+  src: portalMe,
   alt: 'Vista del portal Me de Enel',
 }
 
@@ -202,7 +202,7 @@ export function GaleriasSection() {
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               whileHover={reduce ? {} : { rotate: 0, y: -8 }}
             >
-              <div className="bg-enel-mist relative aspect-[16/10] overflow-hidden rounded-sm shadow-inner">
+              <div className="bg-enel-mist relative aspect-[800/398] overflow-hidden rounded-sm shadow-inner">
                 <img
                   src={PORTAL_INTRANET.src}
                   alt={PORTAL_INTRANET.alt}
