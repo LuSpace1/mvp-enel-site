@@ -31,6 +31,18 @@ const entrada: Variants = {
 export function CulturaSection() {
   const reduce = useReducedMotion()
   const [valorActivo, setValorActivo] = useState<string | null>(null)
+  // Las sombras solo se muestran cuando las tarjetas están en reposo: se ocultan
+  // al abrir y se reactivan cuando termina la animación de vuelta al tamaño pequeño.
+  const [sombrasVisibles, setSombrasVisibles] = useState(true)
+
+  const alternarValor = (palabra: string) => {
+    if (valorActivo === palabra) {
+      setValorActivo(null)
+      return
+    }
+    setSombrasVisibles(false)
+    setValorActivo(palabra)
+  }
 
   return (
     <SectionShell id="cultura" className="relative overflow-hidden bg-white pb-10 md:pb-14">
@@ -72,6 +84,9 @@ export function CulturaSection() {
                   initial={reduce ? false : 'hidden'}
                   whileInView={reduce ? undefined : 'visible'}
                   viewport={{ once: true, amount: 0.4 }}
+                  onLayoutAnimationComplete={() => {
+                    if (!valorActivo) setSombrasVisibles(true)
+                  }}
                   className={`group relative ${abierta ? 'order-first w-full basis-full' : 'h-40 w-40'}`}
                 >
                   <motion.div
@@ -85,7 +100,7 @@ export function CulturaSection() {
                       delay: indice * 0.18,
                     }}
                   >
-                    {!abierta && (
+                    {!abierta && sombrasVisibles && (
                       <motion.span
                         aria-hidden="true"
                         className="bg-enel-navy/25 absolute -bottom-5 left-1/2 h-2.5 w-16 rounded-full blur-[6px]"
@@ -106,7 +121,7 @@ export function CulturaSection() {
                     <motion.button
                       type="button"
                       layout
-                      onClick={() => setValorActivo(abierta ? null : valor.palabra)}
+                      onClick={() => alternarValor(valor.palabra)}
                       aria-expanded={abierta}
                       aria-controls={`valor-${indice}`}
                       aria-label={`${valor.palabra}: ${abierta ? 'ocultar descripción' : 'ver descripción'}`}
