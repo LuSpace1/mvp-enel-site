@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowDown, PlayCircle } from '@phosphor-icons/react'
+import { ArrowDown } from '@phosphor-icons/react'
 
 import { motion, useReducedMotion } from 'motion/react'
 import { VideoEmbed } from '@/components/ui/VideoEmbed'
@@ -109,20 +109,6 @@ export function PortadaDelViaje() {
               Comenzar el viaje
               <ArrowDown size={18} weight="bold" className="animate-bounce" />
             </motion.button>
-            <button
-              type="button"
-              onClick={() => {
-                track('portada.cta.equipo')
-                const el = document.getElementById('organigrama')
-                if (el) el.scrollIntoView({ behavior: 'smooth' })
-              }}
-              className="border-enel-navy/15 text-enel-navy hover:border-enel-navy/40 hover:bg-enel-navy/5 inline-flex h-12 items-center gap-2 rounded-full border px-6 text-sm font-semibold transition"
-              data-analytics-component="portada"
-              data-analytics-accion="conocer-equipo"
-            >
-              <PlayCircle size={18} weight="duotone" />
-              Conocer el equipo
-            </button>
           </div>
         </motion.div>
       </div>
