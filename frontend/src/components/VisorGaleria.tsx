@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { CaretDown, CaretLeft, CaretRight, X } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import { AnimatePresence, motion } from 'motion/react'
 
 export type FotoVisor = {
@@ -10,9 +10,9 @@ export type FotoVisor = {
 }
 
 const slideVariants = {
-  enter: (dir: number) => ({ opacity: 0, x: dir >= 0 ? 60 : -60 }),
+  enter: (dir: number) => ({ opacity: 0, x: dir >= 0 ? 40 : -40 }),
   center: { opacity: 1, x: 0 },
-  exit: (dir: number) => ({ opacity: 0, x: dir >= 0 ? -60 : 60 }),
+  exit: (dir: number) => ({ opacity: 0, x: dir >= 0 ? -40 : 40 }),
 }
 
 export function VisorGaleria({
@@ -35,7 +35,6 @@ export function VisorGaleria({
   onNavegar: (dir: number) => void
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const descripcionRef = useRef<HTMLElement>(null)
   const touchX = useRef<number | null>(null)
 
   const fotoActiva = indice !== null ? fotos[indice] : null
@@ -67,7 +66,7 @@ export function VisorGaleria({
         <motion.div
           ref={scrollRef}
           data-lenis-prevent
-          className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-white"
+          className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-[#f5f2ea] md:overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -82,39 +81,42 @@ export function VisorGaleria({
             if (Math.abs(delta) > 50) onNavegar(delta < 0 ? 1 : -1)
           }}
         >
-          <div className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between gap-4 bg-gradient-to-b from-white/90 to-transparent px-4 py-3 md:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="text-xl font-bold tracking-tight text-[#d97757] md:text-2xl">
+          {/* Controles flotantes, legibles sobre cualquier fondo */}
+          <div className="pointer-events-none fixed top-0 right-0 left-0 z-20 flex items-center justify-between gap-4 px-4 py-3 md:px-6 md:py-4">
+            <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-white/80 px-4 py-2 shadow-sm ring-1 ring-black/5 backdrop-blur-md">
+              <span className="font-serif text-lg font-medium text-[#d97757] italic md:text-xl">
                 {String(indice + 1).padStart(2, '0')}
               </span>
-              <h3 className="truncate font-serif text-lg font-medium text-[#191919] italic md:text-xl">
-                {fotoActiva.titulo}
-              </h3>
-              <span className="hidden shrink-0 text-sm font-semibold tracking-widest text-[#8a857c] uppercase sm:block">
-                {indice + 1} / {fotos.length}
+              <span className="text-[11px] font-semibold tracking-[0.22em] text-[#8a857c] uppercase">
+                / {String(fotos.length).padStart(2, '0')}
               </span>
             </div>
-            <div className="flex shrink-0 items-center gap-1">
+
+            <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-white/80 p-1 shadow-sm ring-1 ring-black/5 backdrop-blur-md">
               <button
+                type="button"
                 onClick={() => onNavegar(-1)}
                 aria-label={`Ver ${nombreEntidad} anterior`}
-                className="rounded-full p-3 text-[#191919] transition-colors hover:bg-[#191919]/10"
+                className="rounded-full p-2.5 text-[#191919] transition-colors hover:bg-[#191919]/10"
               >
-                <CaretLeft size={28} weight="bold" />
+                <CaretLeft size={20} weight="bold" />
               </button>
               <button
+                type="button"
                 onClick={() => onNavegar(1)}
                 aria-label={`Ver ${nombreEntidad} siguiente`}
-                className="rounded-full p-3 text-[#191919] transition-colors hover:bg-[#191919]/10"
+                className="rounded-full p-2.5 text-[#191919] transition-colors hover:bg-[#191919]/10"
               >
-                <CaretRight size={28} weight="bold" />
+                <CaretRight size={20} weight="bold" />
               </button>
+              <span aria-hidden="true" className="mx-1 h-5 w-px bg-[#191919]/10" />
               <button
+                type="button"
                 onClick={onCerrar}
                 aria-label="Cerrar galería"
-                className="rounded-full p-3 text-[#191919] transition-colors hover:bg-[#191919]/10"
+                className="rounded-full p-2.5 text-[#191919] transition-colors hover:bg-[#191919]/10"
               >
-                <X size={24} weight="bold" />
+                <X size={20} weight="bold" />
               </button>
             </div>
           </div>
@@ -127,50 +129,41 @@ export function VisorGaleria({
               initial="enter"
               animate="center"
               exit="exit"
+              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+              className="flex min-h-dvh flex-col md:h-dvh md:flex-row"
             >
-              <div className="relative flex min-h-dvh items-center justify-center px-4 py-16 md:px-20">
+              {/* Imagen */}
+              <div className="flex min-h-[52dvh] flex-1 items-center justify-center px-4 pt-20 pb-8 md:min-h-0 md:px-12 md:py-20 lg:px-16">
                 <img
                   src={fotoActiva.src}
                   alt={fotoActiva.titulo}
                   decoding="async"
                   fetchPriority="high"
-                  className="max-h-[80vh] w-full max-w-full rounded-lg object-contain shadow-2xl ring-1 ring-[#e0dcd0]"
+                  className="max-h-[62dvh] w-auto max-w-full rounded-sm object-contain shadow-[0_30px_70px_-20px_rgba(25,25,25,0.45)] ring-1 ring-[#e0dcd0] md:max-h-[76dvh]"
                 />
-                <button
-                  type="button"
-                  onClick={() =>
-                    descripcionRef.current?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start',
-                    })
-                  }
-                  className="absolute bottom-8 left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full border border-[#e4e0d5] bg-white/70 px-4 py-2 text-xs font-medium whitespace-nowrap text-[#686561] transition-colors hover:bg-white hover:text-[#191919]"
-                >
-                  <CaretDown size={16} weight="bold" />
-                  Ver mas!
-                </button>
               </div>
 
-              <section ref={descripcionRef} className="bg-[#191919] px-4 pt-16 pb-24 md:px-6">
-                <div className="mx-auto max-w-3xl">
-                  <p className="text-xs font-bold tracking-[0.2em] text-[#d97757] uppercase">
-                    {etiqueta}
-                  </p>
-                  <h4 className="mt-3 font-serif text-2xl font-medium text-white italic md:text-3xl">
-                    {fotoActiva.titulo}
-                  </h4>
-                  <div className="mt-6 space-y-4">
-                    {fotoActiva.descripcion && (
-                      <p className="text-base leading-relaxed text-[#d8d4c9]">
-                        {fotoActiva.descripcion}
-                      </p>
-                    )}
-                    {descripcionExtra && (
-                      <p className="text-base leading-relaxed text-[#a09b92]">{descripcionExtra}</p>
-                    )}
-                  </div>
+              {/* Descripción */}
+              <aside className="relative flex shrink-0 flex-col justify-center bg-[#191919] px-6 py-10 md:w-[38%] md:max-w-[540px] md:overflow-y-auto md:px-10 md:py-20 lg:px-12">
+                <p className="text-[11px] font-bold tracking-[0.24em] text-[#d97757] uppercase">
+                  {etiqueta}
+                </p>
+                <h3 className="mt-4 font-serif text-2xl leading-tight font-medium text-white italic md:text-3xl">
+                  {fotoActiva.titulo}
+                </h3>
+                <span aria-hidden="true" className="mt-6 block h-px w-12 bg-white/20" />
+
+                <div className="mt-6 space-y-4">
+                  {fotoActiva.descripcion && (
+                    <p className="text-[15px] leading-relaxed text-[#d8d4c9]">
+                      {fotoActiva.descripcion}
+                    </p>
+                  )}
+                  {descripcionExtra && (
+                    <p className="text-[15px] leading-relaxed text-[#a09b92]">{descripcionExtra}</p>
+                  )}
                 </div>
-              </section>
+              </aside>
             </motion.div>
           </AnimatePresence>
         </motion.div>
