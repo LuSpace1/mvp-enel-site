@@ -2,7 +2,10 @@ import type { Icon } from '@phosphor-icons/react'
 import {
   ArrowUpRight,
   ArrowsClockwise,
+  BookOpen,
   Certificate,
+  Files,
+  FolderOpen,
   GearSix,
   Leaf,
   Lightning,
@@ -17,6 +20,8 @@ import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { track } from '@/lib/analytics'
 import { politicasISO } from '@/lib/data/iso'
+
+const PORTAL_SIG = 'https://enelcom.sharepoint.com/sites/PortalSIG2/SitePages/Home.aspx'
 
 const ICONOS: Record<string, Icon> = {
   calidad: Certificate,
@@ -44,7 +49,7 @@ export function PoliticasISOSection() {
   const reduce = useReducedMotion()
 
   return (
-    <SectionShell id="politicas" className="relative overflow-hidden bg-white pb-2 md:pb-4">
+    <SectionShell id="politicas" className="relative overflow-hidden bg-white">
       <motion.div
         initial={reduce ? false : { opacity: 0, y: 80, rotateX: 12 }}
         whileInView={reduce ? undefined : { opacity: 1, y: 0, rotateX: 0 }}
@@ -123,6 +128,62 @@ export function PoliticasISOSection() {
             )
           })}
         </div>
+
+        <Reveal delay={0.18} y={32} className="relative z-10 mt-12 md:mt-16">
+          <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#eaf4ff] via-[#f4f9ff] to-[#e2f0ff] p-6 md:p-9">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-white/55 blur-2xl"
+            />
+            <div
+              aria-hidden="true"
+              className="bg-enel-blue/10 pointer-events-none absolute -right-16 -bottom-24 h-56 w-56 rounded-full blur-2xl"
+            />
+
+            <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-enel-blue/80 text-[11px] font-bold tracking-[0.2em] uppercase">
+                  Profundiza en nuestro SIG
+                </p>
+                <h3 className="text-enel-navy mt-2 text-2xl font-bold tracking-tight md:text-3xl">
+                  Conoce nuestro Portal SIG
+                </h3>
+                <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-neutral-600 md:text-base">
+                  Accede a la política completa, documentos asociados, normas ISO, procedimientos y
+                  toda la información del Sistema Integrado de Gestión.
+                </p>
+              </div>
+
+              <a
+                href={PORTAL_SIG}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => track('sig.portal.abrir')}
+                className="bg-enel-blue hover:bg-enel-blue-dark inline-flex shrink-0 items-center justify-center gap-2.5 self-start rounded-full px-6 py-3.5 text-sm font-bold text-white shadow-[0_14px_30px_rgba(0,111,187,0.28)] transition-all duration-300 hover:-translate-y-0.5 lg:self-auto"
+              >
+                Ir al Portal SIG
+                <ArrowUpRight size={17} weight="bold" />
+              </a>
+            </div>
+
+            <div className="border-enel-blue/15 relative mt-6 flex flex-col gap-3 border-t pt-5 text-[12px] font-medium text-neutral-600 sm:flex-row sm:items-center sm:justify-between md:mt-7">
+              <span className="flex items-center gap-2">
+                <Files size={17} weight="duotone" className="text-enel-blue shrink-0" />
+                Política y documentos
+              </span>
+              <span aria-hidden="true" className="bg-enel-navy/10 hidden h-4 w-px sm:block" />
+              <span className="flex items-center gap-2">
+                <FolderOpen size={17} weight="duotone" className="text-enel-blue shrink-0" />
+                Procedimientos y lineamientos
+              </span>
+              <span aria-hidden="true" className="bg-enel-navy/10 hidden h-4 w-px sm:block" />
+              <span className="flex items-center gap-2">
+                <BookOpen size={17} weight="duotone" className="text-enel-blue shrink-0" />
+                Información de las 8 normas ISO
+              </span>
+            </div>
+          </div>
+        </Reveal>
       </motion.div>
     </SectionShell>
   )
