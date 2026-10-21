@@ -14,10 +14,10 @@ import { useViajeStore } from '@/store/useViajeStore'
 import meOfficeLogo from '@/assets/images/me_office_logo.png'
 import portalMe from '@/assets/images/portal-me.png'
 
-// La polaroid de la intranet muestra una vista del portal Me.
+// La polaroid de la intranet muestra una vista del portal ME.
 const PORTAL_INTRANET = {
   src: portalMe,
-  alt: 'Vista del portal Me de Enel',
+  alt: 'Vista del portal ME de Enel',
 }
 
 const DESCRIPCION_INSTALACIONES_EXTRA =
@@ -79,6 +79,7 @@ export function GaleriasSection() {
   const [instalacionActiva, setInstalacionActiva] = useState<number | null>(null)
   const [fotoInstalacion, setFotoInstalacion] = useState(0)
   const [dirInstalacion, setDirInstalacion] = useState(0)
+  const progresoRef = useRef<HTMLSpanElement>(null)
   const reduce = useReducedMotion()
   const instalacionesInView = useInView(instalacionesRef, { once: true, amount: 0.15 })
   const navegar = useViajeStore((estado) => estado.navegar)
@@ -87,7 +88,7 @@ export function GaleriasSection() {
 
   useEffect(() => {
     // Cada bloque de la sección (intranet e instalaciones) es un capítulo propio:
-    // cuando entra en la franja central actualiza el paso; al salir vuelve a "Me".
+    // cuando entra en la franja central actualiza el paso; al salir vuelve a "ME".
     const objetivos: { id: string; anterior: string }[] = [
       { id: 'personas', anterior: 'galerias' },
       { id: 'espacios', anterior: 'galerias' },
@@ -119,8 +120,14 @@ export function GaleriasSection() {
     const el = carruselRef.current
     if (!el) return
     const actualizar = () => {
+      const max = el.scrollWidth - el.clientWidth
       setPuedeAtras(el.scrollLeft > 8)
-      setPuedeAdelante(el.scrollLeft < el.scrollWidth - el.clientWidth - 8)
+      setPuedeAdelante(el.scrollLeft < max - 8)
+      // Se actualiza por DOM para no re-renderizar la sección en cada frame del scroll.
+      if (progresoRef.current) {
+        const avance = max > 8 ? Math.min(1, Math.max(0, el.scrollLeft / max)) : 0
+        progresoRef.current.style.width = `${avance * 100}%`
+      }
     }
     actualizar()
     el.addEventListener('scroll', actualizar, { passive: true })
@@ -165,7 +172,7 @@ export function GaleriasSection() {
         <Reveal y={0} className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <img
             src={meOfficeLogo}
-            alt="Logo Me"
+            alt="Logo ME"
             className="3xl:h-16 h-14 w-auto drop-shadow-sm"
             width={112}
             height={123}
@@ -176,7 +183,7 @@ export function GaleriasSection() {
             as="h2"
             className="text-enel-navy 3xl:mt-5 3xl:text-6xl mt-4 text-4xl font-bold tracking-tight md:text-5xl"
           >
-            Herramientas Me
+            Herramientas ME
           </RevealTexto>
           <RevealTexto
             as="p"
@@ -192,7 +199,7 @@ export function GaleriasSection() {
           <MeOfficeHerramientas />
         </Reveal>
 
-        <Reveal id="personas" y={0} delay={0.1} className="3xl:mt-36 relative mt-24">
+        <Reveal id="personas" y={0} delay={0.1} className="3xl:mt-44 relative mt-32">
           <div className="grid items-center gap-10 px-6 pb-14 md:grid-cols-2 md:gap-16 md:px-12">
             <motion.figure
               className="group relative mx-auto w-full max-w-lg rounded-md border border-neutral-200 bg-white p-3 pb-12 shadow-[0_28px_60px_rgba(0,0,0,0.16)]"
@@ -228,8 +235,8 @@ export function GaleriasSection() {
                 variante="parrafo"
                 className="3xl:text-lg mt-4 text-base leading-relaxed font-medium text-neutral-600"
               >
-                La energía que mueve a Chile también vive en nuestra intranet: novedades, personas
-                y recursos para tu día a día.
+                La energía que mueve a Chile también vive en nuestra intranet: novedades, personas y
+                recursos para tu día a día.
               </RevealTexto>
               <a
                 href="https://enelcom.sharepoint.com/sites/globalintranet/SitePages/es/Home.aspx"
@@ -249,7 +256,7 @@ export function GaleriasSection() {
           </div>
         </Reveal>
 
-        <div id="espacios" className="3xl:mt-32 mt-24">
+        <div id="espacios" className="3xl:mt-40 mt-32">
           <motion.div
             ref={instalacionesRef}
             className="mx-auto max-w-3xl text-center"
@@ -275,20 +282,10 @@ export function GaleriasSection() {
           </motion.div>
 
           <div className="3xl:mt-12 mt-10">
-            <div className="relative left-1/2 w-[min(100vw,1720px)] -translate-x-1/2">
-              <button
-                type="button"
-                onClick={() => desplazarInstalaciones(-1)}
-                disabled={!puedeAtras}
-                aria-label="Ver instalaciones anteriores"
-                className="border-enel-navy/10 text-enel-navy absolute top-[46%] left-2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border bg-white/95 shadow-[0_10px_30px_rgba(10,25,47,0.3)] backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white disabled:pointer-events-none disabled:opacity-35 md:left-3 md:h-11 md:w-11"
-              >
-                <CaretLeft size={18} weight="bold" />
-              </button>
-
+            <div className="relative left-1/2 w-[min(100vw,1920px)] -translate-x-1/2">
               <div
                 ref={carruselRef}
-                className="flex min-w-0 snap-x snap-mandatory scroll-px-14 [scrollbar-width:none] gap-6 overflow-x-auto px-14 pt-1 pb-10 md:scroll-px-16 md:px-16 [&::-webkit-scrollbar]:hidden"
+                className="flex min-w-0 snap-x snap-mandatory scroll-px-6 [scrollbar-width:none] gap-6 overflow-x-auto px-6 pt-1 pb-10 md:scroll-px-10 md:px-10 [&::-webkit-scrollbar]:hidden"
               >
                 {instalaciones.map((instalacion, indice) => (
                   <Reveal
@@ -359,15 +356,38 @@ export function GaleriasSection() {
                 ))}
               </div>
 
-              <button
-                type="button"
-                onClick={() => desplazarInstalaciones(1)}
-                disabled={!puedeAdelante}
-                aria-label="Ver más instalaciones"
-                className="border-enel-navy/10 text-enel-navy absolute top-[46%] right-2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border bg-white/95 shadow-[0_10px_30px_rgba(10,25,47,0.3)] backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white disabled:pointer-events-none disabled:opacity-35 md:right-3 md:h-11 md:w-11"
-              >
-                <CaretRight size={18} weight="bold" />
-              </button>
+              <div className="mx-auto mt-1 flex w-full max-w-md items-center gap-4 px-6 md:mt-2 md:px-0">
+                <button
+                  type="button"
+                  onClick={() => desplazarInstalaciones(-1)}
+                  disabled={!puedeAtras}
+                  aria-label="Ver instalaciones anteriores"
+                  className="border-enel-navy/10 text-enel-navy flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-white shadow-[0_10px_30px_rgba(10,25,47,0.16)] transition-all duration-300 hover:scale-105 hover:bg-white disabled:pointer-events-none disabled:opacity-35"
+                >
+                  <CaretLeft size={18} weight="bold" />
+                </button>
+
+                <div
+                  aria-hidden="true"
+                  className="bg-enel-navy/10 relative h-1 flex-1 overflow-hidden rounded-full"
+                >
+                  <span
+                    ref={progresoRef}
+                    className="bg-enel-blue absolute inset-y-0 left-0 rounded-full transition-[width] duration-200 ease-out"
+                    style={{ width: '0%' }}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => desplazarInstalaciones(1)}
+                  disabled={!puedeAdelante}
+                  aria-label="Ver más instalaciones"
+                  className="border-enel-navy/10 text-enel-navy flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-white shadow-[0_10px_30px_rgba(10,25,47,0.16)] transition-all duration-300 hover:scale-105 hover:bg-white disabled:pointer-events-none disabled:opacity-35"
+                >
+                  <CaretRight size={18} weight="bold" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
