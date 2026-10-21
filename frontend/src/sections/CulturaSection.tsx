@@ -65,8 +65,9 @@ export function CulturaSection() {
             delay={0.15}
             className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-neutral-600 md:text-lg"
           >
-            Nuestra cultura se construye día a día a través de acciones, decisiones y
-            comportamientos que compartimos como equipo.
+            Los principios que guían nuestra forma de actuar, tomar decisiones y enfrentar los
+            desafíos del negocio, orientando nuestro compromiso con las personas, los clientes y el
+            futuro de la energía.
           </RevealTexto>
         </div>
 
