@@ -14,6 +14,11 @@ const FLOTE_Y = Array.from({ length: 25 }, (_, i) =>
   Number((-4 + 4 * Math.cos((i / 24) * Math.PI * 2)).toFixed(2)),
 )
 
+// Flotación del CTA: amplitud menor para no competir con el pulso de escala.
+const FLOTE_CTA_Y = Array.from({ length: 25 }, (_, i) =>
+  Number((-2.5 + 2.5 * Math.cos((i / 24) * Math.PI * 2)).toFixed(2)),
+)
+
 export function PortadaDelViaje() {
   const video = videoDeSeccion('hero_main')
   const reduce = useReducedMotion()
@@ -94,12 +99,12 @@ export function PortadaDelViaje() {
                 reduce
                   ? undefined
                   : {
-                      x: [0, -3, 3, -2, 2, -1, 0],
-                      y: [0, 2, -2, 1, -1, 0.5, 0],
+                      y: FLOTE_CTA_Y,
+                      scale: [1, 1, 1.045, 1, 1],
                       boxShadow: [
-                        '0 0 20px 4px rgba(235,0,83,0.35), 0 4px 24px rgba(235,0,83,0.25)',
-                        '0 0 40px 10px rgba(235,0,83,0.6), 0 6px 32px rgba(235,0,83,0.45)',
-                        '0 0 20px 4px rgba(235,0,83,0.35), 0 4px 24px rgba(235,0,83,0.25)',
+                        '0 0 18px 2px rgba(235,0,83,0.28), 0 4px 20px rgba(235,0,83,0.22)',
+                        '0 0 26px 6px rgba(235,0,83,0.45), 0 6px 26px rgba(235,0,83,0.32)',
+                        '0 0 18px 2px rgba(235,0,83,0.28), 0 4px 20px rgba(235,0,83,0.22)',
                       ],
                     }
               }
@@ -107,9 +112,14 @@ export function PortadaDelViaje() {
                 reduce
                   ? undefined
                   : {
-                      x: { duration: 0.4, repeat: Infinity, repeatDelay: 1.2, ease: 'easeInOut' },
-                      y: { duration: 0.4, repeat: Infinity, repeatDelay: 1.2, ease: 'easeInOut' },
-                      boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
+                      y: { duration: 5, repeat: Infinity, ease: 'linear' },
+                      scale: {
+                        duration: 5,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                        times: [0, 0.4, 0.52, 0.64, 0.74],
+                      },
+                      boxShadow: { duration: 3.4, repeat: Infinity, ease: 'easeInOut' },
                     }
               }
               whileHover={reduce ? undefined : { scale: 1.1, y: -3 }}
