@@ -8,6 +8,12 @@ import { track } from '@/lib/analytics'
 import { videoDeSeccion } from '@/lib/data/videos'
 import { useViajeStore } from '@/store/useViajeStore'
 
+// Curva sinusoidal muestreada: el título sube y baja sin detenerse en los
+// extremos, en lugar del típico rebote entre dos posiciones.
+const FLOTE_Y = Array.from({ length: 25 }, (_, i) =>
+  Number((-4 + 4 * Math.cos((i / 24) * Math.PI * 2)).toFixed(2)),
+)
+
 export function PortadaDelViaje() {
   const video = videoDeSeccion('hero_main')
   const reduce = useReducedMotion()
@@ -39,9 +45,9 @@ export function PortadaDelViaje() {
           >
             Conoce{' '}
             <motion.span
-              className="inline-block"
-              animate={reduce ? undefined : { y: [0, -8, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              className="inline-block will-change-transform"
+              animate={reduce ? undefined : { y: FLOTE_Y }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
             >
               <span className="texto-gradiente-azul">Enel Distribución</span>
             </motion.span>
