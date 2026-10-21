@@ -7,25 +7,34 @@ import { SectionShell } from '@/components/ui/SectionShell'
 import { valoresCultura } from '@/lib/data/cultura'
 
 const entrada: Variants = {
-  hidden: {
+  hidden: (indice: number) => ({
     opacity: 0,
-    y: 32,
-    scale: 0.96,
-  },
+    y: 48,
+    scale: 0.55,
+    rotate: indice % 2 === 0 ? -10 : 10,
+  }),
   visible: (indice: number) => ({
     opacity: 1,
     y: 0,
     scale: 1,
+    rotate: 0,
     transition: {
-      duration: 0.75,
-      ease: [0.16, 1, 0.3, 1],
-      delay: indice * 0.07,
+      type: 'spring',
+      stiffness: 240,
+      damping: 17,
+      mass: 0.9,
+      delay: indice * 0.09,
     },
   }),
 }
 
+// Bandera de módulo: la entrada se ejecuta una sola vez por sesión, aunque la
+// sección se desmonte y vuelva a montarse al navegar.
+let entradaEjecutada = false
+
 export function CulturaSection() {
   const reduce = useReducedMotion()
+  const [animarEntrada] = useState(() => !entradaEjecutada)
   const [valorActivo, setValorActivo] = useState<string | null>(null)
   // Las sombras solo se muestran cuando las tarjetas están en reposo: se ocultan
   // al abrir y se reactivan cuando termina la animación de vuelta al tamaño pequeño.
@@ -87,9 +96,12 @@ export function CulturaSection() {
                     layout
                     custom={indice}
                     variants={entrada}
-                    initial={reduce ? false : 'hidden'}
-                    whileInView={reduce ? undefined : 'visible'}
+                    initial={reduce || !animarEntrada ? false : 'hidden'}
+                    whileInView={reduce || !animarEntrada ? undefined : 'visible'}
                     viewport={{ once: true, amount: 0.4 }}
+                    onAnimationStart={() => {
+                      if (indice === 0) entradaEjecutada = true
+                    }}
                     onLayoutAnimationComplete={() => {
                       if (!valorActivo && !sombrasVisibles) setSombrasVisibles(true)
                     }}
