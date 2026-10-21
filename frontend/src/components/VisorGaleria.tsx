@@ -81,9 +81,9 @@ export function VisorGaleria({
             if (Math.abs(delta) > 50) onNavegar(delta < 0 ? 1 : -1)
           }}
         >
-          {/* Controles flotantes, legibles sobre cualquier fondo */}
-          <div className="pointer-events-none fixed top-0 right-0 left-0 z-20 flex items-center justify-between gap-4 px-4 py-3 md:px-6 md:py-4">
-            <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-white/80 px-4 py-2 shadow-sm ring-1 ring-black/5 backdrop-blur-md">
+          {/* Contador */}
+          <div className="pointer-events-none fixed top-0 left-0 z-30 p-4 md:p-6">
+            <div className="flex items-center gap-3 rounded-full bg-white/80 px-4 py-2 shadow-sm ring-1 ring-black/5 backdrop-blur-md">
               <span className="font-serif text-lg font-medium text-[#d97757] italic md:text-xl">
                 {String(indice + 1).padStart(2, '0')}
               </span>
@@ -91,81 +91,94 @@ export function VisorGaleria({
                 / {String(fotos.length).padStart(2, '0')}
               </span>
             </div>
-
-            <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-white/80 p-1 shadow-sm ring-1 ring-black/5 backdrop-blur-md">
-              <button
-                type="button"
-                onClick={() => onNavegar(-1)}
-                aria-label={`Ver ${nombreEntidad} anterior`}
-                className="rounded-full p-2.5 text-[#191919] transition-colors hover:bg-[#191919]/10"
-              >
-                <CaretLeft size={20} weight="bold" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onNavegar(1)}
-                aria-label={`Ver ${nombreEntidad} siguiente`}
-                className="rounded-full p-2.5 text-[#191919] transition-colors hover:bg-[#191919]/10"
-              >
-                <CaretRight size={20} weight="bold" />
-              </button>
-              <span aria-hidden="true" className="mx-1 h-5 w-px bg-[#191919]/10" />
-              <button
-                type="button"
-                onClick={onCerrar}
-                aria-label="Cerrar galería"
-                className="rounded-full p-2.5 text-[#191919] transition-colors hover:bg-[#191919]/10"
-              >
-                <X size={20} weight="bold" />
-              </button>
-            </div>
           </div>
 
-          <AnimatePresence initial={false} custom={direccion} mode="wait">
-            <motion.div
-              key={indice}
-              custom={direccion}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-              className="flex min-h-dvh flex-col md:h-dvh md:flex-row"
-            >
-              {/* Imagen */}
-              <div className="flex min-h-[52dvh] flex-1 items-center justify-center px-4 pt-20 pb-8 md:min-h-0 md:px-12 md:py-20 lg:px-16">
-                <img
+          <div className="flex min-h-dvh flex-col md:h-dvh md:flex-row">
+            {/* Imagen */}
+            <div className="relative flex min-h-[52dvh] flex-1 items-center justify-center px-4 pt-20 pb-8 md:min-h-0 md:px-12 md:pt-24 md:pb-20 lg:px-16">
+              {/* Controles centrados sobre la imagen */}
+              <div className="absolute top-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/80 p-1 shadow-sm ring-1 ring-black/5 backdrop-blur-md">
+                <button
+                  type="button"
+                  onClick={() => onNavegar(-1)}
+                  aria-label={`Ver ${nombreEntidad} anterior`}
+                  className="rounded-full p-2.5 text-[#191919] transition-colors hover:bg-[#191919]/10"
+                >
+                  <CaretLeft size={20} weight="bold" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavegar(1)}
+                  aria-label={`Ver ${nombreEntidad} siguiente`}
+                  className="rounded-full p-2.5 text-[#191919] transition-colors hover:bg-[#191919]/10"
+                >
+                  <CaretRight size={20} weight="bold" />
+                </button>
+                <span aria-hidden="true" className="mx-1 h-5 w-px bg-[#191919]/10" />
+                <button
+                  type="button"
+                  onClick={onCerrar}
+                  aria-label="Cerrar galería"
+                  className="rounded-full p-2.5 text-[#191919] transition-colors hover:bg-[#191919]/10"
+                >
+                  <X size={20} weight="bold" />
+                </button>
+              </div>
+
+              <AnimatePresence initial={false} custom={direccion} mode="wait">
+                <motion.img
+                  key={indice}
+                  custom={direccion}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
                   src={fotoActiva.src}
                   alt={fotoActiva.titulo}
                   decoding="async"
                   fetchPriority="high"
-                  className="max-h-[62dvh] w-auto max-w-full rounded-sm object-contain shadow-[0_30px_70px_-20px_rgba(25,25,25,0.45)] ring-1 ring-[#e0dcd0] md:max-h-[76dvh]"
+                  className="max-h-[62dvh] w-auto max-w-full rounded-sm object-contain shadow-[0_30px_70px_-20px_rgba(25,25,25,0.45)] ring-1 ring-[#e0dcd0] md:max-h-[74dvh]"
                 />
-              </div>
+              </AnimatePresence>
+            </div>
 
-              {/* Descripción */}
-              <aside className="relative flex shrink-0 flex-col justify-center bg-[#191919] px-6 py-10 md:w-[38%] md:max-w-[540px] md:overflow-y-auto md:px-10 md:py-20 lg:px-12">
-                <p className="text-[11px] font-bold tracking-[0.24em] text-[#d97757] uppercase">
-                  {etiqueta}
-                </p>
-                <h3 className="mt-4 font-serif text-2xl leading-tight font-medium text-white italic md:text-3xl">
-                  {fotoActiva.titulo}
-                </h3>
-                <span aria-hidden="true" className="mt-6 block h-px w-12 bg-white/20" />
+            {/* Descripción */}
+            <aside className="relative flex shrink-0 flex-col justify-center bg-[#191919] px-6 py-10 md:w-[38%] md:max-w-[540px] md:overflow-y-auto md:px-10 md:py-20 lg:px-12">
+              <AnimatePresence initial={false} custom={direccion} mode="wait">
+                <motion.div
+                  key={indice}
+                  custom={direccion}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+                >
+                  <p className="text-[11px] font-bold tracking-[0.24em] text-[#d97757] uppercase">
+                    {etiqueta}
+                  </p>
+                  <h3 className="mt-4 font-serif text-2xl leading-tight font-medium text-white italic md:text-3xl">
+                    {fotoActiva.titulo}
+                  </h3>
+                  <span aria-hidden="true" className="mt-6 block h-px w-12 bg-white/20" />
 
-                <div className="mt-6 space-y-4">
-                  {fotoActiva.descripcion && (
-                    <p className="text-[15px] leading-relaxed text-[#d8d4c9]">
-                      {fotoActiva.descripcion}
-                    </p>
-                  )}
-                  {descripcionExtra && (
-                    <p className="text-[15px] leading-relaxed text-[#a09b92]">{descripcionExtra}</p>
-                  )}
-                </div>
-              </aside>
-            </motion.div>
-          </AnimatePresence>
+                  <div className="mt-6 space-y-4">
+                    {fotoActiva.descripcion && (
+                      <p className="text-[15px] leading-relaxed text-[#d8d4c9]">
+                        {fotoActiva.descripcion}
+                      </p>
+                    )}
+                    {descripcionExtra && (
+                      <p className="text-[15px] leading-relaxed text-[#a09b92]">
+                        {descripcionExtra}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </aside>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>,
