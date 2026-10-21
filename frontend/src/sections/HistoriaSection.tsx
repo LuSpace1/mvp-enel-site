@@ -24,12 +24,12 @@ const statCards = [
   },
   {
     statVal: '33',
-    statUnit: '',
-    statDesc: 'Comunas en nuestra zona de concesión',
+    statUnit: 'comunas',
+    statDesc: 'Nuestra zona de concesión',
     color: 'text-[#008556]',
   },
   {
-    statVal: '2',
+    statVal: '+2',
     statUnit: 'M',
     statDesc: 'Clientes en la Región Metropolitana',
     color: 'text-[#eb0052]',
@@ -112,7 +112,7 @@ export function HistoriaSection() {
       </motion.div>
 
       <motion.div
-        className="mt-12 overflow-hidden rounded-[2rem] px-6 py-10 shadow-[0_24px_70px_rgba(74,32,8,0.14)] md:mt-16 md:rounded-[2.5rem] md:px-14 md:py-16"
+        className="relative mt-12 overflow-hidden rounded-[2rem] px-6 py-10 shadow-[0_24px_70px_rgba(74,32,8,0.14)] md:mt-16 md:rounded-[2.5rem] md:px-14 md:py-16"
         style={{
           backgroundImage:
             'radial-gradient(125% 135% at 85% 6%, #fdeee2 0%, #f7cfb3 44%, #ef9f70 100%)',
@@ -122,7 +122,7 @@ export function HistoriaSection() {
         viewport={{ once: true, amount: 0.15 }}
         transition={{ type: 'spring', stiffness: 36, damping: 16, mass: 1.3 }}
       >
-        <span className="text-[11px] font-bold tracking-[0.28em] text-[#8f3a16] uppercase">
+        <span className="text-base font-bold tracking-[0.18em] text-[#8f3a16] uppercase md:text-lg">
           Enel Distribución Chile en cifras
         </span>
 
@@ -176,8 +176,8 @@ export function HistoriaSection() {
               variante="parrafo"
               className="text-enel-navy text-lg leading-snug font-semibold md:text-xl"
             >
-              Una empresa impulsada por la generación de valor, líder en electrificación energética
-              en Chile.
+              Una empresa que impulsa la generación de valor y lidera el camino hacia la
+              electrificación en Chile.
             </RevealTexto>
 
             <div className="mt-7 border-t border-[#141413]/12">
@@ -195,7 +195,7 @@ export function HistoriaSection() {
                   >
                     {stat.statVal}
                     {stat.statUnit ? (
-                      <span className="ml-1 text-xl md:text-2xl">{stat.statUnit}</span>
+                      <span className="ml-1.5 text-xl md:text-2xl">{stat.statUnit}</span>
                     ) : null}
                   </p>
                   <p className="text-enel-navy mt-2 text-[11px] font-bold tracking-wider uppercase">
@@ -206,6 +206,10 @@ export function HistoriaSection() {
             </div>
           </div>
         </div>
+
+        <p className="mt-8 text-right text-[11px] font-semibold tracking-[0.16em] text-[#8f3a16] uppercase md:absolute md:right-8 md:bottom-6 md:mt-0">
+          Cifras al cierre de 2025
+        </p>
       </motion.div>
     </SectionShell>
   )
