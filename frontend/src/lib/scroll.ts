@@ -1,6 +1,6 @@
 import { obtenerLenis } from '@/lib/smoothScroll'
 
-const ALTURA_HEADER = 128
+const ALTURA_HEADER = 80
 
 export function desplazarASeccion(id: string, duracion?: number) {
   const elemento = document.getElementById(id)

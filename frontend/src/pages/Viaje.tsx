@@ -2,12 +2,10 @@ import { lazy, memo, Suspense, useEffect, useRef } from 'react'
 import { Nav } from '@/components/Nav'
 import { SmoothScroll } from '@/components/SmoothScroll'
 import { Indice } from '@/components/Indice'
-import { PasoHeader } from '@/components/PasoPantalla'
 import { StormIntro } from '@/components/StormIntro'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useVideosStore } from '@/store/useVideosStore'
 import { useViajeStore } from '@/store/useViajeStore'
-import { PASOS_VIAJE } from '@/lib/data/viaje'
 
 const PortadaDelViaje = lazy(() =>
   import('@/components/PortadaDelViaje').then((modulo) => ({ default: modulo.PortadaDelViaje })),
@@ -49,8 +47,6 @@ const CierreSection = lazy(() =>
 const Footer = lazy(() =>
   import('@/sections/CierreSection').then((modulo) => ({ default: modulo.Footer })),
 )
-
-const PASO_POR_ID = new Map(PASOS_VIAJE.map((paso) => [paso.id, paso]))
 
 const Secciones = memo(function Secciones() {
   const navegar = useViajeStore((estado) => estado.navegar)
@@ -121,7 +117,6 @@ const Secciones = memo(function Secciones() {
 })
 
 export function Viaje() {
-  const pasoActual = useViajeStore((estado) => estado.pasoActual)
   const initAnonymous = useAuthStore((estado) => estado.initAnonymous)
   const cargarVideos = useVideosStore((estado) => estado.cargar)
 
@@ -132,8 +127,6 @@ export function Viaje() {
     void cargarVideos()
   }, [initAnonymous, cargarVideos])
 
-  const paso = PASO_POR_ID.get(pasoActual)
-
   return (
     <div className="text-enel-navy min-h-svh bg-white font-sans">
       <SmoothScroll />
@@ -141,7 +134,6 @@ export function Viaje() {
       <Indice />
       <StormIntro />
       <main className="min-h-dvh pt-16">
-        {paso && <PasoHeader paso={paso} />}
         <Suspense fallback={null}>
           <Secciones />
         </Suspense>
