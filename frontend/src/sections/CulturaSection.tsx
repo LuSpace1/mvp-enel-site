@@ -7,38 +7,22 @@ import { SectionShell } from '@/components/ui/SectionShell'
 import { valoresCultura } from '@/lib/data/cultura'
 
 const entrada: Variants = {
-  hidden: (indice: number) => ({
+  hidden: {
     opacity: 0,
-    y: 48,
-    scale: 0.55,
-    rotate: indice % 2 === 0 ? -10 : 10,
-  }),
+    y: 32,
+    scale: 0.96,
+  },
   visible: (indice: number) => ({
     opacity: 1,
     y: 0,
     scale: 1,
-    rotate: 0,
     transition: {
-      type: 'spring',
-      stiffness: 240,
-      damping: 17,
-      mass: 0.9,
-      delay: indice * 0.09,
+      duration: 0.75,
+      ease: [0.16, 1, 0.3, 1],
+      delay: indice * 0.07,
     },
   }),
 }
-
-// Flotación de las tarjetas con la misma curva sinusoidal que el título: se
-// mueven sin detenerse en los extremos.
-const FLOTE_TARJETA_Y = Array.from({ length: 25 }, (_, i) =>
-  Number((4.5 * Math.cos((i / 24) * Math.PI * 2) - 4.5).toFixed(2)),
-)
-const SOMBRA_ESCALA = Array.from({ length: 25 }, (_, i) =>
-  Number((1 - 0.25 * ((1 - Math.cos((i / 24) * Math.PI * 2)) / 2)).toFixed(3)),
-)
-const SOMBRA_OPACIDAD = Array.from({ length: 25 }, (_, i) =>
-  Number((0.45 - 0.2 * ((1 - Math.cos((i / 24) * Math.PI * 2)) / 2)).toFixed(3)),
-)
 
 export function CulturaSection() {
   const reduce = useReducedMotion()
@@ -111,30 +95,11 @@ export function CulturaSection() {
                     }}
                     className={`group relative ${abierta ? 'order-first w-full basis-full' : 'h-40 w-40'}`}
                   >
-                    <motion.div
-                      layout
-                      className="relative h-full w-full"
-                      animate={reduce || abierta ? undefined : { y: FLOTE_TARJETA_Y }}
-                      transition={{
-                        duration: 4.5,
-                        repeat: Infinity,
-                        ease: 'linear',
-                        delay: indice * 0.25,
-                      }}
-                    >
+                    <motion.div layout className="relative h-full w-full">
                       {!abierta && sombrasVisibles && (
-                        <motion.span
+                        <span
                           aria-hidden="true"
-                          className="bg-enel-navy/25 absolute -bottom-5 left-1/2 -ml-8 h-2.5 w-16 rounded-full blur-[6px]"
-                          animate={
-                            reduce ? undefined : { scaleX: SOMBRA_ESCALA, opacity: SOMBRA_OPACIDAD }
-                          }
-                          transition={{
-                            duration: 4.5,
-                            repeat: Infinity,
-                            ease: 'linear',
-                            delay: indice * 0.25,
-                          }}
+                          className="bg-enel-navy/25 absolute -bottom-5 left-1/2 -ml-8 h-2.5 w-16 rounded-full opacity-45 blur-[6px]"
                         />
                       )}
 
