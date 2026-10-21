@@ -1,9 +1,10 @@
+import { useCallback, useState } from 'react'
 import { motion, useReducedMotion, type Variants } from 'motion/react'
-import { Lightning } from '@phosphor-icons/react'
 
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
-import { valoresCultura } from '@/lib/data/cultura'
+import { ValorDialog } from '@/components/ValorDialog'
+import { valoresCultura, type ValorCultura } from '@/lib/data/cultura'
 
 const entrada: Variants = {
   hidden: (indice: number) => ({
@@ -29,6 +30,8 @@ const entrada: Variants = {
 
 export function CulturaSection() {
   const reduce = useReducedMotion()
+  const [valorActivo, setValorActivo] = useState<ValorCultura | null>(null)
+  const cerrarValor = useCallback(() => setValorActivo(null), [])
 
   return (
     <SectionShell id="cultura" className="relative overflow-hidden bg-white pb-10 md:pb-14">
@@ -65,8 +68,6 @@ export function CulturaSection() {
                 variants={entrada}
                 initial={reduce ? false : 'hidden'}
                 whileInView={reduce ? undefined : 'visible'}
-                whileHover={reduce ? undefined : { scale: 1.06, y: -6 }}
-                whileTap={reduce ? undefined : { scale: 0.96 }}
                 viewport={{ once: true, amount: 0.4 }}
                 className="group relative h-40 w-40"
               >
@@ -96,28 +97,42 @@ export function CulturaSection() {
                     }}
                   />
 
-                  <div className="border-enel-blue/35 group-hover:border-enel-blue relative grid h-full w-full place-items-center overflow-hidden rounded-3xl border-2 bg-white shadow-sm transition-colors duration-300 group-hover:shadow-lg">
+                  <motion.button
+                    type="button"
+                    onClick={() => setValorActivo(valor)}
+                    aria-haspopup="dialog"
+                    aria-expanded={valorActivo?.palabra === valor.palabra}
+                    aria-label={`Ver descripción de ${valor.palabra.toLowerCase()}`}
+                    whileHover={reduce ? undefined : { scale: 1.06, y: -6 }}
+                    whileTap={reduce ? undefined : { scale: 0.96 }}
+                    className="border-enel-blue/35 group-hover:border-enel-blue focus-visible:ring-enel-blue/40 relative grid h-full w-full cursor-pointer place-items-center overflow-hidden rounded-3xl border-2 bg-white shadow-sm transition-colors duration-300 group-hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  >
                     <span
                       aria-hidden="true"
                       className="from-enel-blue/10 absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                     />
                     <div className="relative flex flex-col items-center gap-3 px-3 text-center">
-                      <Lightning
-                        size={24}
-                        weight="fill"
-                        className="text-enel-blue transition-transform duration-300 group-hover:scale-110"
+                      <img
+                        src={valor.icono}
+                        alt=""
+                        aria-hidden="true"
+                        loading="lazy"
+                        decoding="async"
+                        className="h-14 w-14 object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-110"
                       />
                       <span className="text-enel-navy text-base font-extrabold tracking-wide uppercase">
                         {valor.palabra}
                       </span>
                     </div>
-                  </div>
+                  </motion.button>
                 </motion.div>
               </motion.div>
             ))}
           </div>
         </div>
       </motion.div>
+
+      <ValorDialog valor={valorActivo} onCerrar={cerrarValor} />
     </SectionShell>
   )
 }
