@@ -1,20 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
 import type { MotionValue } from 'motion/react'
-import { CaretRight } from '@phosphor-icons/react'
 
 import { track } from '@/lib/analytics'
 import { prefiereAhorrarDatos } from '@/lib/conexion'
-import { obtenerLenis } from '@/lib/smoothScroll'
 import { useViajeStore } from '@/store/useViajeStore'
 import logoEnel from '@/assets/icons/Enel_Group_logo_blanco.png'
 import videoIntro from '@/assets/videos/portada.webm'
 import posterPortada from '@/assets/images/portada-poster.jpg'
 
-// La intro ya no depende del scroll: se reproduce sola al entrar y levanta el
-// telón cuando termina, dejando la portada (con su video) lista detrás.
+// La intro se reproduce sola al entrar y queda como portada dentro del flujo de
+// la página: al bajar se accede al contenido y al subir se vuelve a ella.
 const SEGUNDOS_ENTRADA = 3.4
-const SEGUNDOS_SALIDA = 0.8
 const PROGRESO_FIN_ENTRADA = 0.9
 
 // Esqueleto del logo Enel: cada pieza se dibuja por trazo conforme avanza la
@@ -68,10 +65,6 @@ function PiezaLazo({
 export function StormIntro() {
   const reduce = useReducedMotion()
   const videoRef = useRef<HTMLVideoElement>(null)
-  const controlRef = useRef<{ stop: () => void } | null>(null)
-  const saltadoRef = useRef(false)
-  const terminadoRef = useRef(false)
-  const [visible, setVisible] = useState(true)
 
   const marcarIntroTerminada = useViajeStore((estado) => estado.marcarIntroTerminada)
 
@@ -80,29 +73,23 @@ export function StormIntro() {
   // El logo entra con un resorte propio para que frene con un pequeño rebote.
   const escalaLogo = useMotionValue(4.5)
 
-  const finalizar = useCallback(() => {
-    if (terminadoRef.current) return
-    terminadoRef.current = true
-    obtenerLenis()?.start()
-    marcarIntroTerminada()
-    setVisible(false)
-  }, [marcarIntroTerminada])
-
   // El video de fondo parte apenas se entra, sin esperar al scroll.
   useEffect(() => {
     if (reduce || ahorraDatos) return
     void videoRef.current?.play().catch(() => {})
   }, [reduce, ahorraDatos])
 
-  // Timeline automático: dibuja el logo, lo completa y levanta el telón.
+  // La portada que sigue a la intro puede mostrarse desde el inicio: la intro
+  // ya no bloquea el scroll, simplemente es el primer bloque de la página.
   useEffect(() => {
-    if (reduce) {
-      marcarIntroTerminada()
-      return
-    }
+    marcarIntroTerminada()
+  }, [marcarIntroTerminada])
+
+  // Timeline automático: dibuja el logo y lo deja como portada estable.
+  useEffect(() => {
+    if (reduce) return
 
     track('intro.ver')
-    obtenerLenis()?.stop()
 
     let cancelado = false
     const entrada = animate(prog, PROGRESO_FIN_ENTRADA, {
@@ -114,50 +101,18 @@ export function StormIntro() {
       visualDuration: 1.5,
       bounce: 0.22,
     })
-    controlRef.current = entrada
 
     void entrada.then(() => {
-      if (cancelado || saltadoRef.current) return
-      // La portada empieza a entrar mientras el telón sube, no después.
-      marcarIntroTerminada()
-      const salida = animate(prog, 1, {
-        duration: SEGUNDOS_SALIDA,
-        ease: [0.4, 0, 0.2, 1],
-      })
-      controlRef.current = salida
-      void salida.then(() => {
-        if (cancelado) return
-        track('intro.completar')
-        finalizar()
-      })
+      if (cancelado) return
+      track('intro.completar')
     })
 
     return () => {
       cancelado = true
-      controlRef.current?.stop()
+      entrada.stop()
       rebote.stop()
-      obtenerLenis()?.start()
     }
-  }, [prog, escalaLogo, reduce, finalizar, marcarIntroTerminada])
-
-  const saltar = () => {
-    if (terminadoRef.current || saltadoRef.current) return
-    saltadoRef.current = true
-    track('intro.saltar')
-    marcarIntroTerminada()
-    controlRef.current?.stop()
-    const salida = animate(prog, 1, { duration: 0.55, ease: [0.4, 0, 0.2, 1] })
-    controlRef.current = salida
-    void salida.then(finalizar)
-  }
-
-  const opCont = useTransform(prog, [0.9, 0.97], [1, 0])
-  const scaleCont = useTransform(prog, [0.9, 0.97], [1, 0.96])
-  const yCont = useTransform(prog, [0.9, 0.97], [0, -24])
-  const yTelon = useTransform(prog, (valor) => {
-    const avance = Math.min(1, Math.max(0, (valor - 0.9) / 0.1))
-    return `translateY(${(-avance * 100).toFixed(2)}%)`
-  })
+  }, [prog, escalaLogo, reduce])
 
   const brillo = useTransform(prog, [0.38, 0.52], [0.4, 1.15])
   const gris = useTransform(prog, [0.38, 0.52], [1, 0])
@@ -172,78 +127,64 @@ export function StormIntro() {
   const scaleEnel = useTransform(prog, [0.35, 0.7], [0.85, 1])
   const opDist = useTransform(prog, [0.4, 0.7], [0, 1])
 
-  if (reduce || !visible) return null
+  if (reduce) return null
 
   return (
     <section
       aria-label="Intro animado: logo Enel"
-      className="fixed inset-0 z-50 h-dvh overflow-hidden"
+      className="relative z-50 h-dvh overflow-hidden bg-[#0b1f33]"
     >
-      <motion.div className="absolute inset-0" style={{ transform: yTelon }}>
-        <video
-          ref={videoRef}
-          src={ahorraDatos ? undefined : videoIntro}
-          poster={posterPortada}
-          preload="auto"
-          autoPlay
-          muted
-          loop
-          playsInline
-          disableRemotePlayback
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+      <video
+        ref={videoRef}
+        src={ahorraDatos ? undefined : videoIntro}
+        poster={posterPortada}
+        preload="auto"
+        autoPlay
+        muted
+        loop
+        playsInline
+        disableRemotePlayback
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
 
-        <motion.div
-          className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
-          style={{ opacity: opCont, scale: scaleCont, y: yCont }}
-        >
-          <motion.div style={{ scale: escalaLogo }} className="relative w-[min(84vw,540px)]">
-            <div className="relative">
-              <motion.svg
-                viewBox="0 0 400 144"
-                aria-hidden="true"
-                className="h-auto w-full"
-                style={{ opacity: opEsqueleto }}
-              >
-                {PIEZAS_LAZO.map((pieza, i) => (
-                  <PiezaLazo key={i} prog={prog} config={pieza} />
-                ))}
-              </motion.svg>
-              <motion.img
-                src={logoEnel}
-                alt="Logo Enel"
-                className="absolute inset-0 h-full w-full object-contain"
-                style={{ opacity: opOfficial, filter: imgFilter }}
-              />
-            </div>
-          </motion.div>
-
-          <motion.h1
-            style={{ opacity: opEnel, y: yEnel, scale: scaleEnel }}
-            className="text-enel-navy mt-4 w-[min(84vw,540px)] text-right text-4xl leading-[1.02] font-semibold tracking-tighter sm:text-6xl md:text-7xl"
-          >
-            <motion.span style={{ opacity: opDist }} className="texto-gradiente-azul">
-              Distribución
-            </motion.span>
-          </motion.h1>
-          <motion.p
-            style={{ opacity: opDist }}
-            className="bg-enel-navy/40 mt-6 max-w-md rounded-full px-6 py-3 text-sm leading-relaxed text-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md md:text-base"
-          >
-            La energía que llega a tu casa empieza mucho antes. Sigue su viaje por nuestra red.
-          </motion.p>
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+        <motion.div style={{ scale: escalaLogo }} className="relative w-[min(84vw,540px)]">
+          <div className="relative">
+            <motion.svg
+              viewBox="0 0 400 144"
+              aria-hidden="true"
+              className="h-auto w-full"
+              style={{ opacity: opEsqueleto }}
+            >
+              {PIEZAS_LAZO.map((pieza, i) => (
+                <PiezaLazo key={i} prog={prog} config={pieza} />
+              ))}
+            </motion.svg>
+            <motion.img
+              src={logoEnel}
+              alt="Logo Enel"
+              className="absolute inset-0 h-full w-full object-contain"
+              style={{ opacity: opOfficial, filter: imgFilter }}
+            />
+          </div>
         </motion.div>
-      </motion.div>
 
-      <button
-        type="button"
-        onClick={saltar}
-        className="text-enel-navy border-enel-navy/15 hover:border-enel-navy/30 absolute top-[max(1.25rem,env(safe-area-inset-top))] right-[max(1.25rem,env(safe-area-inset-right))] z-20 inline-flex min-h-11 items-center gap-1.5 rounded-full border bg-white/60 px-4 py-2 text-xs font-semibold shadow-[0_2px_8px_rgba(10,25,47,0.08)] backdrop-blur transition hover:bg-white"
-      >
-        Saltar intro
-        <CaretRight size={13} weight="bold" />
-      </button>
+        <motion.h1
+          style={{ opacity: opEnel, y: yEnel, scale: scaleEnel }}
+          className="text-enel-navy mt-4 w-[min(84vw,540px)] text-right text-4xl leading-[1.02] font-semibold tracking-tighter sm:text-6xl md:text-7xl"
+        >
+          <motion.span style={{ opacity: opDist }} className="texto-gradiente-azul">
+            Distribución
+          </motion.span>
+        </motion.h1>
+        <motion.p
+          style={{ opacity: opDist }}
+          className="bg-enel-navy/40 mt-6 max-w-md rounded-full px-6 py-3 text-sm leading-relaxed text-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md md:text-base"
+        >
+          La energía que llega a tu casa empieza mucho antes. Sigue su viaje por nuestra red.
+        </motion.p>
+      </div>
     </section>
   )
 }
