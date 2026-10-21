@@ -48,6 +48,34 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Cursor de mano en todos los elementos interactivos (los botones nativos
+   de Tailwind v4 usan `cursor: default`). */
+button:not(:disabled),
+a[href],
+area[href],
+summary,
+select:not(:disabled),
+label[for],
+input[type='checkbox']:not(:disabled),
+input[type='radio']:not(:disabled),
+input[type='file']:not(:disabled),
+input[type='submit']:not(:disabled),
+input[type='button']:not(:disabled),
+input[type='reset']:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+[role='link'],
+[role='tab']:not([aria-disabled='true']),
+[tabindex='0'] {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
 /* Títulos grandes con gradiente azul celeste (Enel Blue → celeste) */
 .texto-gradiente-azul {
   background-image: linear-gradient(92deg, #006fbb 0%, #2f9be2 45%, #8bd0f6 100%);

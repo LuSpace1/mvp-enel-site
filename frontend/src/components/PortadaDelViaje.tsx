@@ -99,9 +99,9 @@ export function PortadaDelViaje() {
                       boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
                     }
               }
-              whileHover={reduce ? undefined : { scale: 1.06, y: -3 }}
+              whileHover={reduce ? undefined : { scale: 1.1, y: -3 }}
               whileTap={reduce ? undefined : { scale: 0.97 }}
-              className="border-enel-pink from-enel-pink relative inline-flex h-14 items-center gap-2.5 rounded-full border-2 bg-gradient-to-r to-[#ff2d78] px-8 text-[15px] font-bold text-white shadow-xl transition"
+              className="border-enel-pink from-enel-pink relative inline-flex h-14 cursor-pointer items-center gap-2.5 rounded-full border-2 bg-gradient-to-r to-[#ff2d78] px-8 text-[15px] font-bold text-white shadow-xl transition"
               data-analytics-component="portada"
               data-analytics-accion="iniciar"
             >
