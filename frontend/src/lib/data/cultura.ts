@@ -15,30 +15,30 @@ export const valoresCultura: ValorCultura[] = [
     palabra: 'CONFIANZA',
     icono: iconoConfianza,
     descripcion:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      'Actuamos con responsabilidad, integridad, legalidad y autonomía, construyendo relaciones de confianza con nuestros interlocutores y clientes. Fomentamos la colaboración, desarrollando capacidades y relaciones sólidas que nos permiten enfrentar desafíos y gestionar la complejidad de la mejor manera posible.',
   },
   {
     palabra: 'INNOVACION',
     icono: iconoInnovacion,
     descripcion:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      'Trabajamos con curiosidad para abrir la energía a nuevos usos, tecnologías y personas, aprendiendo los unos de los otros e identificando nuevos puntos de referencia. Transformamos ideas en valor para nosotros y para nuestros interlocutores.',
   },
   {
     palabra: 'RESPETO',
     icono: iconoRespeto,
     descripcion:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.',
+      'Reconocemos y valoramos las diferencias, ideas, opiniones, capacidades y méritos de las personas. Actuamos con responsabilidad, respetando las normas que protegen la seguridad, la salud, el medio ambiente y los derechos humanos, para asegurar la calidad en todo lo que hacemos.',
   },
   {
     palabra: 'PROACTIVIDAD',
     icono: iconoProactividad,
     descripcion:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.',
+      'Actuamos con espíritu emprendedor, tomando la iniciativa para alcanzar resultados concretos y sostenibles. Nos comprometemos con el futuro de nuestra compañía y la transición energética, poniendo las necesidades de nuestros clientes en el centro de nuestras decisiones.',
   },
   {
     palabra: 'FLEXIBILIDAD',
     icono: iconoFlexibilidad,
     descripcion:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.',
+      'Acogemos el cambio como una oportunidad, anticipándonos a nuevos desafíos y escenarios. Nos adaptamos con agilidad, solidez y sencillez, redefiniendo prioridades, aprendiendo de nuestros errores e impulsando la mejora continua.',
   },
 ]
