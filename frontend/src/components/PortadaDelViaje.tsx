@@ -65,9 +65,9 @@ export function PortadaDelViaje() {
             delay={0.35}
             className="max-w-2xl text-base leading-relaxed text-neutral-600 md:text-lg"
           >
-            En este sitio, encontrarás todo lo que necesitas saber sobre el negocio, nuestra cultura
-            organizacional, quiénes somos y cómo trabajamos para ser la empresa de distribución de
-            energía eléctrica más grande de Chile.
+            Descubre quiénes somos, cómo funciona nuestro negocio y qué nos mueve cada día. Un
+            espacio para conocer nuestra operación, los principios que nos guían y nuestro rol en
+            la distribución de energía eléctrica en Chile.
           </RevealTexto>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <motion.button
@@ -106,7 +106,7 @@ export function PortadaDelViaje() {
               data-analytics-accion="iniciar"
             >
               <span className="bg-enel-pink/20 absolute -inset-0.5 -z-10 rounded-full blur-md" />
-              Comenzar el viaje
+              Explorar el sitio
               <ArrowDown size={18} weight="bold" className="animate-bounce" />
             </motion.button>
           </div>
