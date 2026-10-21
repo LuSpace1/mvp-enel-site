@@ -19,8 +19,8 @@ const ITEMS: IndiceItem[] = [
   { id: 'concesion-detalle', etiqueta: 'Concesión' },
   { id: 'cadena', etiqueta: 'Cadena' },
   { id: 'politicas', etiqueta: 'SIG' },
-  { id: 'galerias', etiqueta: 'Me' },
-  { id: 'personas', etiqueta: 'Rostros' },
+  { id: 'galerias', etiqueta: 'ME' },
+  { id: 'personas', etiqueta: 'Novedades' },
   { id: 'espacios', etiqueta: 'Espacios' },
   { id: 'cierre', etiqueta: 'Cierre' },
 ]

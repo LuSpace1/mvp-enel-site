@@ -34,11 +34,11 @@ export const PASOS_VIAJE: PasoViaje[] = [
   },
   {
     id: 'galerias',
-    nombre: 'Herramientas Me',
+    nombre: 'Herramientas ME',
   },
   {
     id: 'personas',
-    nombre: 'Rostros y equipos',
+    nombre: 'Novedades',
   },
   {
     id: 'espacios',

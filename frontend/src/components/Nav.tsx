@@ -9,7 +9,7 @@ import { clsx } from 'clsx'
 import { useViajeStore } from '@/store/useViajeStore'
 import { PASOS_VIAJE } from '@/lib/data/viaje'
 
-import logoEnel from '@/assets/icons/Enel_Group_logo_blanco.png'
+import logoEnel from '@/assets/icons/Enel_Group_logo.svg'
 
 interface NavItem {
   id: string
@@ -24,8 +24,8 @@ const ITEMS: NavItem[] = [
   { id: 'concesion-detalle', etiqueta: 'Concesión' },
   { id: 'cadena', etiqueta: 'Cadena' },
   { id: 'politicas', etiqueta: 'SIG' },
-  { id: 'galerias', etiqueta: 'Me' },
-  { id: 'personas', etiqueta: 'Rostros' },
+  { id: 'galerias', etiqueta: 'ME' },
+  { id: 'personas', etiqueta: 'Novedades' },
   { id: 'espacios', etiqueta: 'Espacios' },
   { id: 'cierre', etiqueta: 'Cierre' },
 ]
@@ -80,7 +80,7 @@ export function Nav() {
                 type="button"
                 onClick={() => irA(item.id)}
                 className={clsx(
-                  'rounded-full px-2.5 py-1.5 text-[13px] font-medium transition-colors',
+                  'rounded-full px-2 py-1.5 text-[13px] font-medium transition-colors xl:px-2.5',
                   pasoActual === item.id
                     ? 'bg-enel-blue/10 text-enel-blue'
                     : 'hover:text-enel-navy text-neutral-600',
