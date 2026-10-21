@@ -28,6 +28,18 @@ const entrada: Variants = {
   }),
 }
 
+// Flotación de las tarjetas con la misma curva sinusoidal que el título: se
+// mueven sin detenerse en los extremos.
+const FLOTE_TARJETA_Y = Array.from({ length: 25 }, (_, i) =>
+  Number((4.5 * Math.cos((i / 24) * Math.PI * 2) - 4.5).toFixed(2)),
+)
+const SOMBRA_ESCALA = Array.from({ length: 25 }, (_, i) =>
+  Number((1 - 0.25 * ((1 - Math.cos((i / 24) * Math.PI * 2)) / 2)).toFixed(3)),
+)
+const SOMBRA_OPACIDAD = Array.from({ length: 25 }, (_, i) =>
+  Number((0.45 - 0.2 * ((1 - Math.cos((i / 24) * Math.PI * 2)) / 2)).toFixed(3)),
+)
+
 export function CulturaSection() {
   const reduce = useReducedMotion()
   const [valorActivo, setValorActivo] = useState<string | null>(null)
@@ -102,28 +114,26 @@ export function CulturaSection() {
                     <motion.div
                       layout
                       className="relative h-full w-full"
-                      animate={reduce || abierta ? undefined : { y: [0, -9, 0] }}
+                      animate={reduce || abierta ? undefined : { y: FLOTE_TARJETA_Y }}
                       transition={{
-                        duration: 3.4,
+                        duration: 4.5,
                         repeat: Infinity,
-                        ease: 'easeInOut',
-                        delay: indice * 0.18,
+                        ease: 'linear',
+                        delay: indice * 0.25,
                       }}
                     >
                       {!abierta && sombrasVisibles && (
                         <motion.span
                           aria-hidden="true"
-                          className="bg-enel-navy/25 absolute -bottom-5 left-1/2 h-2.5 w-16 rounded-full blur-[6px]"
+                          className="bg-enel-navy/25 absolute -bottom-5 left-1/2 -ml-8 h-2.5 w-16 rounded-full blur-[6px]"
                           animate={
-                            reduce
-                              ? undefined
-                              : { scaleX: [1, 0.7, 1], opacity: [0.45, 0.2, 0.45], x: '-50%' }
+                            reduce ? undefined : { scaleX: SOMBRA_ESCALA, opacity: SOMBRA_OPACIDAD }
                           }
                           transition={{
-                            duration: 3.4,
+                            duration: 4.5,
                             repeat: Infinity,
-                            ease: 'easeInOut',
-                            delay: indice * 0.18,
+                            ease: 'linear',
+                            delay: indice * 0.25,
                           }}
                         />
                       )}
