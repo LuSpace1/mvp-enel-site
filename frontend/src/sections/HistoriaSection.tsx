@@ -81,17 +81,17 @@ export function HistoriaSection() {
             <Reveal delay={0.15} y={18}>
               <div className="mt-6 space-y-4 text-sm leading-relaxed text-white/85 md:text-[15px]">
                 <RevealTexto as="p" variante="parrafo">
-                  Enel es una empresa multinacional de energía y uno de los principales operadores
-                  integrados globales en los sectores de la energía y el gas.
+                  Enel es una compañía multinacional de energía y uno de los principales operadores
+                  integrados del sector energético a nivel mundial.
                 </RevealTexto>
                 <RevealTexto as="p" variante="parrafo" delay={0.1}>
-                  Está presente en 27 países de los 5 continentes, con una capacidad instalada de
-                  91,8 GW y más de 69 millones de consumidores finales en todo el mundo.
+                  Con presencia en 27 países de los cinco continentes, cuenta con una capacidad
+                  instalada de 91,8 GW y más de 69 millones de consumidores finales.
                 </RevealTexto>
                 <RevealTexto as="p" variante="parrafo" delay={0.2}>
-                  En Chile, el Grupo opera a través de sus filiales Enel Green Power, Enel
-                  Generación, Enel Distribución y Enel X, impulsando la transición energética del
-                  país.
+                  En Chile, el Grupo está presente a través de Enel Green Power, Enel Generación,
+                  Enel Distribución y Enel X, impulsando el desarrollo y la transición energética
+                  del país.
                 </RevealTexto>
               </div>
 
@@ -101,7 +101,7 @@ export function HistoriaSection() {
                 rel="noopener noreferrer"
                 className="group mt-8 inline-flex h-12 items-center gap-3 rounded-full bg-white px-6 text-sm font-semibold text-[#8f3a16] shadow-lg transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.97]"
               >
-                Si quieres saber más, haz clic aquí
+                Conoce más sobre Grupo Enel
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#8f3a16]/10 transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:bg-[#8f3a16]/15">
                   <ArrowUpRight size={13} weight="bold" />
                 </span>
