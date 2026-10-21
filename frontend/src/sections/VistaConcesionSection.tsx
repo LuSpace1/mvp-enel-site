@@ -80,8 +80,7 @@ export function VistaConcesionSection() {
                 as="h2"
                 className="text-enel-navy mt-4 text-3xl font-bold tracking-tight md:text-5xl"
               >
-                Nuestro territorio,{' '}
-                <span className="text-enel-blue font-serif italic">trazo a trazo</span>
+                Nuestro territorio, <span className="text-enel-blue">trazo a trazo</span>
               </RevealTexto>
               <RevealTexto
                 as="p"
