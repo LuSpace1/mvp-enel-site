@@ -4,55 +4,65 @@ export const politicasISO: PoliticaISO[] = [
   {
     id: 'calidad',
     nombre: 'Calidad',
+    codigo: 'ISO 9001',
     resumen:
-      'Ofrecer y garantizar suministro eléctrico de manera continua y eficiente, fortaleciendo la cercanía con el cliente para responder eficazmente a sus necesidades.',
+      'Trabajamos para entregar un suministro eléctrico continuo y eficiente, respondiendo a las necesidades de nuestros clientes.',
     url: 'https://sharepoint.example.com/iso-calidad',
   },
   {
     id: 'ambiental',
     nombre: 'Ambiental',
+    codigo: 'ISO 14001',
     resumen:
-      'Compromiso con el desarrollo sostenible, reduciendo impactos ambientales e impulsando la economía circular y buenas prácticas.',
+      'Promovemos el cuidado del medio ambiente y la biodiversidad, reduciendo nuestros impactos e impulsando prácticas sostenibles y de economía circular.',
     url: 'https://sharepoint.example.com/iso-ambiental',
   },
   {
     id: 'salud',
     nombre: 'Salud y Seguridad',
+    codigo: 'ISO 45001',
     resumen:
-      'Prevención de riesgos mediante la identificación, evaluación y control de peligros, asegurando condiciones de trabajo seguras y saludables.',
+      'Identificamos y prevenimos riesgos para cuidar la salud y seguridad de quienes forman parte de nuestra operación, promoviendo entornos de trabajo seguros.',
     url: 'https://sharepoint.example.com/iso-salud',
   },
   {
     id: 'energia',
     nombre: 'Energía',
+    codigo: 'ISO 50001',
     resumen:
-      'Uso eficiente de la energía mediante la optimización de recursos y la adopción de soluciones energéticamente eficientes.',
+      'Impulsamos el uso eficiente de la energía, optimizando recursos y desarrollando soluciones que mejoren nuestro desempeño energético.',
     url: 'https://sharepoint.example.com/iso-energia',
   },
   {
     id: 'continuidad',
     nombre: 'Continuidad del Negocio',
+    codigo: 'ISO 22301',
     resumen:
-      'Continuidad operativa asegurada mediante la gestión de riesgos y la preparación ante eventos disruptivos en procesos críticos.',
+      'Nos preparamos para enfrentar situaciones críticas, gestionando los riesgos para asegurar la continuidad de nuestras operaciones.',
     url: 'https://sharepoint.example.com/iso-continuidad',
   },
   {
     id: 'antisoborno',
     nombre: 'Antisoborno',
-    resumen: 'Tolerancia cero frente a la corrupción, promoviendo integridad y transparencia.',
+    codigo: 'ISO 37001',
+    resumen:
+      'Actuamos con integridad y transparencia, promoviendo una cultura de tolerancia cero frente a la corrupción.',
     url: 'https://sharepoint.example.com/iso-antisoborno',
   },
   {
     id: 'activos',
     nombre: 'Gestión de Activos',
-    resumen: 'Gestión integral del ciclo de vida de los activos para optimizar seguridad y costos.',
+    codigo: 'ISO 55001',
+    resumen:
+      'Gestionamos nuestros activos durante todo su ciclo de vida para fortalecer su seguridad, eficiencia y desempeño.',
     url: 'https://sharepoint.example.com/iso-activos',
   },
   {
     id: 'seguridad-info',
     nombre: 'Seguridad de la Información',
+    codigo: 'ISO 27001',
     resumen:
-      'Protección de la información y datos personales mediante controles y gestión de riesgos.',
+      'Protegemos la información y los datos personales, resguardando su confidencialidad, integridad y disponibilidad mediante una gestión responsable de riesgos.',
     url: 'https://sharepoint.example.com/iso-seguridad-info',
   },
 ]

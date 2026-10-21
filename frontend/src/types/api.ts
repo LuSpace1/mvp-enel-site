@@ -35,6 +35,7 @@ export interface EtapaCadena {
 export interface PoliticaISO {
   id: string
   nombre: string
+  codigo: string
   resumen: string
   url: string
 }

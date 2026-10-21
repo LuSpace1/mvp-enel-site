@@ -62,11 +62,18 @@ export function PoliticasISOSection() {
           <RevealTexto
             as="p"
             variante="parrafo"
-            className="mt-4 text-base leading-relaxed text-neutral-600 md:text-lg"
+            className="mt-4 text-lg font-medium text-neutral-700 md:text-xl"
           >
-            En Enel Distribución Chile y Enel Colina, nuestro Sistema Integrado de Gestión (SIG)
-            impulsa la mejora continua y promueve la participación y consulta de los trabajadores y
-            sus representantes.
+            8 normas ISO que guían nuestra forma de trabajar día a día.
+          </RevealTexto>
+          <RevealTexto
+            as="p"
+            variante="parrafo"
+            className="mt-3 text-base leading-relaxed text-neutral-600 md:text-lg"
+          >
+            En Enel Distribución Chile y Enel Colina, contamos con un Sistema Integrado de Gestión
+            (SIG) que nos permite fortalecer nuestros procesos, impulsar la mejora continua y
+            trabajar de manera más segura, eficiente y responsable.
           </RevealTexto>
         </Reveal>
 
@@ -95,7 +102,10 @@ export function PoliticasISOSection() {
                     <h3 className="text-enel-navy mt-4 text-base font-semibold tracking-tight">
                       {politica.nombre}
                     </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">
+                    <span className="mt-1 block text-[10px] font-medium tracking-[0.15em] text-neutral-400 uppercase">
+                      {politica.codigo}
+                    </span>
+                    <p className="mt-2 text-sm leading-relaxed text-neutral-500">
                       {politica.resumen}
                     </p>
 
