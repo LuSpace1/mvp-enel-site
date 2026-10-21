@@ -90,8 +90,8 @@ export function HistoriaSection() {
                 </RevealTexto>
                 <RevealTexto as="p" variante="parrafo" delay={0.2}>
                   En Chile, el Grupo está presente a través de Enel Green Power, Enel Generación,
-                  Enel Distribución y Enel X, impulsando el desarrollo y la transición energética
-                  del país.
+                  Enel X, Enel Distribución y Enel Colina, impulsando el desarrollo y la transición
+                  energética del país.
                 </RevealTexto>
               </div>
 
