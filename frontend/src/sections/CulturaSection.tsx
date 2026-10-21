@@ -72,7 +72,7 @@ export function CulturaSection() {
                   initial={reduce ? false : 'hidden'}
                   whileInView={reduce ? undefined : 'visible'}
                   viewport={{ once: true, amount: 0.4 }}
-                  className={`group relative ${abierta ? 'w-full basis-full' : 'h-40 w-40'}`}
+                  className={`group relative ${abierta ? 'order-first w-full basis-full' : 'h-40 w-40'}`}
                 >
                   <motion.div
                     layout
