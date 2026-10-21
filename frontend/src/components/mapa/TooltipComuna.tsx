@@ -10,10 +10,10 @@ import {
 import type { MotionValue } from 'motion/react'
 
 import { COMUNAS_SVG } from '@/lib/data/comunas-svg'
-import { METRICA_COMUNA_POR_ID, RANGO_SAIDI, RANGO_SAIFI } from '@/lib/data/concesion-metricas'
+import { METRICA_COMUNA_POR_ID } from '@/lib/data/concesion-metricas'
 import { ZONA_POR_ID } from '@/lib/data/zonas'
 import { useMapaConcesion } from './contexto'
-import { dec, num } from './formato'
+import { num } from './formato'
 import { aContenedor, aPantalla, vistaGeneral, vistaZona, type Mapeo } from './geometria'
 
 interface Props {
@@ -22,9 +22,6 @@ interface Props {
   mvY: MotionValue<number>
   mvEscala: MotionValue<number>
 }
-
-const posicionRango = (valor: number, rango: { min: number; max: number }) =>
-  Math.min(Math.max(((valor - rango.min) / (rango.max - rango.min)) * 100, 6), 100)
 
 /** Número que "cuenta" hasta su valor al montar. */
 function Contador({
@@ -52,52 +49,10 @@ function Contador({
   return <>{texto}</>
 }
 
-function Gauge({
-  label,
-  valor,
-  formato,
-  unidad,
-  pct,
-  color,
-  delay,
-  reduce,
-}: {
-  label: string
-  valor: number
-  formato: (v: number) => string
-  unidad: string
-  pct: number
-  color: string
-  delay: number
-  reduce: boolean
-}) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="w-10 text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
-        {label}
-      </span>
-      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-        <motion.span
-          className="absolute inset-y-0 left-0 rounded-full"
-          style={{ backgroundColor: color }}
-          initial={{ width: reduce ? `${pct}%` : 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ delay: reduce ? 0 : delay, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-        />
-      </div>
-      <span className="w-16 text-right text-[12px] font-bold tabular-nums">
-        <Contador valor={valor} formato={formato} reduce={reduce} />
-        <span className="ml-0.5 text-[9px] font-medium text-neutral-400">{unidad}</span>
-      </span>
-    </div>
-  )
-}
-
 /**
  * Tooltip de comuna anclado al centro del polígono. Misma estética que las
  * tarjetas de Rayos X (glass oscuro, dot de zona, micro-labels), pero con
- * entrada animada: barra de acento, métricas escalonadas, contadores y
- * gauges que se llenan.
+ * entrada animada: barra de acento, métricas escalonadas y contadores.
  */
 export function TooltipComuna({ mapeo, mvX, mvY, mvEscala }: Props) {
   const { zonaActiva, comunaActiva } = useMapaConcesion()
@@ -198,27 +153,37 @@ export function TooltipComuna({ mapeo, mvX, mvY, mvEscala }: Props) {
             ))}
           </div>
 
-          <div className="mt-3 space-y-2 border-t border-white/10 pt-3">
-            <Gauge
-              label="SAIDI"
-              valor={metrica.saidi}
-              formato={dec}
-              unidad="h/año"
-              pct={posicionRango(metrica.saidi, RANGO_SAIDI)}
-              color={zona.color}
-              delay={0.32}
-              reduce={reduce}
-            />
-            <Gauge
-              label="SAIFI"
-              valor={metrica.saifi}
-              formato={dec}
-              unidad="veces/año"
-              pct={posicionRango(metrica.saifi, RANGO_SAIFI)}
-              color={zona.color}
-              delay={0.42}
-              reduce={reduce}
-            />
+          <div className="mt-3 border-t border-white/10 pt-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
+                Subestaciones
+              </p>
+              {metrica.subestaciones.length > 0 && (
+                <span className="text-[10px] font-semibold text-neutral-500 tabular-nums">
+                  {metrica.subestaciones.length}
+                </span>
+              )}
+            </div>
+
+            {metrica.subestaciones.length > 0 ? (
+              <motion.div
+                className="mt-1.5 flex flex-wrap gap-1"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, type: 'spring', stiffness: 260, damping: 22 }}
+              >
+                {metrica.subestaciones.map((subestacion) => (
+                  <span
+                    key={subestacion}
+                    className="rounded-full border border-white/10 bg-white/[0.07] px-2 py-0.5 text-[10px] font-medium text-neutral-200"
+                  >
+                    {subestacion}
+                  </span>
+                ))}
+              </motion.div>
+            ) : (
+              <p className="mt-1 text-[11px] font-medium text-neutral-400">Sin S/E propia</p>
+            )}
           </div>
         </div>
       </div>

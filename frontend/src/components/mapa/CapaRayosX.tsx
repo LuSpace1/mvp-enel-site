@@ -12,7 +12,7 @@ import {
 } from '@/lib/data/concesion-metricas'
 import { ZONA_POR_ID } from '@/lib/data/zonas'
 import { useMapaConcesion } from './contexto'
-import { compacto, dec } from './formato'
+import { compacto } from './formato'
 import {
   FACTOR_ZONA_XRAY,
   aContenedor,
@@ -33,7 +33,7 @@ const LADO_POR_ZONA: Record<string, Lado> = {
   florida: 'der',
 }
 
-const ALTO_TARJETA_COMUNA = 100
+const ALTO_TARJETA_COMUNA = 128
 const ALTO_TARJETA_ZONA = 210
 const HUECO_TARJETA = 10
 const PAD_SUP = 58
@@ -58,8 +58,7 @@ interface ObjetivoRayos {
   sub: string
   clientes: number
   mwh: number
-  saidi: number
-  saifi: number
+  subestaciones: string[]
   totalComunas?: number
   comunas?: string[]
 }
@@ -256,8 +255,8 @@ function TarjetaZona({
       <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2.5">
         <DatoDark label="Clientes" valor={compacto(zona.clientes)} />
         <DatoDark label="Energía" valor={compacto(zona.mwh)} unidad="MWh" />
-        <DatoDark label="SAIDI" valor={dec(zona.saidi)} unidad="h/año" />
-        <DatoDark label="SAIFI" valor={dec(zona.saifi)} unidad="veces/año" />
+        <DatoDark label="Subestaciones" valor={String(zona.subestaciones.length)} />
+        <DatoDark label="Comunas" valor={String(zona.totalComunas)} />
       </div>
 
       <div className="mt-3 border-t border-white/10 pt-2.5">
@@ -310,8 +309,19 @@ function TarjetaComuna({
       <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
         <DatoDark label="Clientes" valor={compacto(objetivo.clientes)} sm />
         <DatoDark label="Energía" valor={compacto(objetivo.mwh)} unidad="MWh" sm />
-        <DatoDark label="SAIDI" valor={dec(objetivo.saidi)} unidad="h/año" sm />
-        <DatoDark label="SAIFI" valor={dec(objetivo.saifi)} unidad="v/año" sm />
+      </div>
+
+      <div className="mt-2 border-t border-white/10 pt-1.5">
+        <p className="text-[9px] font-semibold tracking-wider text-neutral-400 uppercase">
+          Subestaciones
+        </p>
+        {objetivo.subestaciones.length > 0 ? (
+          <p className="mt-0.5 text-[11px] leading-tight text-neutral-200">
+            {objetivo.subestaciones.join(' · ')}
+          </p>
+        ) : (
+          <p className="mt-0.5 text-[11px] leading-tight text-neutral-400">Sin S/E propia</p>
+        )}
       </div>
     </motion.div>
   )
@@ -371,8 +381,7 @@ export function CapaRayosX({ mapeo, tam, escenaRef, mvX, mvY, mvEscala }: Props)
           sub: mc.nombre,
           clientes: mc.clientes,
           mwh: mc.mwh,
-          saidi: mc.saidi,
-          saifi: mc.saifi,
+          subestaciones: mc.subestaciones,
           y: item.py,
         })
       })
@@ -391,8 +400,7 @@ export function CapaRayosX({ mapeo, tam, escenaRef, mvX, mvY, mvEscala }: Props)
           sub: `${z.totalComunas} comunas`,
           clientes: z.clientes,
           mwh: z.mwh,
-          saidi: z.saidi,
-          saifi: z.saifi,
+          subestaciones: z.subestaciones,
           totalComunas: z.totalComunas,
           comunas: z.comunas,
           y,
