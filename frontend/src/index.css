@@ -143,8 +143,28 @@ body {
 .float-subtle {
   animation: float-subtle 4s ease-in-out infinite;
 }
+
+/* Flote continuo y suave de las tarjetas de valores */
+@keyframes float-valor {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.float-valor {
+  animation: float-valor 5.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  will-change: transform;
+}
+.float-valor:hover,
+.float-valor:focus-within {
+  animation-play-state: paused;
+}
 @media (prefers-reduced-motion: reduce) {
-  .float-subtle {
+  .float-subtle,
+  .float-valor {
     animation: none;
   }
 }

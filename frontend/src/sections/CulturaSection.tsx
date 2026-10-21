@@ -115,71 +115,83 @@ export function CulturaSection() {
                         />
                       )}
 
-                      <motion.button
-                        type="button"
-                        layout
-                        onClick={() => alternarValor(valor.palabra)}
-                        aria-expanded={abierta}
-                        aria-controls={`valor-${indice}`}
-                        aria-label={`${valor.palabra}: ${abierta ? 'ocultar descripción' : 'ver descripción'}`}
-                        whileHover={reduce || abierta ? undefined : { scale: 1.06, y: -6 }}
-                        whileTap={reduce ? undefined : { scale: 0.97 }}
-                        className={`border-enel-blue/35 group-hover:border-enel-blue focus-visible:ring-enel-blue/40 relative flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-3xl border-2 bg-white shadow-sm transition-colors duration-300 group-hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
+                      <div
+                        className={abierta ? 'h-full w-full' : 'float-valor h-full w-full'}
+                        style={
                           abierta
-                            ? 'mx-auto max-w-3xl items-stretch'
-                            : 'items-center justify-center px-3 text-center'
-                        }`}
+                            ? undefined
+                            : {
+                                animationDelay: `${indice * -0.8}s`,
+                                animationDuration: `${5.4 + (indice % 3) * 0.7}s`,
+                              }
+                        }
                       >
-                        <span
-                          aria-hidden="true"
-                          className="from-enel-blue/10 absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                        />
+                        <motion.button
+                          type="button"
+                          layout
+                          onClick={() => alternarValor(valor.palabra)}
+                          aria-expanded={abierta}
+                          aria-controls={`valor-${indice}`}
+                          aria-label={`${valor.palabra}: ${abierta ? 'ocultar descripción' : 'ver descripción'}`}
+                          whileHover={reduce || abierta ? undefined : { scale: 1.06, y: -6 }}
+                          whileTap={reduce ? undefined : { scale: 0.97 }}
+                          className={`border-enel-blue/35 group-hover:border-enel-blue focus-visible:ring-enel-blue/40 relative flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-3xl border-2 bg-white shadow-sm transition-colors duration-300 group-hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
+                            abierta
+                              ? 'mx-auto max-w-3xl items-stretch'
+                              : 'items-center justify-center px-3 text-center'
+                          }`}
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="from-enel-blue/10 absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                          />
 
-                        {abierta ? (
-                          <span className="relative flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:items-start sm:gap-5 sm:p-7 sm:text-left">
-                            <img
-                              src={valor.icono}
-                              alt=""
-                              aria-hidden="true"
-                              className="h-14 w-14 shrink-0 object-contain mix-blend-multiply"
-                            />
-                            <span className="block min-w-0">
-                              <span className="text-enel-navy block text-base font-extrabold tracking-wide uppercase">
+                          {abierta ? (
+                            <span className="relative flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:items-start sm:gap-5 sm:p-7 sm:text-left">
+                              <img
+                                src={valor.icono}
+                                alt=""
+                                aria-hidden="true"
+                                className="h-14 w-14 shrink-0 object-contain mix-blend-multiply"
+                              />
+                              <span className="block min-w-0">
+                                <span className="text-enel-navy block text-base font-extrabold tracking-wide uppercase">
+                                  {valor.palabra}
+                                </span>
+                                <motion.span
+                                  id={`valor-${indice}`}
+                                  initial={reduce ? false : { opacity: 0, y: 8 }}
+                                  animate={reduce ? undefined : { opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.35, delay: 0.1 }}
+                                  className="mt-2 block text-sm leading-relaxed text-neutral-600 sm:text-[15px]"
+                                >
+                                  {valor.descripcion}
+                                </motion.span>
+                              </span>
+                              <CaretUp
+                                size={16}
+                                weight="bold"
+                                aria-hidden="true"
+                                className="text-enel-blue/60 absolute top-4 right-4 sm:top-5 sm:right-5"
+                              />
+                            </span>
+                          ) : (
+                            <span className="relative flex flex-col items-center gap-3">
+                              <img
+                                src={valor.icono}
+                                alt=""
+                                aria-hidden="true"
+                                loading="lazy"
+                                decoding="async"
+                                className="h-14 w-14 object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-110"
+                              />
+                              <span className="text-enel-navy text-base font-extrabold tracking-wide uppercase">
                                 {valor.palabra}
                               </span>
-                              <motion.span
-                                id={`valor-${indice}`}
-                                initial={reduce ? false : { opacity: 0, y: 8 }}
-                                animate={reduce ? undefined : { opacity: 1, y: 0 }}
-                                transition={{ duration: 0.35, delay: 0.1 }}
-                                className="mt-2 block text-sm leading-relaxed text-neutral-600 sm:text-[15px]"
-                              >
-                                {valor.descripcion}
-                              </motion.span>
                             </span>
-                            <CaretUp
-                              size={16}
-                              weight="bold"
-                              aria-hidden="true"
-                              className="text-enel-blue/60 absolute top-4 right-4 sm:top-5 sm:right-5"
-                            />
-                          </span>
-                        ) : (
-                          <span className="relative flex flex-col items-center gap-3">
-                            <img
-                              src={valor.icono}
-                              alt=""
-                              aria-hidden="true"
-                              loading="lazy"
-                              decoding="async"
-                              className="h-14 w-14 object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-110"
-                            />
-                            <span className="text-enel-navy text-base font-extrabold tracking-wide uppercase">
-                              {valor.palabra}
-                            </span>
-                          </span>
-                        )}
-                      </motion.button>
+                          )}
+                        </motion.button>
+                      </div>
                     </motion.div>
                   </motion.div>
                 )
