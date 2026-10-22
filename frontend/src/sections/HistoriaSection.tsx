@@ -133,36 +133,42 @@ export function HistoriaSection() {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               >
-                <svg
-                  viewBox={CHILE_VIEWBOX}
-                  role="img"
-                  aria-label="Mapa de Chile"
-                  className="block h-[400px] w-auto drop-shadow-[0_18px_30px_rgba(143,58,22,0.35)] sm:h-[480px] md:h-[540px]"
+                <motion.div
+                  className="relative"
+                  whileHover={reduce ? undefined : { scale: 1.04 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 >
-                  <path d={CHILE_PATH} fill="#ffffff" />
-                </svg>
+                  <svg
+                    viewBox={CHILE_VIEWBOX}
+                    role="img"
+                    aria-label="Mapa de Chile"
+                    className="block h-[400px] w-auto drop-shadow-[0_18px_30px_rgba(143,58,22,0.35)] sm:h-[480px] md:h-[540px]"
+                  >
+                    <path d={CHILE_PATH} fill="#ffffff" />
+                  </svg>
 
-                <div
-                  className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    left: `${(CHILE_MARKER.x / 174.81) * 100}%`,
-                    top: `${(CHILE_MARKER.y / 1000) * 100}%`,
-                  }}
-                >
-                  {!reduce && (
-                    <motion.span
-                      aria-hidden="true"
-                      className="absolute inset-0 rounded-full bg-[#e2231a]"
-                      animate={{ scale: [1, 3.2], opacity: [0.55, 0] }}
-                      transition={{ duration: 2.2, repeat: Infinity, ease: 'easeOut' }}
-                    />
-                  )}
-                  <span className="relative block h-3 w-3 rounded-full bg-[#e2231a] ring-2 ring-white" />
+                  <div
+                    className="absolute -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                      left: `${(CHILE_MARKER.x / 174.81) * 100}%`,
+                      top: `${(CHILE_MARKER.y / 1000) * 100}%`,
+                    }}
+                  >
+                    {!reduce && (
+                      <motion.span
+                        aria-hidden="true"
+                        className="absolute inset-0 rounded-full bg-[#e2231a]"
+                        animate={{ scale: [1, 3.2], opacity: [0.55, 0] }}
+                        transition={{ duration: 2.2, repeat: Infinity, ease: 'easeOut' }}
+                      />
+                    )}
+                    <span className="relative block h-3 w-3 rounded-full bg-[#e2231a] ring-2 ring-white" />
 
-                  <span className="text-enel-navy absolute top-1/2 right-full mr-3 -translate-y-1/2 rounded-full bg-white/85 px-3 py-1 text-[10px] font-bold tracking-wide whitespace-nowrap uppercase shadow-sm backdrop-blur-sm">
-                    Región Metropolitana
-                  </span>
-                </div>
+                    <span className="text-enel-navy absolute top-1/2 right-full mr-3 -translate-y-1/2 rounded-full bg-white/85 px-3 py-1 text-[10px] font-bold tracking-wide whitespace-nowrap uppercase shadow-sm backdrop-blur-sm">
+                      Región Metropolitana
+                    </span>
+                  </div>
+                </motion.div>
               </motion.div>
             </Parallax>
           </div>
@@ -187,14 +193,16 @@ export function HistoriaSection() {
                   transition={{ duration: 0.5, delay: indice * 0.1, ease: [0.22, 1, 0.36, 1] }}
                   className="border-b border-[#141413]/12 py-4"
                 >
-                  <p
-                    className={`text-3xl leading-none font-extrabold tracking-tight md:text-[2rem] ${stat.color}`}
+                  <motion.p
+                    whileHover={reduce ? undefined : { scale: 1.04 }}
+                    transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                    className={`origin-left text-3xl leading-none font-extrabold tracking-tight md:text-[2rem] ${stat.color}`}
                   >
                     {stat.statVal}
                     {stat.statUnit ? (
                       <span className="ml-1.5 text-xl md:text-2xl">{stat.statUnit}</span>
                     ) : null}
-                  </p>
+                  </motion.p>
                   <p className="text-enel-navy mt-2 text-[11px] font-bold tracking-wider uppercase">
                     {stat.statDesc}
                   </p>
