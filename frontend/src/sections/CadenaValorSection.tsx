@@ -17,7 +17,7 @@ import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { etapasCadena } from '@/lib/data/organizacion'
 
-import fotoCliente from '@/assets/images/enel_oficinas.jpg'
+import fotoCliente from '@/assets/images/cadena/customer-management.jpg'
 import fotoEstrategia from '@/assets/images/cadena/strategy-development.jpg'
 import fotoSuministro from '@/assets/images/cadena/supply-chain.jpg'
 import fotoIngenieria from '@/assets/images/cadena/engineering.jpg'
@@ -33,8 +33,8 @@ const ICONOS: Record<string, Icon> = {
   cash: HandCoins,
 }
 
-// Fotos por etapa: Customer Management usa una oficina Enel; el resto son
-// imágenes genéricas de StockSnap.io (CC0) sin escenas recargadas.
+// Fotos nuevas por etapa: cada una representa su proceso. Las imágenes
+// genéricas son de StockSnap.io (CC0) y no se reutilizan en otras secciones.
 const IMAGENES: Record<string, string> = {
   customer: fotoCliente,
   strategy: fotoEstrategia,
