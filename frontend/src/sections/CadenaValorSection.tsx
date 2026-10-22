@@ -1,7 +1,8 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
+  CaretDown,
   Check,
   Compass,
   HandCoins,
@@ -55,10 +56,16 @@ const SUBTITULO =
 export function CadenaValorSection() {
   const reduce = useReducedMotion()
   const [indiceActivo, setIndiceActivo] = useState(0)
+  const [procesoAbierto, setProcesoAbierto] = useState<number | null>(null)
 
   const etapaActual = etapasCadena[indiceActivo] ?? etapasCadena[0]!
   const imagenActual = IMAGENES[etapaActual.id] ?? fotoCliente
   const total = etapasCadena.length
+
+  // Cada etapa arranca con sus procesos plegados.
+  useEffect(() => {
+    setProcesoAbierto(null)
+  }, [etapaActual.id])
 
   function irA(indice: number) {
     setIndiceActivo(Math.min(Math.max(indice, 0), total - 1))
@@ -175,22 +182,66 @@ export function CadenaValorSection() {
                 </p>
 
                 <p className="mt-8 text-[11px] font-bold tracking-[0.2em] text-neutral-400 uppercase">
-                  Principales actividades
+                  Principales procesos
+                </p>
+                <p className="mt-1 text-xs text-neutral-400">
+                  Haz clic en cada proceso para ver su descripción.
                 </p>
                 <ul className="mt-3 grid gap-2.5">
-                  {etapaActual.actividades.map((actividad) => (
-                    <li
-                      key={actividad}
-                      className="bg-enel-mist/70 flex items-center gap-3 rounded-xl px-3.5 py-3"
-                    >
-                      <span className="bg-enel-blue/10 text-enel-blue flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
-                        <Check size={15} weight="bold" aria-hidden="true" />
-                      </span>
-                      <span className="text-enel-navy text-sm leading-snug font-medium">
-                        {actividad}
-                      </span>
-                    </li>
-                  ))}
+                  {etapaActual.procesos.map((proceso, indice) => {
+                    const abierto = procesoAbierto === indice
+                    const panelId = `proceso-${etapaActual.id}-${indice}`
+
+                    return (
+                      <li
+                        key={proceso.titulo}
+                        className={`overflow-hidden rounded-xl transition-colors duration-300 ${
+                          abierto ? 'bg-enel-mist' : 'bg-enel-mist/70 hover:bg-enel-mist'
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setProcesoAbierto(abierto ? null : indice)}
+                          aria-expanded={abierto}
+                          aria-controls={panelId}
+                          className="flex w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left"
+                        >
+                          <span className="bg-enel-blue/10 text-enel-blue flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+                            <Check size={15} weight="bold" aria-hidden="true" />
+                          </span>
+                          <span className="text-enel-navy flex-1 text-sm leading-snug font-medium">
+                            {proceso.titulo}
+                          </span>
+                          <CaretDown
+                            size={16}
+                            weight="bold"
+                            aria-hidden="true"
+                            className={`text-enel-blue shrink-0 transition-transform duration-300 ${
+                              abierto ? 'rotate-180' : ''
+                            }`}
+                          />
+                        </button>
+
+                        <AnimatePresence initial={false}>
+                          {abierto && (
+                            <motion.div
+                              id={panelId}
+                              key="panel"
+                              initial={reduce ? false : { height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={reduce ? undefined : { height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                              className="overflow-hidden"
+                            >
+                              <p className="px-3.5 pb-3.5 pl-[3.625rem] text-sm leading-relaxed text-neutral-600">
+                                {proceso.descripcion}
+                              </p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
 

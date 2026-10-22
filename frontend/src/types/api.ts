@@ -24,12 +24,17 @@ export interface Subgerencia {
   videoSection: string
 }
 
+export interface ProcesoCadena {
+  titulo: string
+  descripcion: string
+}
+
 export interface EtapaCadena {
   id: string
   titulo: string
   descripcion: string
   detalle: string
-  actividades: string[]
+  procesos: ProcesoCadena[]
 }
 
 export interface PoliticaISO {
