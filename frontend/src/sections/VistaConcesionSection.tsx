@@ -48,9 +48,7 @@ function ChipEstado() {
               {zonaActiva ? <> · {zona.comunas.length} comunas</> : null}
             </span>
           ) : (
-            <span className="font-serif text-neutral-500 italic">
-              Pasa el cursor para descubrir…
-            </span>
+            <span className="text-neutral-500">Pasa el cursor para descubrir…</span>
           )}
         </motion.span>
       </AnimatePresence>
@@ -76,10 +74,7 @@ export function VistaConcesionSection() {
               <p className="text-enel-blue text-sm font-bold tracking-[0.2em] uppercase">
                 Concesión en detalle
               </p>
-              <RevealTexto
-                as="h2"
-                className="text-enel-navy mt-4 text-3xl font-bold tracking-tight md:text-5xl"
-              >
+              <RevealTexto as="h2" className="text-enel-navy mt-4 text-3xl md:text-5xl">
                 Nuestro territorio, <span className="text-enel-blue">trazo a trazo</span>
               </RevealTexto>
               <RevealTexto

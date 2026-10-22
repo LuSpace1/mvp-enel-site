@@ -246,7 +246,7 @@ function TarjetaZona({
           className="h-3 w-3 shrink-0 rounded-full shadow-sm"
           style={{ backgroundColor: zona.color }}
         />
-        <h3 className="text-sm font-bold">Zona {zona.nombre}</h3>
+        <h3 className="text-sm">Zona {zona.nombre}</h3>
         <span className="ml-auto text-[11px] font-semibold text-neutral-400">
           {zona.totalComunas} comunas
         </span>

@@ -1,6 +1,13 @@
 @import '@fontsource-variable/outfit';
 @import 'tailwindcss';
 
+/* Familia única del portal. Los tres roles tipográficos (títulos, subtítulos
+   y contenido) comparten Outfit; solo cambian peso, tracking y tamaño. */
+:root {
+  --fuente-enel:
+    'Outfit Variable', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
 @theme {
   --color-enel-blue: #006fbb;
   --color-enel-blue-dark: #005a94;
@@ -10,8 +17,14 @@
   --color-enel-fog: #d9dfe8;
   --color-enel-pink: #eb0053;
 
-  --font-sans:
-    'Outfit Variable', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  /* Sistema tipográfico: 1 familia, 3 roles.
+     - --font-display  → títulos (h1, h2)
+     - --font-heading  → subtítulos (h3–h6)
+     - --font-body     → contenido general (p, li, controles, etc.) */
+  --font-sans: var(--fuente-enel);
+  --font-display: var(--fuente-enel);
+  --font-heading: var(--fuente-enel);
+  --font-body: var(--fuente-enel);
 
   /* Breakpoint para pantallas grandes de escritorio (>=1600px). Por debajo,
      las secciones compactan tamaños y espaciados. */
@@ -21,6 +34,30 @@
 html {
   scroll-behavior: auto;
   scroll-padding-top: 5rem;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body);
+  }
+
+  /* Títulos: Outfit 600 con tracking cerrado. */
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  /* Subtítulos: misma familia, un punto menos de tracking y peso 600. */
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
 }
 
 /* Scroll suave con inercia (Lenis) */
@@ -225,7 +262,7 @@ body {
 
 /* Nombres de comunas: misma sans y peso que las etiquetas de zona, con halo sutil */
 .comuna-label-svg {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-weight: 400;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -244,7 +281,7 @@ body {
 
 /* Nombres de zonas sobre el mapa; en zoom se reducen y suben a la franja superior */
 .zona-label-svg {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.32em;

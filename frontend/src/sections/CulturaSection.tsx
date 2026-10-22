@@ -66,17 +66,14 @@ export function CulturaSection() {
         transition={{ type: 'spring', stiffness: 50, damping: 15, mass: 1.2 }}
       >
         <div className="relative z-10 mb-12 text-center">
-          <RevealTexto
-            as="h2"
-            className="text-enel-navy text-4xl font-semibold tracking-tight md:text-6xl"
-          >
+          <RevealTexto as="h2" className="text-enel-navy text-4xl md:text-6xl">
             Nuestros valores
           </RevealTexto>
           <RevealTexto
             as="p"
             variante="parrafo"
             delay={0.15}
-            className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-neutral-600 md:text-lg"
+            className="mx-auto mt-4 max-w-2xl text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
             Los principios que guían nuestra forma de actuar, tomar decisiones y enfrentar los
             desafíos del negocio, orientando nuestro compromiso con las personas, los clientes y el

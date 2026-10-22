@@ -74,10 +74,7 @@ export function CadenaValorSection() {
   return (
     <SectionShell id="cadena" className="relative overflow-hidden bg-white">
       <div className="mx-auto max-w-3xl text-center">
-        <RevealTexto
-          as="h2"
-          className="text-enel-navy text-3xl font-bold tracking-tight md:text-5xl"
-        >
+        <RevealTexto as="h2" className="text-enel-navy text-3xl md:text-5xl">
           Cadena de <span className="text-enel-blue">Valor</span>
         </RevealTexto>
         <RevealTexto
@@ -174,7 +171,7 @@ export function CadenaValorSection() {
                 <p className="text-enel-blue text-[11px] font-bold tracking-[0.18em] uppercase">
                   {etapaActual.descripcion}
                 </p>
-                <h3 className="text-enel-navy mt-3 text-3xl leading-tight font-bold tracking-tight md:text-4xl">
+                <h3 className="text-enel-navy mt-3 text-3xl leading-tight md:text-4xl">
                   {etapaActual.titulo}
                 </h3>
                 <p className="mt-4 text-base leading-relaxed text-neutral-600">

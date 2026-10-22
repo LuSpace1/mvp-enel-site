@@ -87,14 +87,14 @@ export function CierreSection() {
             </span>
             <RevealTexto
               as="h2"
-              className="text-enel-navy mt-6 text-4xl leading-[1.05] font-semibold tracking-tight md:text-6xl"
+              className="text-enel-navy mt-6 text-4xl leading-[1.05] md:text-6xl"
             >
               Accesos Rápidos
             </RevealTexto>
             <RevealTexto
               as="p"
               variante="parrafo"
-              className="mt-6 max-w-xl text-base leading-relaxed text-neutral-500 md:text-lg"
+              className="mt-6 max-w-xl text-base leading-relaxed font-medium text-neutral-500 md:text-lg"
             >
               Accede en un solo lugar a las políticas, contactos y canales que necesitas para tu
               trabajo.
@@ -132,9 +132,7 @@ export function CierreSection() {
                     <recurso.icono size={20} weight="duotone" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-enel-navy text-base leading-snug font-semibold tracking-tight">
-                      {recurso.titulo}
-                    </h3>
+                    <h3 className="text-enel-navy text-base leading-snug">{recurso.titulo}</h3>
                     <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">
                       {recurso.descripcion}
                     </p>

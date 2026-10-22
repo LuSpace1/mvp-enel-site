@@ -46,7 +46,7 @@ export function PortadaDelViaje() {
             as="h1"
             delay={0.15}
             activar={entrada}
-            className="text-enel-navy w-full text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-[4rem]"
+            className="text-enel-navy w-full text-4xl leading-[1.05] sm:text-5xl md:text-6xl lg:text-[4rem]"
           >
             Conoce{' '}
             <motion.span
@@ -81,7 +81,7 @@ export function PortadaDelViaje() {
             variante="parrafo"
             activar={entrada}
             delay={0.35}
-            className="max-w-2xl text-base leading-relaxed text-neutral-600 md:text-lg"
+            className="max-w-2xl text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
             Descubre quiénes somos, cómo funciona nuestro negocio y qué nos mueve cada día. Un
             espacio para conocer nuestra operación, los principios que nos guían y nuestro rol en la

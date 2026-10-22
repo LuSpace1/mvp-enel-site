@@ -181,7 +181,7 @@ export function GaleriasSection() {
           />
           <RevealTexto
             as="h2"
-            className="text-enel-navy 3xl:mt-5 3xl:text-6xl mt-4 text-4xl font-bold tracking-tight md:text-5xl"
+            className="text-enel-navy 3xl:mt-5 3xl:text-6xl mt-4 text-4xl md:text-5xl"
           >
             Herramientas ME
           </RevealTexto>
@@ -219,15 +219,12 @@ export function GaleriasSection() {
                 />
               </div>
               <figcaption className="text-enel-navy absolute right-0 bottom-4 left-0 flex items-baseline justify-center px-3">
-                <span className="font-serif text-lg font-medium italic">Intranet</span>
+                <span className="text-lg font-semibold">Intranet</span>
               </figcaption>
             </motion.figure>
 
             <div className="max-w-xl">
-              <RevealTexto
-                as="h2"
-                className="3xl:text-5xl text-3xl font-bold tracking-tight md:text-4xl"
-              >
+              <RevealTexto as="h2" className="3xl:text-5xl text-3xl md:text-4xl">
                 Mantente al día
               </RevealTexto>
               <RevealTexto
@@ -265,10 +262,7 @@ export function GaleriasSection() {
             transition={{ type: 'spring', stiffness: 70, damping: 18 }}
             style={{ transformOrigin: 'bottom center' }}
           >
-            <RevealTexto
-              as="h2"
-              className="text-enel-navy 3xl:text-6xl text-4xl font-bold tracking-tight md:text-5xl"
-            >
+            <RevealTexto as="h2" className="text-enel-navy 3xl:text-6xl text-4xl md:text-5xl">
               Conoce nuestras instalaciones
             </RevealTexto>
             <RevealTexto
@@ -328,7 +322,7 @@ export function GaleriasSection() {
                           aria-hidden="true"
                           className="bg-enel-pink mb-4 block h-1 w-10 rounded-full"
                         />
-                        <h3 className="3xl:text-[1.9rem] text-2xl leading-tight font-bold tracking-tight text-white md:text-[1.75rem]">
+                        <h3 className="3xl:text-[1.9rem] text-2xl leading-tight text-white md:text-[1.75rem]">
                           {instalacion.titulo}
                         </h3>
                         <p className="mt-2 text-[11px] font-bold tracking-[0.18em] text-white/65 uppercase">

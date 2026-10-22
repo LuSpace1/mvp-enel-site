@@ -136,7 +136,7 @@ export function EquiposGaleria({ abiertoInicial = null }: { abiertoInicial?: num
                     <span className="text-enel-blue text-xl font-bold tracking-tight drop-shadow-sm md:text-2xl">
                       {String(indiceGlobal + 1).padStart(2, '0')}
                     </span>
-                    <span className="font-serif text-lg font-medium text-white italic md:text-xl">
+                    <span className="text-lg font-semibold text-white md:text-xl">
                       {foto.titulo}
                     </span>
                   </div>

@@ -172,7 +172,7 @@ export function StormIntro() {
 
         <motion.h1
           style={{ opacity: opEnel, y: yEnel, scale: scaleEnel }}
-          className="text-enel-navy mt-4 w-[min(84vw,540px)] text-right text-4xl leading-[1.02] font-semibold tracking-tighter sm:text-6xl md:text-7xl"
+          className="text-enel-navy mt-4 w-[min(84vw,540px)] text-right text-4xl leading-[1.02] sm:text-6xl md:text-7xl"
         >
           <motion.span style={{ opacity: opDist }} className="texto-gradiente-azul">
             Distribución

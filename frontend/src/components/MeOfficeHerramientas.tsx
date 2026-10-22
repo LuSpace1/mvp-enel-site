@@ -88,9 +88,7 @@ export function MeOfficeHerramientas() {
                 />
 
                 <div className="mt-7">
-                  <h4 className="text-[1.35rem] leading-tight font-semibold tracking-tight text-white">
-                    {herramienta.nombre}
-                  </h4>
+                  <h4 className="text-[1.35rem] leading-tight text-white">{herramienta.nombre}</h4>
                   {herramienta.nota && (
                     <p className="text-enel-blue-light/80 mt-1.5 text-[10px] font-semibold tracking-[0.14em] uppercase">
                       {herramienta.nota}

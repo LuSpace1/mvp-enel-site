@@ -58,10 +58,7 @@ export function PoliticasISOSection() {
         style={{ perspective: 1200 }}
       >
         <Reveal y={0} className="relative z-10 max-w-3xl">
-          <RevealTexto
-            as="h2"
-            className="text-enel-navy text-3xl font-semibold tracking-tight md:text-5xl"
-          >
+          <RevealTexto as="h2" className="text-enel-navy text-3xl md:text-5xl">
             Nuestro marco de actuación
           </RevealTexto>
           <RevealTexto
@@ -104,9 +101,7 @@ export function PoliticasISOSection() {
                     >
                       <Icono size={20} weight="duotone" />
                     </span>
-                    <h3 className="text-enel-navy mt-4 text-base font-semibold tracking-tight">
-                      {politica.nombre}
-                    </h3>
+                    <h3 className="text-enel-navy mt-4 text-base">{politica.nombre}</h3>
                     <span className="mt-1 block text-[10px] font-medium tracking-[0.15em] text-neutral-400 uppercase">
                       {politica.codigo}
                     </span>
@@ -145,7 +140,7 @@ export function PoliticasISOSection() {
                 <p className="text-enel-blue/80 text-[11px] font-bold tracking-[0.2em] uppercase">
                   Profundiza en nuestro SIG
                 </p>
-                <h3 className="text-enel-navy mt-2 text-2xl font-bold tracking-tight md:text-3xl">
+                <h3 className="text-enel-navy mt-2 text-2xl md:text-3xl">
                   Conoce nuestro Portal SIG
                 </h3>
                 <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-neutral-600 md:text-base">

@@ -128,7 +128,7 @@ export function Viaje() {
   }, [initAnonymous, cargarVideos])
 
   return (
-    <div className="text-enel-navy min-h-svh bg-white font-sans">
+    <div className="text-enel-navy font-body min-h-svh bg-white">
       <SmoothScroll />
       <Nav />
       <Indice />

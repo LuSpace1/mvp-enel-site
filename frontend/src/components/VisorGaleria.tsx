@@ -96,7 +96,7 @@ export function VisorGaleria({
           {/* Contador */}
           <div className="pointer-events-none fixed top-0 left-0 z-30 p-4 md:p-6">
             <div className="flex items-center gap-3 rounded-full bg-white/80 px-4 py-2 shadow-sm ring-1 ring-black/5 backdrop-blur-md">
-              <span className="font-serif text-lg font-medium text-[#d97757] italic md:text-xl">
+              <span className="text-lg font-semibold text-[#d97757] md:text-xl">
                 {String(indice + 1).padStart(2, '0')}
               </span>
               <span className="text-[11px] font-semibold tracking-[0.22em] text-[#8a857c] uppercase">
@@ -160,7 +160,7 @@ export function VisorGaleria({
               <p className="text-[11px] font-bold tracking-[0.24em] text-[#d97757] uppercase">
                 {etiqueta}
               </p>
-              <h3 className="mt-4 font-serif text-2xl leading-tight font-medium text-white italic md:text-3xl">
+              <h3 className="mt-4 text-2xl leading-tight text-white md:text-3xl">
                 {titulo || fotos[0]?.titulo}
               </h3>
               <span aria-hidden="true" className="mt-6 block h-px w-12 bg-white/20" />
