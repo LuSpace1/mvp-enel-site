@@ -49,9 +49,10 @@ interface TarjetaAreaProps {
   foto: string
   onClick: () => void
   delay?: number
+  sigla?: string
 }
 
-function TarjetaArea({ titulo, responsable, foto, onClick, delay = 0 }: TarjetaAreaProps) {
+function TarjetaArea({ titulo, responsable, foto, onClick, delay = 0, sigla }: TarjetaAreaProps) {
   return (
     <button
       onClick={onClick}
@@ -65,8 +66,12 @@ function TarjetaArea({ titulo, responsable, foto, onClick, delay = 0 }: TarjetaA
         decoding="async"
         className="group-hover:ring-enel-blue/30 h-20 w-20 rounded-full object-cover shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_1px_4px_rgba(0,0,0,0.06)] ring-4 ring-black/[0.04] transition-all duration-300"
       />
-      <h4 className="text-enel-navy mt-5 flex min-h-[4.5rem] items-center justify-center text-[17px] leading-snug">
-        {titulo}
+      <h4
+        className={`text-enel-navy mt-5 flex min-h-[4.5rem] items-center justify-center text-[17px] leading-snug ${
+          sigla ? 'font-bold' : ''
+        }`}
+      >
+        {sigla ?? titulo}
       </h4>
       <p className="mt-1 text-[13px] font-medium text-neutral-500">{responsable}</p>
       <span className="text-enel-blue group-hover:text-enel-blue-dark mt-auto inline-flex items-center pt-5 text-[13px] font-medium transition-colors duration-300">
@@ -217,13 +222,13 @@ export function OrganigramaSection() {
         transition={{ duration: 1.0, ease: [0.23, 1, 0.32, 1] }}
       >
         <Reveal y={0} className="mx-auto mb-16 max-w-2xl text-center">
-          <RevealTexto as="h2" className="text-enel-navy text-3xl leading-[1.1] md:text-5xl">
+          <RevealTexto as="h2" className="text-enel-navy text-4xl md:text-6xl">
             Estructura organizacional
           </RevealTexto>
           <RevealTexto
             as="p"
             variante="parrafo"
-            className="mt-4 text-[15px] leading-relaxed font-medium text-neutral-500"
+            className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
             Descubre cómo se estructura Enel Distribución, sus principales gerencias, líderes y
             áreas de apoyo transversal que contribuyen al funcionamiento del negocio.
@@ -247,22 +252,19 @@ export function OrganigramaSection() {
               className="float-subtle group relative w-80 cursor-pointer rounded-[28px] border border-black/[0.06] bg-white/70 p-6 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_40px_-8px_rgba(10,25,47,0.12)] backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:border-black/[0.09] hover:shadow-[0_2px_4px_rgba(0,0,0,0.03),0_24px_48px_-12px_rgba(10,25,47,0.16)] active:scale-[0.98] active:duration-100"
               style={{ animationDelay: '0s' }}
             >
-              <span className="bg-enel-blue absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-[10px] font-semibold tracking-[0.14em] text-white uppercase shadow-sm">
-                Liderazgo
-              </span>
               <img
                 src={gerenteGeneral.foto}
                 alt={`${gerenteGeneral.nombre}, ${gerenteGeneral.cargo}`}
                 className="group-hover:ring-enel-blue/30 mx-auto h-28 w-28 rounded-full object-cover shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.08)] ring-4 ring-black/[0.04] transition-all duration-300"
                 loading="lazy"
               />
-              <p className="text-enel-blue mt-5 text-xs font-semibold tracking-[0.12em] uppercase">
+              <p className="text-enel-navy mt-5 text-xs font-bold tracking-[0.12em] uppercase">
                 {gerenteGeneral.cargo}
               </p>
-              <h3 className="text-enel-navy mt-1 text-2xl">{gerenteGeneral.nombre}</h3>
-              <p className="mt-2 text-[11px] font-medium text-neutral-500">
-                {gerenteGeneral.empresa}
-              </p>
+              <h3 className="mt-1 text-[13px] font-medium text-neutral-500">
+                {gerenteGeneral.nombre}
+              </h3>
+              <p className="text-enel-blue mt-3 text-[13px] font-semibold">Saber más</p>
             </div>
           </motion.div>
 
@@ -288,6 +290,7 @@ export function OrganigramaSection() {
                 <div className="bg-enel-fog/80 hidden h-8 w-0.5 lg:block" />
                 <TarjetaArea
                   titulo={sub.nombre}
+                  sigla={sub.sigla}
                   responsable={sub.subgerente}
                   foto={sub.foto}
                   delay={idx * 0.35}
