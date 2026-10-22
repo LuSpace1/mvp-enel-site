@@ -269,17 +269,17 @@ export function OrganigramaSection() {
           </motion.div>
 
           <div className="bg-enel-fog/80 h-8 w-0.5" />
-
-          <div className="bg-enel-fog/80 relative hidden h-10 w-0.5 lg:block">
-            {/* Línea horizontal que conecta las subgerencias */}
-            <div className="bg-enel-fog/80 absolute bottom-0 left-1/2 h-0.5 w-[calc(100vw-4rem)] max-w-[780px] -translate-x-1/2" />
-          </div>
+          <div className="bg-enel-fog/80 hidden h-10 w-0.5 lg:block" />
 
           <motion.div
             variants={cardsSubgerencias}
             className="relative mt-8 grid w-full max-w-5xl grid-cols-1 justify-items-center gap-4 px-4 sm:grid-cols-2 lg:mt-0 lg:grid-cols-4"
           >
             <div className="bg-enel-fog/80 absolute top-0 bottom-0 left-1/2 -z-10 block w-0.5 -translate-x-1/2 sm:hidden" />
+            <div
+              aria-hidden="true"
+              className="bg-enel-fog/80 absolute top-0 right-[calc(12.5%_+_0.375rem)] left-[calc(12.5%_+_0.375rem)] hidden h-0.5 lg:block"
+            />
 
             {subgerencias.map((sub, idx) => (
               <motion.div
