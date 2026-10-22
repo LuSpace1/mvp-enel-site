@@ -182,7 +182,8 @@ export function StormIntro() {
           style={{ opacity: opDist }}
           className="bg-enel-navy/40 mt-6 max-w-md rounded-full px-6 py-3 text-sm leading-relaxed text-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md md:text-base"
         >
-          La energía que llega a tu casa empieza mucho antes. Sigue su viaje por nuestra red.
+          La energía que nos conecta comienza mucho antes. Descubre todo lo que hay detrás de
+          nuestra red.
         </motion.p>
       </div>
     </section>
