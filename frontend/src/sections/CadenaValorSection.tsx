@@ -33,8 +33,8 @@ const ICONOS: Record<string, Icon> = {
   cash: HandCoins,
 }
 
-// Fotos nuevas por etapa: cada una representa su proceso. Las imágenes
-// genéricas son de StockSnap.io (CC0) y no se reutilizan en otras secciones.
+// Fotos nuevas por etapa: customer-management.jpg es "Holiday Extras - Contact
+// centre" de Holidayextras (CC BY 2.0); el resto son de StockSnap.io (CC0).
 const IMAGENES: Record<string, string> = {
   customer: fotoCliente,
   strategy: fotoEstrategia,
