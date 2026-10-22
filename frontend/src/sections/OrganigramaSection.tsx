@@ -65,7 +65,7 @@ function TarjetaArea({ titulo, responsable, foto, onClick, delay = 0 }: TarjetaA
         decoding="async"
         className="group-hover:ring-enel-blue/30 h-20 w-20 rounded-full object-cover shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_1px_4px_rgba(0,0,0,0.06)] ring-4 ring-black/[0.04] transition-all duration-300"
       />
-      <h4 className="text-enel-navy mt-5 flex min-h-[3rem] items-center justify-center text-[17px] leading-snug">
+      <h4 className="text-enel-navy mt-5 flex min-h-[4.5rem] items-center justify-center text-[17px] leading-snug">
         {titulo}
       </h4>
       <p className="mt-1 text-[13px] font-medium text-neutral-500">{responsable}</p>
@@ -287,7 +287,7 @@ export function OrganigramaSection() {
               >
                 <div className="bg-enel-fog/80 hidden h-8 w-0.5 lg:block" />
                 <TarjetaArea
-                  titulo={sub.sigla}
+                  titulo={sub.nombre}
                   responsable={sub.subgerente}
                   foto={sub.foto}
                   delay={idx * 0.35}

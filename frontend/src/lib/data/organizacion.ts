@@ -95,10 +95,7 @@ export const areasStaff: AreaStaff[] = [
     lider: 'Alfredo Montes',
     foto: fotoHombre,
     detalle: [
-      'Monitorear los principales cambios legislativos y jurisprudenciales que puedan tener impacto en el negocio de Enel Grids, así como aquellos relacionados con derecho comercial, protección al consumidor, derecho administrativo, legislación crediticia y normativa de protección de datos personales.',
-      'Proporcionar asesoría jurídica a las unidades de negocio de Enel Grids.',
-      'Monitorear los litigios relacionados con Enel Grids y aquellos vinculados a materias de Enel X.',
-      'Gestionar los órganos societarios, el cumplimiento de la normativa del mercado de valores local y las actividades de cumplimiento asociadas a Enel Distribución Chile S.A., asegurando los procesos de información correspondientes.',
+      'Brindar asesoría jurídica a las distintas áreas del negocio, asegurando el cumplimiento de la normativa vigente y anticipando los impactos de cambios legales y regulatorios. Supervisar la gestión de litigios y los asuntos societarios, contribuyendo a la protección de los intereses de la compañía y a una gestión responsable de sus operaciones.',
     ],
   },
   {
