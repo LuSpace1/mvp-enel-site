@@ -20,8 +20,16 @@ export interface Subgerencia {
   subgerente: string
   foto: string
   proposito: string
-  procesos: string[]
+  areas: string[]
   videoSection: string
+}
+
+export interface AreaStaff {
+  id: string
+  nombre: string
+  lider: string
+  foto: string
+  detalle: string[]
 }
 
 export interface ProcesoCadena {

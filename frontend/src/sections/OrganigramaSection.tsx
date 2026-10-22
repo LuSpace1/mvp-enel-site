@@ -1,16 +1,5 @@
 import { useEffect, useState } from 'react'
-import {
-  X,
-  Play,
-  ArrowRight,
-  ChartLine,
-  Handshake,
-  ShieldCheck,
-  UsersThree,
-  Scales,
-  GlobeHemisphereWest,
-} from '@phosphor-icons/react'
-import type { Icon } from '@phosphor-icons/react'
+import { X, Play, ArrowRight, Handshake } from '@phosphor-icons/react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import type { Variants } from 'motion/react'
 import { Reveal } from '@/components/ui/Reveal'
@@ -54,14 +43,6 @@ const cardStaff: Variants = {
   },
 }
 
-const iconosStaff: Record<(typeof areasStaff)[number]['id'], Icon> = {
-  finanzas: ChartLine,
-  auditoria: ShieldCheck,
-  personas: UsersThree,
-  legal: Scales,
-  comunicaciones: GlobeHemisphereWest,
-}
-
 export function OrganigramaSection() {
   const [nodoAbierto, setNodoAbierto] = useState<string | null>(null)
   const [staffActivo, setStaffActivo] = useState<(typeof areasStaff)[number] | null>(null)
@@ -95,10 +76,11 @@ export function OrganigramaSection() {
             as="h2"
             className="text-enel-navy text-3xl leading-[1.1] font-semibold tracking-[-0.02em] md:text-5xl md:tracking-[-0.025em]"
           >
-            Equipos y Gerencia
+            Estructura organizacional
           </RevealTexto>
           <RevealTexto as="p" variante="parrafo" className="mt-4 text-[15px] text-neutral-500">
-            Conoce a quienes hacen posible la energía en nuestra red
+            Descubre cómo se estructura Enel Distribución, sus principales gerencias, líderes y
+            áreas de apoyo transversal que contribuyen al funcionamiento del negocio.
           </RevealTexto>
         </Reveal>
 
@@ -259,15 +241,15 @@ export function OrganigramaSection() {
                     <div className="mt-5">
                       <p className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.14em] text-neutral-400 uppercase">
                         <span className="bg-enel-blue h-1.5 w-1.5 rounded-full" />
-                        Principales procesos
+                        Áreas
                       </p>
                       <div className="flex flex-wrap gap-1.5">
-                        {sub.procesos.map((proc) => (
+                        {sub.areas.map((area) => (
                           <span
-                            key={proc}
+                            key={area}
                             className="rounded-full border border-black/[0.06] bg-black/[0.03] px-2.5 py-1 text-[10px] font-medium text-neutral-600"
                           >
-                            {proc}
+                            {area}
                           </span>
                         ))}
                       </div>
@@ -319,8 +301,8 @@ export function OrganigramaSection() {
             variante="parrafo"
             className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-neutral-500"
           >
-            Pertenecen a Enel Chile y entregan apoyo transversal a las líneas de negocio, sin
-            integrar las gerencias.
+            Conoce las áreas de Enel Chile que brindan apoyo transversal a las distintas líneas de
+            negocio.
           </RevealTexto>
         </Reveal>
 
@@ -329,47 +311,42 @@ export function OrganigramaSection() {
           initial={reduce ? false : 'hidden'}
           whileInView={reduce ? undefined : 'show'}
           viewport={{ once: true, amount: 0.2 }}
-          className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-5"
+          className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {areasStaff.map((area, idx) => {
-            const Icono = iconosStaff[area.id] ?? ChartLine
-            return (
-              <motion.div key={area.id} variants={cardStaff} className="flex">
-                <button
-                  onClick={() => {
-                    setStaffActivo(area)
-                    setNodoAbierto(null)
-                  }}
-                  className="float-subtle group relative flex h-full w-full cursor-pointer flex-col items-start overflow-hidden rounded-[24px] border border-black/[0.06] bg-white/70 p-6 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-8px_rgba(10,25,47,0.10)] backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:border-black/[0.09] hover:shadow-[0_2px_4px_rgba(0,0,0,0.03),0_24px_48px_-12px_rgba(10,25,47,0.16)] active:scale-[0.98] active:duration-100"
-                  style={{ animationDelay: `${idx * 0.35}s` }}
-                >
-                  <div className="mb-6 flex size-12 items-center justify-center rounded-[14px] bg-gradient-to-b from-white to-neutral-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04]">
-                    <Icono
-                      size={22}
-                      weight="duotone"
-                      className="text-enel-navy group-hover:text-enel-blue transition-colors duration-300"
-                    />
-                  </div>
+          {areasStaff.map((area, idx) => (
+            <motion.div key={area.id} variants={cardStaff} className="flex">
+              <button
+                onClick={() => {
+                  setStaffActivo(area)
+                  setNodoAbierto(null)
+                }}
+                className="float-subtle group relative flex h-full w-full cursor-pointer flex-col items-center overflow-hidden rounded-[24px] border border-black/[0.06] bg-white/70 p-6 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-8px_rgba(10,25,47,0.10)] backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:border-black/[0.09] hover:shadow-[0_2px_4px_rgba(0,0,0,0.03),0_24px_48px_-12px_rgba(10,25,47,0.16)] active:scale-[0.98] active:duration-100"
+                style={{ animationDelay: `${idx * 0.35}s` }}
+              >
+                <img
+                  src={area.foto}
+                  alt={`${area.lider}, ${area.nombre}`}
+                  loading="lazy"
+                  decoding="async"
+                  className="group-hover:ring-enel-blue/30 h-20 w-20 rounded-full object-cover shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_1px_4px_rgba(0,0,0,0.06)] ring-4 ring-black/[0.04] transition-all duration-300"
+                />
 
-                  <h4 className="text-enel-navy text-[17px] leading-snug font-semibold tracking-[-0.01em]">
-                    {area.nombre}
-                  </h4>
-                  <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-neutral-500">
-                    {area.detalle}
-                  </p>
+                <h4 className="text-enel-navy mt-5 flex min-h-[3rem] items-center justify-center text-[17px] leading-snug font-semibold tracking-[-0.01em]">
+                  {area.nombre}
+                </h4>
+                <p className="mt-1 text-[13px] font-medium text-neutral-500">{area.lider}</p>
 
-                  <span className="text-enel-blue/80 group-hover:text-enel-blue mt-auto inline-flex items-center gap-1 pt-5 text-[13px] font-medium transition-colors duration-300">
-                    Conocer área
-                    <ArrowRight
-                      size={13}
-                      weight="bold"
-                      className="transition-transform duration-300 ease-out group-hover:translate-x-0.5"
-                    />
-                  </span>
-                </button>
-              </motion.div>
-            )
-          })}
+                <span className="text-enel-blue/80 group-hover:text-enel-blue mt-auto inline-flex items-center gap-1 pt-5 text-[13px] font-medium transition-colors duration-300">
+                  Conocer área
+                  <ArrowRight
+                    size={13}
+                    weight="bold"
+                    className="transition-transform duration-300 ease-out group-hover:translate-x-0.5"
+                  />
+                </span>
+              </button>
+            </motion.div>
+          ))}
         </motion.div>
       </motion.div>
 
@@ -445,15 +422,15 @@ export function OrganigramaSection() {
                 <div className="mt-5">
                   <p className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.14em] text-neutral-400 uppercase">
                     <span className="bg-enel-blue h-1.5 w-1.5 rounded-full" />
-                    Principales procesos
+                    Áreas
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {subAbierta.procesos.map((proc) => (
+                    {subAbierta.areas.map((area) => (
                       <span
-                        key={proc}
+                        key={area}
                         className="rounded-full border border-black/[0.06] bg-black/[0.03] px-2.5 py-1 text-[10px] font-medium text-neutral-600"
                       >
-                        {proc}
+                        {area}
                       </span>
                     ))}
                   </div>
@@ -547,8 +524,7 @@ export function OrganigramaSection() {
               <p className="mt-1 text-sm font-medium text-neutral-500">{gerenteGeneral.empresa}</p>
               <div className="mt-6 rounded-2xl border border-black/[0.04] bg-white/60 p-5 shadow-xs">
                 <p className="text-sm leading-relaxed font-medium text-neutral-600">
-                  Desde la Gerencia General se conducen las cinco subgerencias y se articula el
-                  soporte transversal de las áreas staff de la compañía.
+                  {gerenteGeneral.proposito}
                 </p>
               </div>
 
@@ -590,7 +566,7 @@ export function OrganigramaSection() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               transition={{ type: 'spring', bounce: 0, duration: 0.45 }}
-              className="relative w-full max-w-lg shrink-0 overflow-hidden rounded-[28px] border border-white/60 bg-white/85 p-6 shadow-2xl backdrop-blur-2xl sm:p-8"
+              className="relative w-full max-w-xl shrink-0 overflow-hidden rounded-[28px] border border-white/60 bg-white/85 p-6 shadow-2xl backdrop-blur-2xl sm:p-8"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -602,20 +578,37 @@ export function OrganigramaSection() {
               </button>
 
               <div className="mt-2 text-left">
-                <span className="text-enel-blue bg-enel-blue/[0.08] inline-flex items-center rounded-full px-3.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
-                  {staffActivo.etiqueta}
-                </span>
-                <h3 className="text-enel-navy mt-3 mb-4 text-2xl font-semibold tracking-[-0.02em]">
-                  {staffActivo.nombre}
-                </h3>
-                <div className="rounded-2xl border border-black/[0.04] bg-white/60 p-5 shadow-xs">
-                  <p className="text-sm leading-relaxed font-medium text-neutral-600">
-                    {staffActivo.detalle}
-                  </p>
+                <div className="flex items-center gap-4 pr-10">
+                  <img
+                    src={staffActivo.foto}
+                    alt={`${staffActivo.lider}, ${staffActivo.nombre}`}
+                    className="h-16 w-16 shrink-0 rounded-full object-cover shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_1px_4px_rgba(0,0,0,0.06)] ring-4 ring-black/[0.04]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div>
+                    <span className="text-enel-blue bg-enel-blue/[0.08] inline-flex items-center rounded-full px-3.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
+                      Área Staff
+                    </span>
+                    <h3 className="text-enel-navy mt-2 text-2xl leading-tight font-semibold tracking-[-0.02em]">
+                      {staffActivo.nombre}
+                    </h3>
+                    <p className="mt-1 text-sm font-medium text-neutral-500">{staffActivo.lider}</p>
+                  </div>
                 </div>
-                <p className="mt-4 text-center text-[11px] font-medium text-neutral-400">
-                  Pertenece a Enel Chile y entrega apoyo transversal a las líneas de negocio.
-                </p>
+                <div className="mt-5 rounded-2xl border border-black/[0.04] bg-white/60 p-5 shadow-xs">
+                  <ul className="space-y-3">
+                    {staffActivo.detalle.map((parrafo) => (
+                      <li
+                        key={parrafo}
+                        className="flex gap-2.5 text-sm leading-relaxed font-medium text-neutral-600"
+                      >
+                        <span className="bg-enel-blue mt-[0.55rem] size-1.5 shrink-0 rounded-full" />
+                        <span>{parrafo}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </motion.div>
           </motion.div>

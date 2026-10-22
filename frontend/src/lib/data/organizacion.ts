@@ -1,4 +1,4 @@
-import type { EtapaCadena, Subgerencia } from '@/types/api'
+import type { AreaStaff, EtapaCadena, Subgerencia } from '@/types/api'
 
 import fotoHombre from '@/assets/images/placeholder_hombre.webp'
 import fotoMujer from '@/assets/images/placeholder_mujer.jpg'
@@ -9,21 +9,12 @@ export const gerenteGeneral = {
   cargo: 'Gerente General',
   empresa: 'Enel Distribución Chile',
   foto: fotoHombre,
+  proposito:
+    'Liderar y gestionar integralmente el negocio de distribución eléctrica, asegurando la operación y el desarrollo de la red, la gestión comercial y la atención de clientes. Administrar eficientemente los recursos e inversiones, impulsando el crecimiento sostenible y el cumplimiento de los objetivos estratégicos y normativos.',
   videoSection: 'gerencia_general',
 }
 
 export const subgerencias: Subgerencia[] = [
-  {
-    id: 'pc',
-    sigla: 'P&C',
-    nombre: 'Industrial P&C',
-    subgerente: 'Francisco Evans',
-    foto: fotoHombre,
-    proposito:
-      'Gestionar de manera estratégica la cadena de suministro, el abastecimiento y las contrataciones de servicios y materiales del negocio.',
-    procesos: ['Compras estratégicas', 'Abastecimiento', 'Contratos'],
-    videoSection: 'subgerencia_pc',
-  },
   {
     id: 'hseq',
     sigla: 'HSEQ',
@@ -31,8 +22,8 @@ export const subgerencias: Subgerencia[] = [
     subgerente: 'Ximena León',
     foto: fotoMujer,
     proposito:
-      'Garantizar la gestión integral en salud, seguridad, medio ambiente y calidad (HSEQ), asegurando el cumplimiento de estándares globales y normativas locales, promoviendo una cultura preventiva y de mejora continua.',
-    procesos: ['SIG', 'Cumplimiento normativo', 'Inspección', 'Capacitación técnica'],
+      'Definir e implementar estrategias e iniciativas de Salud, Seguridad, Medio Ambiente y Calidad, asegurando el cumplimiento de los lineamientos globales y la normativa local. Promover la mejora continua, la prevención de riesgos y el fortalecimiento del Sistema Integrado de Gestión en las distintas actividades del negocio.',
+    areas: ['Health & Safety', 'Environment', 'Quality', 'CEO'],
     videoSection: 'subgerencia_hseq',
   },
   {
@@ -42,20 +33,17 @@ export const subgerencias: Subgerencia[] = [
     subgerente: 'Giovanni Zanchetta',
     foto: fotoHombre,
     proposito:
-      'Gestionar eficientemente las operaciones comerciales reguladas, optimizando el balance energético, el ciclo de ingresos y la experiencia del cliente.',
-    procesos: ['Activaciones', 'Meter to cash', 'Gestión de pérdidas', 'Atención a clientes'],
+      'Gestionar integralmente los procesos comerciales del suministro eléctrico, desde la conexión y medición hasta la facturación, cobranza y gestión de pérdidas de energía. Asegurar una atención eficiente y de calidad a través de los distintos canales, promoviendo la satisfacción de los clientes y optimizando la gestión de energía y los ingresos del negocio.',
+    areas: [
+      'Activation',
+      'Readings and Billing',
+      'Losses Management',
+      'Collection & Credit',
+      'Energy Balance & Supply',
+      'Customer Care',
+      'Customer Satisfaction & Quality Management',
+    ],
     videoSection: 'subgerencia_rco',
-  },
-  {
-    id: 'com',
-    sigla: 'COM',
-    nombre: 'Construction Operation and Maintenance',
-    subgerente: 'Francisco Messen',
-    foto: fotoHombre,
-    proposito:
-      'Asegurar la continuidad y calidad del servicio eléctrico mediante la operación, mantenimiento y ejecución de proyectos en la red.',
-    procesos: ['Operación de red', 'Mantenimiento', 'Gestión de fallas', 'Planes de emergencia'],
-    videoSection: 'subgerencia_com',
   },
   {
     id: 'nd',
@@ -64,52 +52,72 @@ export const subgerencias: Subgerencia[] = [
     subgerente: 'Marco Castro',
     foto: fotoHombre,
     proposito:
-      'Planificar y desarrollar la red eléctrica asegurando eficiencia en inversiones, sostenibilidad y alineamiento con la regulación y estándares globales.',
-    procesos: [
-      'Planificación de red',
-      'Gestión de activos',
-      'Evaluación de proyectos',
-      'Nuevos negocios',
+      'Planificar y promover el desarrollo de la red de distribución eléctrica, identificando necesidades de inversión, riesgos y oportunidades de mejora para optimizar su desempeño y resiliencia. Impulsar nuevas oportunidades de negocio y soluciones técnicas eficientes y sostenibles, asegurando su alineación con los estándares globales y la normativa local.',
+    areas: [
+      'Network Analysis and Solutions Optimization',
+      'Network Business Opportunities Development',
+      'Engineering Support and Global Standards Adoption',
     ],
     videoSection: 'subgerencia_nd',
   },
+  {
+    id: 'com',
+    sigla: 'COM',
+    nombre: 'Construction and Maintenance',
+    subgerente: 'Francisco Messen',
+    foto: fotoHombre,
+    proposito:
+      'Gestionar la construcción, operación y mantenimiento de la red de distribución eléctrica, asegurando la continuidad, seguridad y calidad del suministro. Coordinar los trabajos en terreno, la atención de fallas y emergencias, así como la ejecución de proyectos y programas de mantenimiento, promoviendo la eficiencia operacional y la mejora continua de la infraestructura.',
+    areas: [
+      'Network Operation',
+      'Maintenance and Technical Support',
+      'Supply Chain',
+      'Meter Operation',
+      'Chile Operational Regional Area',
+    ],
+    videoSection: 'subgerencia_com',
+  },
 ]
 
-export const areasStaff = [
+export const areasStaff: AreaStaff[] = [
   {
-    id: 'finanzas',
-    nombre: 'Finanzas',
-    etiqueta: 'Gestión Financiera',
-    detalle:
-      'Lidera la planificación financiera, contabilidad y control de gestión. Garantiza la asignación eficiente de recursos, viabilidad presupuestaria y sustentabilidad económica de las inversiones de red.',
+    id: 'industrial-control',
+    nombre: 'Industrial Control',
+    lider: 'Francisco Evans',
+    foto: fotoHombre,
+    detalle: [
+      'Gestionar la planificación financiera, los presupuestos, las proyecciones y el control de gestión del negocio, monitoreando los resultados y proponiendo acciones de mejora. Evaluar y apoyar la aprobación de inversiones, el cumplimiento de objetivos y el impacto financiero de los aspectos regulatorios, contribuyendo a una toma de decisiones eficiente y alineada con la estrategia de la compañía.',
+    ],
   },
   {
-    id: 'auditoria',
-    nombre: 'Auditoría',
-    etiqueta: 'Control y Riesgos',
-    detalle:
-      'Monitorea la transparencia, mitiga riesgos y evalúa el control interno. Asegura que los procesos organizacionales cumplan con el marco legal, las políticas del Grupo Enel y el código ético.',
+    id: 'legal-assistance',
+    nombre: 'Legal Assistance',
+    lider: 'Alfredo Montes',
+    foto: fotoHombre,
+    detalle: [
+      'Monitorear los principales cambios legislativos y jurisprudenciales que puedan tener impacto en el negocio de Enel Grids, así como aquellos relacionados con derecho comercial, protección al consumidor, derecho administrativo, legislación crediticia y normativa de protección de datos personales.',
+      'Proporcionar asesoría jurídica a las unidades de negocio de Enel Grids.',
+      'Monitorear los litigios relacionados con Enel Grids y aquellos vinculados a materias de Enel X.',
+      'Gestionar los órganos societarios, el cumplimiento de la normativa del mercado de valores local y las actividades de cumplimiento asociadas a Enel Distribución Chile S.A., asegurando los procesos de información correspondientes.',
+    ],
   },
   {
-    id: 'personas',
-    nombre: 'Personas y Organizacionales',
-    etiqueta: 'Talento y Cultura',
-    detalle:
-      'Gestiona la atracción, retención y desarrollo de talento. Impulsa la transformación cultural, diversidad, inclusión, el bienestar y clima laboral de los equipos de la distribuidora.',
+    id: 'regulatory',
+    nombre: 'Regulatory',
+    lider: 'Rodrigo Maldonado',
+    foto: fotoHombre,
+    detalle: [
+      'Definir y resguardar la posición de la compañía frente a los desafíos regulatorios, identificando tendencias y evaluando su impacto económico y financiero en el negocio. Gestionar los asuntos regulatorios y la relación con organismos y grupos de interés relevantes, contribuyendo a la toma de decisiones estratégicas.',
+    ],
   },
   {
-    id: 'legal',
-    nombre: 'Legal',
-    etiqueta: 'Asesoría Jurídica y Regulatoria',
-    detalle:
-      'Proporciona asesoría jurídica y regulatoria integral. Asegura el resguardo legal de la infraestructura, vigila el cumplimiento de normas de mercado eléctrico y formaliza contratos clave.',
-  },
-  {
-    id: 'comunicaciones',
-    nombre: 'Comunicaciones Externas y Sostenibilidad',
-    etiqueta: 'Reputación y Sostenibilidad',
-    detalle:
-      'Gestiona la relación con los medios, reputación y comunidades locales. Lidera la estrategia de sostenibilidad, valor compartido, compromisos ambientales y el apoyo a la transición energética.',
+    id: 'people-organization',
+    nombre: 'People and Organization',
+    lider: 'William Espitia',
+    foto: fotoHombre,
+    detalle: [
+      'Gestionar los procesos de personas y desarrollo organizacional, impulsando la planificación del talento, la movilidad interna y el diseño de estructuras organizacionales alineadas con las necesidades del negocio. Administrar las políticas de compensaciones y las relaciones laborales con sindicatos y organizaciones de trabajadores, contribuyendo al desarrollo de las personas y la organización.',
+    ],
   },
 ]
 
