@@ -58,13 +58,13 @@ export function PoliticasISOSection() {
         style={{ perspective: 1200 }}
       >
         <Reveal y={0} className="relative z-10 max-w-3xl">
-          <RevealTexto as="h2" className="text-enel-navy text-3xl md:text-5xl">
+          <RevealTexto as="h2" className="text-enel-navy text-4xl md:text-6xl">
             Nuestro marco de actuación
           </RevealTexto>
           <RevealTexto
             as="p"
             variante="parrafo"
-            className="mt-4 text-lg font-medium text-neutral-700 md:text-xl"
+            className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
             8 normas ISO que guían nuestra forma de trabajar día a día.
           </RevealTexto>

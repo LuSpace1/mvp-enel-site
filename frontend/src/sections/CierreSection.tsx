@@ -85,16 +85,13 @@ export function CierreSection() {
             <span className="text-enel-blue border-enel-blue/20 bg-enel-blue/5 rounded-full border px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] uppercase">
               Sigue explorando
             </span>
-            <RevealTexto
-              as="h2"
-              className="text-enel-navy mt-6 text-4xl leading-[1.05] md:text-6xl"
-            >
+            <RevealTexto as="h2" className="text-enel-navy mt-6 text-4xl md:text-6xl">
               Accesos Rápidos
             </RevealTexto>
             <RevealTexto
               as="p"
               variante="parrafo"
-              className="mt-6 max-w-xl text-base leading-relaxed font-medium text-neutral-500 md:text-lg"
+              className="mt-4 max-w-xl text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
             >
               Accede en un solo lugar a las políticas, contactos y canales que necesitas para tu
               trabajo.

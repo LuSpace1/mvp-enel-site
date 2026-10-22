@@ -74,13 +74,13 @@ export function VistaConcesionSection() {
               <p className="text-enel-blue text-sm font-bold tracking-[0.2em] uppercase">
                 Concesión en detalle
               </p>
-              <RevealTexto as="h2" className="text-enel-navy mt-4 text-3xl md:text-5xl">
+              <RevealTexto as="h2" className="text-enel-navy mt-4 text-4xl md:text-6xl">
                 Nuestro territorio, <span className="text-enel-blue">trazo a trazo</span>
               </RevealTexto>
               <RevealTexto
                 as="p"
                 variante="parrafo"
-                className="mt-5 text-base leading-relaxed font-medium text-neutral-600"
+                className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
               >
                 Organizamos nuestra red en 4 zonas de concesión —Chacabuco, Cordillera, Pacífico y
                 Florida— que cubren gran parte de la Región Metropolitana. Toca una zona para

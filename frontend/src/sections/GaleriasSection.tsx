@@ -179,16 +179,13 @@ export function GaleriasSection() {
             loading="lazy"
             decoding="async"
           />
-          <RevealTexto
-            as="h2"
-            className="text-enel-navy 3xl:mt-5 3xl:text-6xl mt-4 text-4xl md:text-5xl"
-          >
+          <RevealTexto as="h2" className="text-enel-navy mt-4 text-4xl md:text-6xl">
             Herramientas ME
           </RevealTexto>
           <RevealTexto
             as="p"
             variante="parrafo"
-            className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
+            className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
             Explora las herramientas y plataformas que facilitan tu día a día, accede a información,
             servicios y oportunidades para tu desarrollo.
@@ -224,13 +221,13 @@ export function GaleriasSection() {
             </motion.figure>
 
             <div className="max-w-xl">
-              <RevealTexto as="h2" className="3xl:text-5xl text-3xl md:text-4xl">
+              <RevealTexto as="h2" className="text-enel-navy text-4xl md:text-6xl">
                 Mantente al día
               </RevealTexto>
               <RevealTexto
                 as="p"
                 variante="parrafo"
-                className="3xl:text-lg mt-4 text-base leading-relaxed font-medium text-neutral-600"
+                className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
               >
                 La energía que mueve a Chile también vive en nuestra intranet: novedades, personas y
                 recursos para tu día a día.
@@ -262,13 +259,13 @@ export function GaleriasSection() {
             transition={{ type: 'spring', stiffness: 70, damping: 18 }}
             style={{ transformOrigin: 'bottom center' }}
           >
-            <RevealTexto as="h2" className="text-enel-navy 3xl:text-6xl text-4xl md:text-5xl">
+            <RevealTexto as="h2" className="text-enel-navy text-4xl md:text-6xl">
               Conoce nuestras instalaciones
             </RevealTexto>
             <RevealTexto
               as="p"
               variante="parrafo"
-              className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
+              className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
             >
               Los espacios donde trabaja la energía que mueve a Chile, desde el centro de formación
               hasta las oficinas de operación.

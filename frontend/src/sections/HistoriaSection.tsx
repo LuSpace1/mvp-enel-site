@@ -71,7 +71,7 @@ export function HistoriaSection() {
               Memoria Anual 2025
             </span>
 
-            <RevealTexto as="h2" className="mt-4 text-4xl leading-[1.02] text-white md:text-6xl">
+            <RevealTexto as="h2" className="mt-4 text-4xl text-white md:text-6xl">
               Grupo Enel
             </RevealTexto>
 
