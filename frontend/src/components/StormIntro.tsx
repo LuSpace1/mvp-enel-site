@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { ArrowDown } from '@phosphor-icons/react'
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
 import type { MotionValue } from 'motion/react'
 
@@ -65,6 +66,7 @@ function PiezaLazo({
 export function StormIntro() {
   const reduce = useReducedMotion()
   const videoRef = useRef<HTMLVideoElement>(null)
+  const seccionRef = useRef<HTMLElement>(null)
 
   const marcarIntroTerminada = useViajeStore((estado) => estado.marcarIntroTerminada)
 
@@ -73,10 +75,40 @@ export function StormIntro() {
   // El logo entra con un resorte propio para que frene con un pequeño rebote.
   const escalaLogo = useMotionValue(4.5)
 
-  // El video de fondo parte apenas se entra, sin esperar al scroll.
+  // Reproduce el video solo cuando el intro está a la vista. Al bajar se pausa
+  // para no decodificar en loop fuera de pantalla; al volver a subir se reanuda.
   useEffect(() => {
     if (reduce || ahorraDatos) return
-    void videoRef.current?.play().catch(() => {})
+    const video = videoRef.current
+    const seccion = seccionRef.current
+    if (!video || !seccion) return
+
+    let visible = false
+
+    const sincronizar = () => {
+      if (visible && !document.hidden) {
+        void video.play().catch(() => {})
+      } else {
+        video.pause()
+      }
+    }
+
+    const observador = new IntersectionObserver(
+      ([entrada]) => {
+        visible = entrada?.isIntersecting ?? false
+        sincronizar()
+      },
+      { threshold: 0.1 },
+    )
+
+    const alCambiarVisibilidad = () => sincronizar()
+
+    observador.observe(seccion)
+    document.addEventListener('visibilitychange', alCambiarVisibilidad)
+    return () => {
+      observador.disconnect()
+      document.removeEventListener('visibilitychange', alCambiarVisibilidad)
+    }
   }, [reduce, ahorraDatos])
 
   // La portada que sigue a la intro puede mostrarse desde el inicio: la intro
@@ -115,11 +147,11 @@ export function StormIntro() {
   }, [prog, escalaLogo, reduce])
 
   const brillo = useTransform(prog, [0.38, 0.52], [0.4, 1.15])
-  const gris = useTransform(prog, [0.38, 0.52], [1, 0])
   const opOfficial = useTransform(prog, [0.42, 0.52], [0, 1])
   const opEsqueleto = useTransform(prog, [0.44, 0.54], [1, 0])
 
-  const imgFilter = useTransform(() => `brightness(${brillo.get()}) grayscale(${gris.get()})`)
+  // El logo ya es blanco: solo hace falta animar el brillo, sin grayscale.
+  const imgFilter = useTransform(brillo, (valor) => `brightness(${valor})`)
 
   // Título: entrada temprana, muy larga y progresiva
   const opEnel = useTransform(prog, [0.35, 0.7], [0, 1])
@@ -127,10 +159,22 @@ export function StormIntro() {
   const scaleEnel = useTransform(prog, [0.35, 0.7], [0.85, 1])
   const opDist = useTransform(prog, [0.4, 0.7], [0, 1])
 
+  // El mensaje entra en dos tiempos desde la derecha: primero la frase
+  // principal y luego la invitación.
+  const xMensaje = useTransform(opDist, [0.45, 0.72], [56, 0])
+  const opMensaje = useTransform(opDist, [0.45, 0.62], [0, 1])
+  const xInvitacion = useTransform(opDist, [0.66, 0.93], [56, 0])
+  const opInvitacion = useTransform(opDist, [0.66, 0.83], [0, 1])
+
+  const irAbajo = () => {
+    document.getElementById('portada')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   if (reduce) return null
 
   return (
     <section
+      ref={seccionRef}
       aria-label="Intro animado: logo Enel"
       className="relative z-50 h-dvh overflow-hidden bg-[#0b1f33]"
     >
@@ -148,7 +192,14 @@ export function StormIntro() {
         className="absolute inset-0 h-full w-full object-cover"
       />
 
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+      {/* Velo para estabilizar el contraste del logo y del texto sobre el video. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[#06111d]/30" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#06111d]/55 to-transparent"
+      />
+
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 pb-16 text-center sm:pb-20">
         <motion.div style={{ scale: escalaLogo }} className="relative w-[min(84vw,540px)]">
           <div className="relative">
             <motion.svg
@@ -178,13 +229,35 @@ export function StormIntro() {
             Distribución
           </motion.span>
         </motion.h1>
-        <motion.p
-          style={{ opacity: opDist }}
-          className="bg-enel-navy/40 mt-6 max-w-md rounded-full px-6 py-3 text-sm leading-relaxed text-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md md:text-base"
-        >
-          La energía que nos conecta comienza mucho antes. Descubre todo lo que hay detrás de
-          nuestra red.
+        <motion.p className="mt-7 max-w-xl text-white [text-shadow:0_1px_18px_rgba(0,0,0,0.55)]">
+          <motion.span
+            style={{ x: xMensaje, opacity: opMensaje }}
+            className="block text-lg leading-snug font-semibold sm:text-xl md:text-2xl"
+          >
+            La energía que nos conecta comienza mucho antes.
+          </motion.span>
+          <motion.span
+            style={{ x: xInvitacion, opacity: opInvitacion }}
+            className="mt-2 block text-sm leading-relaxed font-medium text-white/70 sm:text-base md:text-lg"
+          >
+            Descubre todo lo que hay detrás de nuestra red.
+          </motion.span>
         </motion.p>
+
+        <motion.button
+          type="button"
+          onClick={irAbajo}
+          aria-label="Bajar a la siguiente sección"
+          className="absolute inset-x-0 bottom-5 mx-auto flex w-fit cursor-pointer flex-col items-center gap-1.5 rounded-2xl px-5 py-2.5 text-white/60 drop-shadow-[0_1px_8px_rgba(0,0,0,0.55)] transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70 sm:bottom-7"
+          initial={reduce ? false : { opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.7, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <span className="text-[10px] font-semibold tracking-[0.22em] uppercase">
+            Desliza para descubrir
+          </span>
+          <ArrowDown size={15} weight="bold" className="animate-bounce" aria-hidden="true" />
+        </motion.button>
       </div>
     </section>
   )
