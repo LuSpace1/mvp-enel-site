@@ -17,11 +17,12 @@ import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { etapasCadena } from '@/lib/data/organizacion'
 
-import fotoOficinas from '@/assets/images/enel_oficinas.jpg'
-import fotoCentro from '@/assets/images/centro_de_exelencia_enel.jpg'
-import fotoMut from '@/assets/images/MUT.jpg'
-import fotoMutDia from '@/assets/images/MUT-02.jpg'
-import fotoTorre from '@/assets/images/torre_enel_mut.jpeg'
+import fotoCliente from '@/assets/images/cadena/customer-management.jpg'
+import fotoEstrategia from '@/assets/images/cadena/strategy-development.jpg'
+import fotoSuministro from '@/assets/images/cadena/supply-chain.jpg'
+import fotoIngenieria from '@/assets/images/cadena/engineering.jpg'
+import fotoConstruccion from '@/assets/images/cadena/construction-operation.jpg'
+import fotoCobro from '@/assets/images/cadena/service-to-cash.jpg'
 
 const ICONOS: Record<string, Icon> = {
   customer: Headset,
@@ -32,13 +33,15 @@ const ICONOS: Record<string, Icon> = {
   cash: HandCoins,
 }
 
+// Fotos genéricas por etapa (StockSnap.io, CC0): representan el proceso sin
+// personas ni escenas recargadas.
 const IMAGENES: Record<string, string> = {
-  customer: fotoOficinas,
-  strategy: fotoTorre,
-  supply: fotoMut,
-  engineering: fotoCentro,
-  construction: fotoMutDia,
-  cash: fotoOficinas,
+  customer: fotoCliente,
+  strategy: fotoEstrategia,
+  supply: fotoSuministro,
+  engineering: fotoIngenieria,
+  construction: fotoConstruccion,
+  cash: fotoCobro,
 }
 
 const CHEVRON = (primero: boolean) =>
@@ -54,7 +57,7 @@ export function CadenaValorSection() {
   const [indiceActivo, setIndiceActivo] = useState(0)
 
   const etapaActual = etapasCadena[indiceActivo] ?? etapasCadena[0]!
-  const imagenActual = IMAGENES[etapaActual.id] ?? fotoOficinas
+  const imagenActual = IMAGENES[etapaActual.id] ?? fotoCliente
   const total = etapasCadena.length
 
   function irA(indice: number) {
