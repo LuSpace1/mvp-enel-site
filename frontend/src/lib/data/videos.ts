@@ -2,13 +2,14 @@ import type { VideoLink } from '@/types/api'
 
 import { useVideosStore } from '@/store/useVideosStore'
 
+const VIDEO_PORTADA = 'https://www.youtube.com/watch?v=HvcKx1kIvfs'
 const VIDEO_MUESTRA = 'https://www.youtube.com/watch?v=EQeBgrPs_-Y'
 
 const videosMock: VideoLink[] = [
   {
     id: 1,
     title: 'Mensaje del Gerente General Paolo Leidi',
-    youtube_url: VIDEO_MUESTRA,
+    youtube_url: VIDEO_PORTADA,
     section_identifier: 'hero_main',
     created_at: '',
     updated_at: '',
