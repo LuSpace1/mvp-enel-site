@@ -91,13 +91,18 @@ export function MeOfficeHerramientas() {
                   <h4 className="text-[1.35rem] leading-tight font-semibold tracking-tight text-white">
                     {herramienta.nombre}
                   </h4>
+                  {herramienta.nota && (
+                    <p className="text-enel-blue-light/80 mt-1.5 text-[10px] font-semibold tracking-[0.14em] uppercase">
+                      {herramienta.nota}
+                    </p>
+                  )}
                   <p className="mt-2.5 max-w-[27ch] text-sm leading-relaxed text-white/55">
                     {herramienta.descripcion}
                   </p>
                 </div>
                 <div className="mt-auto pt-8">
                   <span className="inline-flex items-center gap-2.5 rounded-full bg-white/[0.06] py-1.5 pr-1.5 pl-4 text-[11px] font-bold tracking-[0.14em] text-white/75 uppercase transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
-                    Abrir herramienta
+                    Acceder
                     <span className="bg-enel-blue flex h-7 w-7 items-center justify-center rounded-full text-white transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
                       <ArrowUpRight size={13} weight="bold" />
                     </span>

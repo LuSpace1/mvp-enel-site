@@ -190,8 +190,8 @@ export function GaleriasSection() {
             variante="parrafo"
             className="3xl:mt-6 3xl:text-xl mt-5 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
-            Todo el ecosistema ME en un solo lugar: accede directo a tus herramientas, formación y
-            beneficios.
+            Explora las herramientas y plataformas que facilitan tu día a día, accede a información,
+            servicios y oportunidades para tu desarrollo.
           </RevealTexto>
         </Reveal>
 
