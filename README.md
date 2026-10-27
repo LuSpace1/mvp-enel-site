@@ -19,7 +19,7 @@ Portal interactivo de Enel Distribución Chile. Es una sola página que se recor
 ## Tecnologías
 
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS 4, Motion, Zustand
-- **Backend:** Django 5, Django REST Framework, SQLite
+- **Backend:** Django 6, Django REST Framework, SQLite
 - **Lint y formato:** oxlint, Prettier
 
 ## Cómo correrlo
