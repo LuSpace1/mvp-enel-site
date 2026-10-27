@@ -15,6 +15,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
 import { RevealTexto } from '@/components/ui/RevealTexto'
+import { useCampo } from '@/lib/cms/contenido'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { etapasCadena } from '@/lib/data/organizacion'
 
@@ -50,11 +51,15 @@ const CHEVRON = (primero: boolean) =>
     ? 'polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%)'
     : 'polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%, 18px 50%)'
 
-const SUBTITULO =
-  'Conoce cómo se conectan nuestros procesos y áreas clave, desde la planificación hasta la atención de nuestros clientes, para entregar un servicio eléctrico continuo, seguro y de calidad.'
-
 export function CadenaValorSection() {
   const reduce = useReducedMotion()
+  const titulo = useCampo('cadena', 'titulo', 'Cadena de')
+  const tituloDestacado = useCampo('cadena', 'titulo_destacado', 'Valor')
+  const intro = useCampo(
+    'cadena',
+    'intro',
+    'Conoce cómo se conectan nuestros procesos y áreas clave, desde la planificación hasta la atención de nuestros clientes, para entregar un servicio eléctrico continuo, seguro y de calidad.',
+  )
   const [indiceActivo, setIndiceActivo] = useState(0)
   const [procesoAbierto, setProcesoAbierto] = useState<number | null>(null)
 
@@ -75,14 +80,14 @@ export function CadenaValorSection() {
     <SectionShell id="cadena" className="relative overflow-hidden bg-white">
       <div className="mx-auto max-w-3xl text-center">
         <RevealTexto as="h2" className="text-enel-navy text-4xl md:text-6xl">
-          Cadena de <span className="text-enel-blue">Valor</span>
+          {titulo} <span className="text-enel-blue">{tituloDestacado}</span>
         </RevealTexto>
         <RevealTexto
           as="p"
           variante="parrafo"
           className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
         >
-          {SUBTITULO}
+          {intro}
         </RevealTexto>
       </div>
 

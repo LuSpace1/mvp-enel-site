@@ -1,55 +1,21 @@
 import { lazy, memo, Suspense, useEffect, useRef } from 'react'
+
 import { Nav } from '@/components/Nav'
 import { SmoothScroll } from '@/components/SmoothScroll'
 import { Indice } from '@/components/Indice'
 import { StormIntro } from '@/components/StormIntro'
-import { useAuthStore } from '@/store/useAuthStore'
+import { useContenidoStore, useNavegacion } from '@/lib/cms/contenido'
+import { componenteDeSeccion } from '@/lib/cms/secciones'
 import { useVideosStore } from '@/store/useVideosStore'
 import { useViajeStore } from '@/store/useViajeStore'
 
-const PortadaDelViaje = lazy(() =>
-  import('@/components/PortadaDelViaje').then((modulo) => ({ default: modulo.PortadaDelViaje })),
-)
-const HistoriaSection = lazy(() =>
-  import('@/sections/HistoriaSection').then((modulo) => ({ default: modulo.HistoriaSection })),
-)
-const CulturaSection = lazy(() =>
-  import('@/sections/CulturaSection').then((modulo) => ({ default: modulo.CulturaSection })),
-)
-const OrganigramaSection = lazy(() =>
-  import('@/sections/OrganigramaSection').then((modulo) => ({
-    default: modulo.OrganigramaSection,
-  })),
-)
-const VistaConcesionSection = lazy(() =>
-  import('@/sections/VistaConcesionSection').then((modulo) => ({
-    default: modulo.VistaConcesionSection,
-  })),
-)
-const CadenaValorSection = lazy(() =>
-  import('@/sections/CadenaValorSection').then((modulo) => ({
-    default: modulo.CadenaValorSection,
-  })),
-)
-const PoliticasISOSection = lazy(() =>
-  import('@/sections/PoliticasISOSection').then((modulo) => ({
-    default: modulo.PoliticasISOSection,
-  })),
-)
-const GaleriasSection = lazy(() =>
-  import('@/sections/GaleriasSection').then((modulo) => ({
-    default: modulo.GaleriasSection,
-  })),
-)
-const CierreSection = lazy(() =>
-  import('@/sections/CierreSection').then((modulo) => ({ default: modulo.CierreSection })),
-)
 const Footer = lazy(() =>
   import('@/sections/CierreSection').then((modulo) => ({ default: modulo.Footer })),
 )
 
 const Secciones = memo(function Secciones() {
   const navegar = useViajeStore((estado) => estado.navegar)
+  const navegacion = useNavegacion()
   const contenedorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -71,69 +37,42 @@ const Secciones = memo(function Secciones() {
 
     nodos.forEach((nodo) => observer.observe(nodo))
     return () => observer.disconnect()
-  }, [navegar])
+  }, [navegar, navegacion])
 
   return (
     <div ref={contenedorRef}>
-      <div data-seccion="portada" className="scroll-mt-32">
-        <PortadaDelViaje />
-      </div>
-
-      <div data-seccion="historia" className="scroll-mt-32">
-        <HistoriaSection />
-      </div>
-
-      <div data-seccion="cultura" className="scroll-mt-32">
-        <CulturaSection />
-      </div>
-
-      <div data-seccion="organigrama" className="scroll-mt-32">
-        <OrganigramaSection />
-      </div>
-
-      <div data-seccion="concesion-detalle" className="scroll-mt-32">
-        <VistaConcesionSection />
-      </div>
-
-      <div data-seccion="cadena" className="scroll-mt-32">
-        <CadenaValorSection />
-      </div>
-
-      <div data-seccion="politicas" className="scroll-mt-32">
-        <PoliticasISOSection />
-      </div>
-
-      <div data-seccion="galerias" className="scroll-mt-32">
-        <GaleriasSection />
-      </div>
-
-      <div data-seccion="cierre" className="scroll-mt-32">
-        <CierreSection />
-      </div>
-
+      {navegacion.map(({ id }) => {
+        const Componente = componenteDeSeccion(id)
+        if (!Componente) return null
+        return (
+          <div key={id} data-seccion={id} className="scroll-mt-32">
+            <Componente />
+          </div>
+        )
+      })}
       <Footer />
     </div>
   )
 })
 
-export function Viaje() {
-  const initAnonymous = useAuthStore((estado) => estado.initAnonymous)
+export function Viaje({ preview = false }: { preview?: boolean }) {
+  const cargarContenido = useContenidoStore((estado) => estado.cargar)
   const cargarVideos = useVideosStore((estado) => estado.cargar)
 
   useEffect(() => {
     history.scrollRestoration = 'manual'
     window.scrollTo(0, 0)
-    void initAnonymous()
+    void cargarContenido()
     void cargarVideos()
-  }, [initAnonymous, cargarVideos])
+  }, [cargarContenido, cargarVideos])
 
   return (
     <div className="text-enel-navy font-body min-h-svh bg-white">
       <SmoothScroll />
       <Nav />
       <Indice />
-      <StormIntro />
-      <main className="min-h-dvh pt-16">
+      {!preview && <StormIntro />}
+      <main className={preview ? 'min-h-dvh' : 'min-h-dvh pt-16'}>
         <Suspense fallback={null}>
           <Secciones />
         </Suspense>

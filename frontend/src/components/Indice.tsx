@@ -4,26 +4,8 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { clsx } from 'clsx'
 
 import { track } from '@/lib/analytics'
+import { useNavegacion, type ItemNavegacion } from '@/lib/cms/contenido'
 import { desplazarASeccion } from '@/lib/scroll'
-
-interface IndiceItem {
-  id: string
-  etiqueta: string
-}
-
-const ITEMS: IndiceItem[] = [
-  { id: 'portada', etiqueta: 'Inicio' },
-  { id: 'historia', etiqueta: 'Historia' },
-  { id: 'cultura', etiqueta: 'Cultura' },
-  { id: 'organigrama', etiqueta: 'Equipos' },
-  { id: 'concesion-detalle', etiqueta: 'Concesión' },
-  { id: 'cadena', etiqueta: 'Cadena' },
-  { id: 'politicas', etiqueta: 'SIG' },
-  { id: 'galerias', etiqueta: 'ME' },
-  { id: 'personas', etiqueta: 'Novedades' },
-  { id: 'espacios', etiqueta: 'Espacios' },
-  { id: 'cierre', etiqueta: 'Cierre' },
-]
 
 const SPRING_BURBUJA = {
   type: 'spring' as const,
@@ -34,6 +16,7 @@ const SPRING_BURBUJA = {
 
 export const Indice = memo(function Indice() {
   const reduce = useReducedMotion()
+  const items = useNavegacion()
   const [activo, setActivo] = useState(0)
   const [mostrar, setMostrar] = useState(false)
 
@@ -50,7 +33,7 @@ export const Indice = memo(function Indice() {
     // layout). Así el scroll no fuerza 11 reflows por frame.
     function recalcularGeometria() {
       linea = window.innerHeight * 0.35 + 64
-      tops = ITEMS.map((item) => {
+      tops = items.map((item) => {
         const elemento = document.getElementById(item.id)
         return elemento ? elemento.getBoundingClientRect().top + window.scrollY : null
       })
@@ -74,7 +57,7 @@ export const Indice = memo(function Indice() {
         if (top !== null && top <= umbral) indice = i
       }
       const fondoAlcanzado = window.innerHeight + scroll >= altoDocumento - 2
-      if (fondoAlcanzado) indice = ITEMS.length - 1
+      if (fondoAlcanzado) indice = items.length - 1
       setActivo(indice)
 
       const enHero = hayPortada ? finPortada - scroll > window.innerHeight * 0.25 : true
@@ -106,9 +89,9 @@ export const Indice = memo(function Indice() {
       window.removeEventListener('scroll', alScrollear)
       window.removeEventListener('resize', invalidar)
     }
-  }, [])
+  }, [items])
 
-  function irA(item: IndiceItem) {
+  function irA(item: ItemNavegacion) {
     track('indice.clic', { paso: item.id })
     desplazarASeccion(item.id)
   }
@@ -126,7 +109,7 @@ export const Indice = memo(function Indice() {
         >
           <div className="relative rounded-full border border-white/70 bg-white/55 p-1 shadow-[0_8px_32px_rgba(20,20,19,0.10)] backdrop-blur-2xl backdrop-saturate-150">
             <ul className="relative flex flex-col">
-              {ITEMS.map((item, i) => {
+              {items.map((item, i) => {
                 const esActivo = i === activo
                 return (
                   <li key={item.id}>

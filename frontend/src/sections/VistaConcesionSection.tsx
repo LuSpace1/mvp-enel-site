@@ -3,6 +3,7 @@ import { MapPin } from '@phosphor-icons/react'
 
 import { Reveal } from '@/components/ui/Reveal'
 import { RevealTexto } from '@/components/ui/RevealTexto'
+import { useCampo } from '@/lib/cms/contenido'
 import { MapaConcesion } from '@/components/mapa/MapaConcesion'
 import { ProveedorMapa } from '@/components/mapa/ProveedorMapa'
 import { useMapaConcesion } from '@/components/mapa/contexto'
@@ -58,6 +59,14 @@ function ChipEstado() {
 
 export function VistaConcesionSection() {
   const reduce = useReducedMotion() ?? false
+  const kicker = useCampo('concesion-detalle', 'kicker', 'Concesión en detalle')
+  const titulo = useCampo('concesion-detalle', 'titulo', 'Nuestro territorio,')
+  const tituloDestacado = useCampo('concesion-detalle', 'titulo_destacado', 'trazo a trazo')
+  const intro = useCampo(
+    'concesion-detalle',
+    'intro',
+    'Organizamos nuestra red en 4 zonas de concesión —Chacabuco, Cordillera, Pacífico y Florida— que cubren gran parte de la Región Metropolitana. Toca una zona para explorar sus comunas y activa el Modo Rayos X para ver las cifras clave y las subestaciones de un vistazo.',
+  )
 
   return (
     <section id="concesion-detalle" className="relative overflow-hidden bg-white py-14 md:py-20">
@@ -72,20 +81,17 @@ export function VistaConcesionSection() {
           <div className="flex flex-col items-center text-center">
             <Reveal y={0} className="mb-10 max-w-2xl">
               <p className="text-enel-blue text-sm font-bold tracking-[0.2em] uppercase">
-                Concesión en detalle
+                {kicker}
               </p>
               <RevealTexto as="h2" className="text-enel-navy mt-4 text-4xl md:text-6xl">
-                Nuestro territorio, <span className="text-enel-blue">trazo a trazo</span>
+                {titulo} <span className="text-enel-blue">{tituloDestacado}</span>
               </RevealTexto>
               <RevealTexto
                 as="p"
                 variante="parrafo"
                 className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
               >
-                Organizamos nuestra red en 4 zonas de concesión —Chacabuco, Cordillera, Pacífico y
-                Florida— que cubren gran parte de la Región Metropolitana. Toca una zona para
-                explorar sus comunas y activa el Modo Rayos X para ver las cifras clave y las
-                subestaciones de un vistazo.
+                {intro}
               </RevealTexto>
 
               <ChipEstado />

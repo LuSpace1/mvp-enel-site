@@ -3,34 +3,13 @@ import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import { List, X } from '@phosphor-icons/react'
 
 import { track } from '@/lib/analytics'
+import { useNavegacion } from '@/lib/cms/contenido'
 import { desplazarASeccion } from '@/lib/scroll'
 import { clsx } from 'clsx'
 
 import { useViajeStore } from '@/store/useViajeStore'
-import { PASOS_VIAJE } from '@/lib/data/viaje'
 
 import logoEnel from '@/assets/icons/Enel_Group_logo.svg'
-
-interface NavItem {
-  id: string
-  etiqueta: string
-}
-
-const ITEMS: NavItem[] = [
-  { id: 'portada', etiqueta: 'Inicio' },
-  { id: 'historia', etiqueta: 'Historia' },
-  { id: 'cultura', etiqueta: 'Cultura' },
-  { id: 'organigrama', etiqueta: 'Equipos' },
-  { id: 'concesion-detalle', etiqueta: 'Concesión' },
-  { id: 'cadena', etiqueta: 'Cadena' },
-  { id: 'politicas', etiqueta: 'SIG' },
-  { id: 'galerias', etiqueta: 'ME' },
-  { id: 'personas', etiqueta: 'Novedades' },
-  { id: 'espacios', etiqueta: 'Espacios' },
-  { id: 'cierre', etiqueta: 'Cierre' },
-]
-
-const INDICE_POR_ID = new Map(PASOS_VIAJE.map((paso, indice) => [paso.id, indice]))
 
 function irA(id: string) {
   track('nav.clic', { paso: id })
@@ -41,9 +20,13 @@ export function Nav() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const reduce = useReducedMotion()
   const pasoActual = useViajeStore((estado) => estado.pasoActual)
+  const items = useNavegacion()
 
-  const indiceActual = INDICE_POR_ID.get(pasoActual) ?? 0
-  const progreso = Math.max(0, indiceActual / (PASOS_VIAJE.length - 1))
+  const indiceActual = Math.max(
+    0,
+    items.findIndex((item) => item.id === pasoActual),
+  )
+  const progreso = items.length > 1 ? indiceActual / (items.length - 1) : 0
 
   return (
     <motion.header
@@ -74,7 +57,7 @@ export function Nav() {
         </button>
 
         <ul className="hidden items-center gap-1 lg:flex">
-          {ITEMS.map((item) => (
+          {items.map((item) => (
             <li key={item.id}>
               <button
                 type="button"
@@ -113,7 +96,7 @@ export function Nav() {
             data-lenis-prevent
             className="border-enel-fog/70 absolute top-16 right-0 left-0 z-30 flex max-h-[70vh] flex-col overflow-y-auto border-b bg-white p-4 shadow-2xl lg:hidden"
           >
-            {ITEMS.map((item) => (
+            {items.map((item) => (
               <button
                 key={item.id}
                 onClick={() => {

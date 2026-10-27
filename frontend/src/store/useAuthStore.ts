@@ -2,66 +2,106 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 import { http } from '@/lib/http'
-import { track } from '@/lib/analytics'
-import type { AnonymousAuthResponse } from '@/types/api'
+import type { CmsCapabilities } from '@/types/cms'
+
+export interface AuthUser {
+  id: string
+  username: string
+  enel_id?: string | null
+  email?: string
+  full_name?: string
+  is_active?: boolean
+  groups?: string[]
+  roles: string[]
+  capabilities: CmsCapabilities
+}
 
 type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'error'
 
-interface AuthState {
-  uuid: string | null
-  access: string | null
-  refresh: string | null
-  status: AuthStatus
-  initAnonymous: () => Promise<void>
+interface LoginResponse {
+  access: string
+  refresh: string
+  user: AuthUser
 }
 
-function generarUuid(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID()
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (caracter) => {
-    const aleatorio = (Math.random() * 16) | 0
-    const valor = caracter === 'x' ? aleatorio : (aleatorio & 0x3) | 0x8
-    return valor.toString(16)
-  })
+interface AuthState {
+  access: string | null
+  refresh: string | null
+  user: AuthUser | null
+  status: AuthStatus
+  error: string | null
+  login: (username: string, password: string) => Promise<void>
+  logout: () => void
+  setSession: (access: string, refresh?: string | null) => void
+  actualizarPerfil: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      uuid: null,
       access: null,
       refresh: null,
+      user: null,
       status: 'idle',
+      error: null,
 
-      initAnonymous: async () => {
-        const estado = get().status
-        if (estado === 'authenticated' || estado === 'loading') return
-
-        set({ status: 'loading' })
-
+      login: async (username, password) => {
+        set({ status: 'loading', error: null })
         try {
-          const uuid = get().uuid ?? generarUuid()
-          const { data } = await http.post<AnonymousAuthResponse>('/auth/anonymous/', { uuid })
+          const { data } = await http.post<LoginResponse>('/auth/login/', { username, password })
           set({
-            uuid,
             access: data.access,
             refresh: data.refresh,
+            user: data.user,
             status: 'authenticated',
+            error: null,
           })
-          track('auth.anonyma.exitosa', { uuid })
         } catch {
-          set({ status: 'error' })
-          track('auth.anonyma.fallida')
+          set({
+            status: 'error',
+            error: 'Usuario o contraseña incorrectos.',
+            access: null,
+            refresh: null,
+            user: null,
+          })
+          throw new Error('login_failed')
+        }
+      },
+
+      logout: () => {
+        set({
+          access: null,
+          refresh: null,
+          user: null,
+          status: 'idle',
+          error: null,
+        })
+      },
+
+      setSession: (access, refresh) => {
+        set((state) => ({
+          access,
+          refresh: refresh === undefined ? state.refresh : refresh,
+          status: 'authenticated',
+        }))
+      },
+
+      actualizarPerfil: async () => {
+        if (!get().access) return
+        try {
+          const { data } = await http.get<AuthUser>('/auth/me/')
+          set({ user: data, status: 'authenticated' })
+        } catch {
+          get().logout()
         }
       },
     }),
     {
       name: 'portal-enel-auth',
       partialize: (state) => ({
-        uuid: state.uuid,
         access: state.access,
         refresh: state.refresh,
+        user: state.user,
       }),
     },
   ),

@@ -4,6 +4,7 @@ import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import type { Variants } from 'motion/react'
 import { Reveal } from '@/components/ui/Reveal'
 import { RevealTexto } from '@/components/ui/RevealTexto'
+import { useCampo } from '@/lib/cms/contenido'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { VideoEmbed } from '@/components/ui/VideoEmbed'
 import { areasStaff, gerenteGeneral, subgerencias } from '@/lib/data/organizacion'
@@ -199,6 +200,12 @@ export function OrganigramaSection() {
   const [ggAbierto, setGgAbierto] = useState(false)
   const [videoActivo, setVideoActivo] = useState<{ url: string; titulo: string } | null>(null)
   const reduce = useReducedMotion()
+  const titulo = useCampo('organigrama', 'titulo', 'Estructura organizacional')
+  const intro = useCampo(
+    'organigrama',
+    'intro',
+    'Descubre cómo se estructura Enel Distribución, sus principales gerencias, líderes y áreas de apoyo transversal que contribuyen al funcionamiento del negocio.',
+  )
   const subAbierta = subgerencias.find((sub) => sub.id === nodoAbierto) ?? null
 
   useEffect(() => {
@@ -223,15 +230,14 @@ export function OrganigramaSection() {
       >
         <Reveal y={0} className="mx-auto mb-16 max-w-2xl text-center">
           <RevealTexto as="h2" className="text-enel-navy text-4xl md:text-6xl">
-            Estructura organizacional
+            {titulo}
           </RevealTexto>
           <RevealTexto
             as="p"
             variante="parrafo"
             className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
-            Descubre cómo se estructura Enel Distribución, sus principales gerencias, líderes y
-            áreas de apoyo transversal que contribuyen al funcionamiento del negocio.
+            {intro}
           </RevealTexto>
         </Reveal>
 

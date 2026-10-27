@@ -19,6 +19,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { track } from '@/lib/analytics'
+import { useCampo, useLista } from '@/lib/cms/contenido'
 import { politicasISO } from '@/lib/data/iso'
 
 const PORTAL_SIG = 'https://enelcom.sharepoint.com/sites/PortalSIG2/SitePages/Home.aspx'
@@ -45,8 +46,40 @@ const ESTILOS: Record<string, string> = {
   'seguridad-info': 'from-violet-500 to-purple-600',
 }
 
+interface PoliticaCms {
+  clave: string
+  nombre: string
+  codigo: string
+  resumen: string
+  url: string
+}
+
 export function PoliticasISOSection() {
   const reduce = useReducedMotion()
+  const titulo = useCampo('politicas', 'titulo', 'Nuestro marco de actuación')
+  const intro = useCampo(
+    'politicas',
+    'intro',
+    '8 normas ISO que guían nuestra forma de trabajar día a día. En Enel Distribución Chile y Enel Colina, contamos con un Sistema Integrado de Gestión (SIG) que nos permite fortalecer nuestros procesos, impulsar la mejora continua y trabajar de manera más segura, eficiente y responsable.',
+  )
+  const portalTitulo = useCampo('politicas', 'portal_titulo', 'Conoce nuestro Portal SIG')
+  const portalDescripcion = useCampo(
+    'politicas',
+    'portal_descripcion',
+    'Accede a la política completa, documentos asociados, normas ISO, procedimientos y toda la información del Sistema Integrado de Gestión.',
+  )
+  const portalUrl = useCampo('politicas', 'portal_url', PORTAL_SIG)
+  const portalCta = useCampo('politicas', 'portal_cta', 'Ir al Portal SIG')
+  const politicasCms = useLista<PoliticaCms>('politicas', 'politicas', [])
+  const politicas = politicasCms.length
+    ? politicasCms.map((politica) => ({
+        id: politica.clave,
+        nombre: politica.nombre,
+        codigo: politica.codigo,
+        resumen: politica.resumen,
+        url: politica.url,
+      }))
+    : politicasISO
 
   return (
     <SectionShell id="politicas" className="relative overflow-hidden bg-white">
@@ -59,28 +92,19 @@ export function PoliticasISOSection() {
       >
         <Reveal y={0} className="relative z-10 max-w-3xl">
           <RevealTexto as="h2" className="text-enel-navy text-4xl md:text-6xl">
-            Nuestro marco de actuación
+            {titulo}
           </RevealTexto>
           <RevealTexto
             as="p"
             variante="parrafo"
             className="mt-4 text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
-            8 normas ISO que guían nuestra forma de trabajar día a día.
-          </RevealTexto>
-          <RevealTexto
-            as="p"
-            variante="parrafo"
-            className="mt-3 text-base leading-relaxed text-neutral-600 md:text-lg"
-          >
-            En Enel Distribución Chile y Enel Colina, contamos con un Sistema Integrado de Gestión
-            (SIG) que nos permite fortalecer nuestros procesos, impulsar la mejora continua y
-            trabajar de manera más segura, eficiente y responsable.
+            {intro}
           </RevealTexto>
         </Reveal>
 
         <div className="relative z-10 mt-10 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-12 lg:grid-cols-4">
-          {politicasISO.map((politica, index) => {
+          {politicas.map((politica, index) => {
             const Icono = ICONOS[politica.id] ?? Certificate
             const estilo = ESTILOS[politica.id] ?? 'from-enel-navy to-enel-blue'
 
@@ -140,23 +164,20 @@ export function PoliticasISOSection() {
                 <p className="text-enel-blue/80 text-[11px] font-bold tracking-[0.2em] uppercase">
                   Profundiza en nuestro SIG
                 </p>
-                <h3 className="text-enel-navy mt-2 text-2xl md:text-3xl">
-                  Conoce nuestro Portal SIG
-                </h3>
+                <h3 className="text-enel-navy mt-2 text-2xl md:text-3xl">{portalTitulo}</h3>
                 <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-neutral-600 md:text-base">
-                  Accede a la política completa, documentos asociados, normas ISO, procedimientos y
-                  toda la información del Sistema Integrado de Gestión.
+                  {portalDescripcion}
                 </p>
               </div>
 
               <a
-                href={PORTAL_SIG}
+                href={portalUrl}
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => track('sig.portal.abrir')}
                 className="bg-enel-blue hover:bg-enel-blue-dark inline-flex shrink-0 items-center justify-center gap-2.5 self-start rounded-full px-6 py-3.5 text-sm font-bold text-white shadow-[0_14px_30px_rgba(0,111,187,0.28)] transition-all duration-300 hover:-translate-y-0.5 lg:self-auto"
               >
-                Ir al Portal SIG
+                {portalCta}
                 <ArrowUpRight size={17} weight="bold" />
               </a>
             </div>

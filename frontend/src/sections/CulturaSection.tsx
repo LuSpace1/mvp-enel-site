@@ -4,7 +4,28 @@ import { LayoutGroup, motion, useReducedMotion, type Variants } from 'motion/rea
 
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { SectionShell } from '@/components/ui/SectionShell'
+import { useCampo, useLista } from '@/lib/cms/contenido'
 import { valoresCultura } from '@/lib/data/cultura'
+
+import iconoConfianza from '@/assets/icons/valores/confianza.png'
+import iconoFlexibilidad from '@/assets/icons/valores/flexibilidad.png'
+import iconoInnovacion from '@/assets/icons/valores/innovacion.png'
+import iconoProactividad from '@/assets/icons/valores/proactividad.png'
+import iconoRespeto from '@/assets/icons/valores/respeto.png'
+
+const ICONOS_VALOR: Record<string, string> = {
+  confianza: iconoConfianza,
+  innovacion: iconoInnovacion,
+  respeto: iconoRespeto,
+  proactividad: iconoProactividad,
+  flexibilidad: iconoFlexibilidad,
+}
+
+interface ValorCms {
+  icono: string
+  palabra: string
+  descripcion: string
+}
 
 const entrada: Variants = {
   hidden: (indice: number) => ({
@@ -34,6 +55,20 @@ let entradaEjecutada = false
 
 export function CulturaSection() {
   const reduce = useReducedMotion()
+  const titulo = useCampo('cultura', 'titulo', 'Nuestros valores')
+  const intro = useCampo(
+    'cultura',
+    'intro',
+    'Los principios que guían nuestra forma de actuar, tomar decisiones y enfrentar los desafíos del negocio, orientando nuestro compromiso con las personas, los clientes y el futuro de la energía.',
+  )
+  const valoresCms = useLista<ValorCms>('cultura', 'valores', [])
+  const valores = valoresCms.length
+    ? valoresCms.map((valor) => ({
+        palabra: valor.palabra,
+        icono: ICONOS_VALOR[valor.icono] ?? iconoConfianza,
+        descripcion: valor.descripcion,
+      }))
+    : valoresCultura
   const [animarEntrada] = useState(() => !entradaEjecutada)
   const [valorActivo, setValorActivo] = useState<string | null>(null)
   // Las sombras solo se muestran cuando las tarjetas están en reposo: se ocultan
@@ -67,7 +102,7 @@ export function CulturaSection() {
       >
         <div className="relative z-10 mb-12 text-center">
           <RevealTexto as="h2" className="text-enel-navy text-4xl md:text-6xl">
-            Nuestros valores
+            {titulo}
           </RevealTexto>
           <RevealTexto
             as="p"
@@ -75,16 +110,14 @@ export function CulturaSection() {
             delay={0.15}
             className="mx-auto mt-4 max-w-2xl text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
-            Los principios que guían nuestra forma de actuar, tomar decisiones y enfrentar los
-            desafíos del negocio, orientando nuestro compromiso con las personas, los clientes y el
-            futuro de la energía.
+            {intro}
           </RevealTexto>
         </div>
 
         <div className="relative z-10 flex flex-col items-center pb-10">
           <LayoutGroup>
             <div className="flex w-full flex-wrap justify-center gap-7">
-              {valoresCultura.map((valor, indice) => {
+              {valores.map((valor, indice) => {
                 const abierta = valorActivo === valor.palabra
 
                 return (

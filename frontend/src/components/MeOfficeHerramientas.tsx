@@ -3,8 +3,17 @@ import { ArrowUpRight, CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { useReducedMotion } from 'motion/react'
 
 import { MarcaMe } from '@/components/MarcasMe'
+import { useLista } from '@/lib/cms/contenido'
 import { herramientasMeOffice } from '@/lib/data/meOffice'
 import { track } from '@/lib/analytics'
+
+interface HerramientaCms {
+  clave: string
+  nombre: string
+  nota?: string
+  descripcion: string
+  url: string
+}
 
 /**
  * Carrusel horizontal de accesos directos a las herramientas ME. Las flechas
@@ -17,6 +26,16 @@ export function MeOfficeHerramientas() {
   const [puedeAdelante, setPuedeAdelante] = useState(true)
   const [indicador, setIndicador] = useState({ ancho: 1, desplazamiento: 0 })
   const reduce = useReducedMotion()
+  const herramientasCms = useLista<HerramientaCms>('galerias', 'herramientas', [])
+  const herramientas = herramientasCms.length
+    ? herramientasCms.map((herramienta) => ({
+        id: herramienta.clave,
+        nombre: herramienta.nombre,
+        nota: herramienta.nota || undefined,
+        descripcion: herramienta.descripcion,
+        url: herramienta.url,
+      }))
+    : herramientasMeOffice
 
   useEffect(() => {
     const el = carruselRef.current
@@ -64,7 +83,7 @@ export function MeOfficeHerramientas() {
         ref={carruselRef}
         className="no-scrollbar flex min-w-0 snap-x snap-mandatory scroll-px-1 gap-5 overflow-x-auto px-1 py-3"
       >
-        {herramientasMeOffice.map((herramienta) => (
+        {herramientas.map((herramienta) => (
           <a
             key={herramienta.id}
             href={herramienta.url || '#'}

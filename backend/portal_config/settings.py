@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "oauth2_provider",
     # Aplicaciones propias
     "apps.authentication",
+    "apps.cms",
     "content",
 ]
 
@@ -75,11 +76,17 @@ TEMPLATES = [
 WSGI_APPLICATION = "portal_config.wsgi.application"
 
 
-# Base de datos (SQLite para el MVP local).
+# Base de datos: PostgreSQL en desarrollo, tests y produccion.
+# Los valores locales viven en .env (ignorado por git). Django crea y elimina
+# su propia base de test a partir de estos parametros.
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.postgresql"),
+        "NAME": os.getenv("DB_NAME", "portal_enel"),
+        "USER": os.getenv("DB_USER", "postgres"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
+        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+        "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
 
@@ -136,6 +143,16 @@ OAUTH2_PROVIDER = {
 # Rol tecnico que administra el contenido de este sitio.
 # Nombre propuesto: debe confirmarse con Enel/CompAC antes de produccion.
 PORTAL_ADMIN_ROLE = os.getenv("PORTAL_ADMIN_ROLE", "Portal_Admin")
+
+# Roles del CMS. Nombres propuestos en docs/CMS_FEATURE.md, pendientes de
+# confirmacion con Enel/CompAC; configurables por entorno.
+CMS_EDITOR_ROLE = os.getenv("CMS_EDITOR_ROLE", "CMS_Editor")
+CMS_PUBLISHER_ROLE = os.getenv("CMS_PUBLISHER_ROLE", "CMS_Publisher")
+
+# Limites de imagenes del CMS (MVP: binarios en la base de datos).
+CMS_IMAGE_MAX_BYTES = int(os.getenv("CMS_IMAGE_MAX_BYTES", str(5 * 1024 * 1024)))
+CMS_IMAGE_MAX_DIMENSION = int(os.getenv("CMS_IMAGE_MAX_DIMENSION", "2560"))
+CMS_IMAGE_ALLOWED_TYPES = ("image/jpeg", "image/png", "image/webp")
 
 # Lista opcional de grupos que SCIM puede crear. Vacia = catalogo dinamico.
 # El rol de administracion del portal siempre esta permitido.

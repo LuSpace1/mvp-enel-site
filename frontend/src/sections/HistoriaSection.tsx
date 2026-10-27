@@ -4,40 +4,111 @@ import { ArrowUpRight } from '@phosphor-icons/react'
 import { Reveal } from '@/components/ui/Reveal'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { Parallax } from '@/components/ui/Parallax'
+import { RichText } from '@/components/ui/RichText'
 import { SectionShell } from '@/components/ui/SectionShell'
+import { useCampo, useLista } from '@/lib/cms/contenido'
 import { CHILE_MARKER, CHILE_PATH, CHILE_VIEWBOX } from '@/lib/data/chile-svg'
+import type { RichTextDoc } from '@/types/cms'
 
 import fotoHistoria from '@/assets/images/enel_oficinas.jpg'
+
+const COLORES_CIFRAS = ['text-[#d64200]', 'text-[#0555fa]', 'text-[#008556]', 'text-[#eb0052]']
 
 const statCards = [
   {
     statVal: '14,5',
     statUnit: 'TWh',
     statDesc: 'Energía distribuida al año',
-    color: 'text-[#d64200]',
+    color: COLORES_CIFRAS[0],
   },
   {
     statVal: '18.248',
     statUnit: 'km',
     statDesc: 'Red de distribución eléctrica',
-    color: 'text-[#0555fa]',
+    color: COLORES_CIFRAS[1],
   },
   {
     statVal: '33',
     statUnit: 'comunas',
     statDesc: 'Nuestra zona de concesión',
-    color: 'text-[#008556]',
+    color: COLORES_CIFRAS[2],
   },
   {
     statVal: '+2',
     statUnit: 'M',
     statDesc: 'Clientes en la Región Metropolitana',
-    color: 'text-[#eb0052]',
+    color: COLORES_CIFRAS[3],
   },
 ]
 
+const CUERPO_POR_DEFECTO: RichTextDoc = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text: 'Enel es una compañía multinacional de energía y uno de los principales operadores integrados del sector energético a nivel mundial.',
+        },
+      ],
+    },
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text: 'Con presencia en 27 países de los cinco continentes, cuenta con una capacidad instalada de 91,8 GW y más de 69 millones de consumidores finales.',
+        },
+      ],
+    },
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text: 'En Chile, el Grupo está presente a través de Enel Green Power, Enel Generación, Enel X, Enel Distribución y Enel Colina, impulsando el desarrollo y la transición energética del país.',
+        },
+      ],
+    },
+  ],
+}
+
+interface CifraCms {
+  valor: string
+  unidad: string
+  descripcion: string
+}
+
 export function HistoriaSection() {
   const reduce = useReducedMotion()
+  const kicker = useCampo('historia', 'kicker', 'Memoria Anual 2025')
+  const titulo = useCampo('historia', 'titulo', 'Grupo Enel')
+  const cuerpo = useCampo<RichTextDoc>('historia', 'cuerpo', CUERPO_POR_DEFECTO)
+  const ctaTexto = useCampo('historia', 'cta_texto', 'Conoce más sobre Grupo Enel')
+  const ctaUrl = useCampo(
+    'historia',
+    'cta_url',
+    'https://www.enel.cl/es/conoce-enel/grupo-enel.html',
+  )
+  const imagen = useCampo('historia', 'imagen', '')
+  const imagenAlt = useCampo('historia', 'imagen_alt', 'Oficinas de Enel')
+  const cifrasTitulo = useCampo('historia', 'cifras_titulo', 'Enel Distribución Chile en cifras')
+  const cifrasIntro = useCampo(
+    'historia',
+    'cifras_intro',
+    'Una empresa que impulsa la generación de valor y lidera el camino hacia la electrificación en Chile.',
+  )
+  const cifrasNota = useCampo('historia', 'cifras_nota', 'Cifras al cierre de 2025')
+  const cifrasCms = useLista<CifraCms>('historia', 'cifras', [])
+  const stats = cifrasCms.length
+    ? cifrasCms.map((cifra, indice) => ({
+        statVal: cifra.valor,
+        statUnit: cifra.unidad,
+        statDesc: cifra.descripcion,
+        color: COLORES_CIFRAS[indice % COLORES_CIFRAS.length],
+      }))
+    : statCards
 
   return (
     <SectionShell id="historia" className="relative overflow-hidden bg-white">
@@ -49,8 +120,8 @@ export function HistoriaSection() {
         transition={{ type: 'spring', stiffness: 40, damping: 16, mass: 1.2 }}
       >
         <img
-          src={fotoHistoria}
-          alt="Oficinas de Enel"
+          src={imagen || fotoHistoria}
+          alt={imagenAlt}
           loading="lazy"
           decoding="async"
           className="h-[540px] w-full object-cover object-center md:h-[600px]"
@@ -68,41 +139,32 @@ export function HistoriaSection() {
         <div className="absolute inset-y-0 left-0 flex w-full items-center bg-[#8f3a16]/72 md:w-[56%]">
           <div className="w-full max-w-[560px] px-7 py-12 md:px-14 md:py-16">
             <span className="text-[11px] font-bold tracking-[0.28em] text-white/75 uppercase">
-              Memoria Anual 2025
+              {kicker}
             </span>
 
             <RevealTexto as="h2" className="mt-4 text-4xl text-white md:text-6xl">
-              Grupo Enel
+              {titulo}
             </RevealTexto>
 
             <Reveal delay={0.15} y={18}>
-              <div className="mt-6 space-y-4 text-sm leading-relaxed text-white/85 md:text-[15px]">
-                <RevealTexto as="p" variante="parrafo">
-                  Enel es una compañía multinacional de energía y uno de los principales operadores
-                  integrados del sector energético a nivel mundial.
-                </RevealTexto>
-                <RevealTexto as="p" variante="parrafo" delay={0.1}>
-                  Con presencia en 27 países de los cinco continentes, cuenta con una capacidad
-                  instalada de 91,8 GW y más de 69 millones de consumidores finales.
-                </RevealTexto>
-                <RevealTexto as="p" variante="parrafo" delay={0.2}>
-                  En Chile, el Grupo está presente a través de Enel Green Power, Enel Generación,
-                  Enel X, Enel Distribución y Enel Colina, impulsando el desarrollo y la transición
-                  energética del país.
-                </RevealTexto>
-              </div>
+              <RichText
+                doc={cuerpo}
+                className="mt-6 text-sm leading-relaxed text-white/85 md:text-[15px]"
+              />
 
-              <a
-                href="https://www.enel.cl/es/conoce-enel/grupo-enel.html"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group mt-8 inline-flex h-12 items-center gap-3 rounded-full bg-white px-6 text-sm font-semibold text-[#8f3a16] shadow-lg transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.97]"
-              >
-                Conoce más sobre Grupo Enel
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#8f3a16]/10 transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:bg-[#8f3a16]/15">
-                  <ArrowUpRight size={13} weight="bold" />
-                </span>
-              </a>
+              {ctaTexto && ctaUrl && (
+                <a
+                  href={ctaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group mt-8 inline-flex h-12 items-center gap-3 rounded-full bg-white px-6 text-sm font-semibold text-[#8f3a16] shadow-lg transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.97]"
+                >
+                  {ctaTexto}
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#8f3a16]/10 transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:bg-[#8f3a16]/15">
+                    <ArrowUpRight size={13} weight="bold" />
+                  </span>
+                </a>
+              )}
             </Reveal>
           </div>
         </div>
@@ -120,7 +182,7 @@ export function HistoriaSection() {
         transition={{ type: 'spring', stiffness: 36, damping: 16, mass: 1.3 }}
       >
         <span className="text-base font-bold tracking-[0.18em] text-[#8f3a16] uppercase md:text-lg">
-          Enel Distribución Chile en cifras
+          {cifrasTitulo}
         </span>
 
         <div className="mt-6 grid items-center gap-10 md:mt-10 md:max-w-[58rem] md:grid-cols-[minmax(0,1fr)_minmax(0,19rem)] md:gap-12">
@@ -179,14 +241,13 @@ export function HistoriaSection() {
               variante="parrafo"
               className="text-enel-navy text-lg leading-snug font-semibold md:text-xl"
             >
-              Una empresa que impulsa la generación de valor y lidera el camino hacia la
-              electrificación en Chile.
+              {cifrasIntro}
             </RevealTexto>
 
             <div className="mt-7 border-t border-[#141413]/12">
-              {statCards.map((stat, indice) => (
+              {stats.map((stat, indice) => (
                 <motion.div
-                  key={stat.statDesc}
+                  key={`${stat.statDesc}-${indice}`}
                   initial={reduce ? false : { opacity: 0, y: 20 }}
                   whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.4 }}
@@ -213,7 +274,7 @@ export function HistoriaSection() {
         </div>
 
         <p className="mt-8 text-right text-[11px] font-semibold tracking-[0.16em] text-[#8f3a16] uppercase md:absolute md:right-8 md:bottom-6 md:mt-0">
-          Cifras al cierre de 2025
+          {cifrasNota}
         </p>
       </motion.div>
     </SectionShell>

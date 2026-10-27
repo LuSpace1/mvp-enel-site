@@ -2,8 +2,12 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import IdentityAuditLog, User
-from .permissions import is_portal_admin
-from .roles import admin_role_name
+from .permissions import is_portal_admin, user_has_group
+from .roles import (
+    admin_role_name,
+    cms_editor_role_name,
+    cms_publisher_role_name,
+)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -12,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
     groups = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
     full_name = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
+    capabilities = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -28,6 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_superuser",
             "groups",
             "roles",
+            "capabilities",
             "created_at",
             "updated_at",
         )
@@ -38,7 +44,21 @@ class UserSerializer(serializers.ModelSerializer):
     def get_roles(self, obj) -> list[str]:
         # Solo los roles vigentes en el catalogo otorgan permisos: un Role
         # desactivado no debe mostrarse como si diera acceso.
-        return [admin_role_name()] if is_portal_admin(obj) else []
+        roles: list[str] = []
+        if is_portal_admin(obj):
+            roles.append(admin_role_name())
+        for role_name in (cms_editor_role_name(), cms_publisher_role_name()):
+            if user_has_group(obj, [role_name]):
+                roles.append(role_name)
+        return roles
+
+    def get_capabilities(self, obj) -> dict[str, bool]:
+        from apps.cms.permissions import can_edit_cms, can_publish_cms
+
+        return {
+            "can_edit_cms": can_edit_cms(obj),
+            "can_publish_cms": can_publish_cms(obj),
+        }
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

@@ -11,6 +11,7 @@ import {
 import { motion, useReducedMotion } from 'motion/react'
 
 import { Reveal } from '@/components/ui/Reveal'
+import { useCampo, useLista } from '@/lib/cms/contenido'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { track } from '@/lib/analytics'
 import { desplazarASeccion } from '@/lib/scroll'
@@ -54,9 +55,40 @@ const RECURSOS = [
   },
 ]
 
+interface RecursoCms {
+  titulo: string
+  descripcion: string
+  url: string
+}
+
+const ICONOS_RECURSO = RECURSOS.map((recurso) => recurso.icono)
+const COLORES_RECURSO = RECURSOS.map((recurso) => recurso.color)
+
 export function CierreSection() {
   const reduce = useReducedMotion()
   const [subiendo, setSubiendo] = useState(false)
+  const kicker = useCampo('cierre', 'kicker', 'Sigue explorando')
+  const titulo = useCampo('cierre', 'titulo', 'Accesos Rápidos')
+  const intro = useCampo(
+    'cierre',
+    'intro',
+    'Accede en un solo lugar a las políticas, contactos y canales que necesitas para tu trabajo.',
+  )
+  const cita = useCampo(
+    'cierre',
+    'cita',
+    '"La energía de un equipo se multiplica cuando todos trabajan con el mismo propósito."',
+  )
+  const recursosCms = useLista<RecursoCms>('cierre', 'recursos', [])
+  const recursos = recursosCms.length
+    ? recursosCms.map((recurso, indice) => ({
+        titulo: recurso.titulo,
+        descripcion: recurso.descripcion,
+        url: recurso.url,
+        icono: ICONOS_RECURSO[indice % ICONOS_RECURSO.length]!,
+        color: COLORES_RECURSO[indice % COLORES_RECURSO.length]!,
+      }))
+    : RECURSOS
 
   const volverAlInicio = () => {
     track('cierre.volver')
@@ -83,24 +115,23 @@ export function CierreSection() {
         <Reveal y={0}>
           <div className="max-w-3xl">
             <span className="text-enel-blue border-enel-blue/20 bg-enel-blue/5 rounded-full border px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] uppercase">
-              Sigue explorando
+              {kicker}
             </span>
             <RevealTexto as="h2" className="text-enel-navy mt-6 text-4xl md:text-6xl">
-              Accesos Rápidos
+              {titulo}
             </RevealTexto>
             <RevealTexto
               as="p"
               variante="parrafo"
               className="mt-4 max-w-xl text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
             >
-              Accede en un solo lugar a las políticas, contactos y canales que necesitas para tu
-              trabajo.
+              {intro}
             </RevealTexto>
           </div>
         </Reveal>
 
         <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {RECURSOS.map((recurso, indice) => (
+          {recursos.map((recurso, indice) => (
             <motion.a
               key={recurso.titulo}
               href={recurso.url}
@@ -151,9 +182,7 @@ export function CierreSection() {
 
         <Reveal delay={0.2}>
           <div className="mt-24 flex flex-col items-center gap-8">
-            <p className="text-sm text-neutral-400 italic">
-              "La energía de un equipo se multiplica cuando todos trabajan con el mismo propósito."
-            </p>
+            <p className="text-sm text-neutral-400 italic">{cita}</p>
             <motion.button
               type="button"
               onClick={volverAlInicio}

@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { VideoEmbed } from '@/components/ui/VideoEmbed'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { track } from '@/lib/analytics'
-import { videoDeSeccion } from '@/lib/data/videos'
+import { useCampo } from '@/lib/cms/contenido'
 import { useViajeStore } from '@/store/useViajeStore'
 
 // Curva sinusoidal muestreada: el título sube y baja sin detenerse en los
@@ -19,8 +19,19 @@ const FLOTE_CTA_Y = Array.from({ length: 25 }, (_, i) =>
   Number((-2.5 + 2.5 * Math.cos((i / 24) * Math.PI * 2)).toFixed(2)),
 )
 
+const DESCRIPCION_POR_DEFECTO =
+  'Descubre quiénes somos, cómo funciona nuestro negocio y qué nos mueve cada día. Un espacio para conocer nuestra operación, los principios que nos guían y nuestro rol en la distribución de energía eléctrica en Chile.'
+
 export function PortadaDelViaje() {
-  const video = videoDeSeccion('hero_main')
+  const tituloDestacado = useCampo('portada', 'titulo_destacado', 'Enel Distribución')
+  const descripcion = useCampo('portada', 'descripcion', DESCRIPCION_POR_DEFECTO)
+  const ctaTexto = useCampo('portada', 'cta_texto', 'Explorar el sitio')
+  const videoUrl = useCampo(
+    'portada',
+    'video_youtube_url',
+    'https://www.youtube.com/watch?v=HvcKx1kIvfs',
+  )
+  const videoTitulo = useCampo('portada', 'video_titulo', 'Mensaje del Gerente General Paolo Leidi')
   const reduce = useReducedMotion()
 
   const introTerminada = useViajeStore((estado) => estado.introTerminada)
@@ -54,19 +65,19 @@ export function PortadaDelViaje() {
               animate={reduce ? undefined : { y: FLOTE_Y }}
               transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
             >
-              <span className="texto-gradiente-azul">Enel Distribución</span>
+              <span className="texto-gradiente-azul">{tituloDestacado}</span>
             </motion.span>
           </RevealTexto>
         </div>
 
-        {video && (
+        {videoUrl && (
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 20 }}
             animate={reduce || entrada ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 1.2, delay: entrada ? 0.5 : 0, ease: [0.16, 1, 0.3, 1] }}
             className="mx-auto mt-8 w-full max-w-3xl"
           >
-            <VideoEmbed youtubeUrl={video.youtube_url} titulo={video.title} />
+            <VideoEmbed youtubeUrl={videoUrl} titulo={videoTitulo} />
           </motion.div>
         )}
 
@@ -83,9 +94,7 @@ export function PortadaDelViaje() {
             delay={0.35}
             className="max-w-2xl text-base leading-relaxed font-medium text-neutral-600 md:text-lg"
           >
-            Descubre quiénes somos, cómo funciona nuestro negocio y qué nos mueve cada día. Un
-            espacio para conocer nuestra operación, los principios que nos guían y nuestro rol en la
-            distribución de energía eléctrica en Chile.
+            {descripcion}
           </RevealTexto>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <motion.button
@@ -129,7 +138,7 @@ export function PortadaDelViaje() {
               data-analytics-accion="iniciar"
             >
               <span className="bg-enel-pink/20 absolute -inset-0.5 -z-10 rounded-full blur-md" />
-              Explorar el sitio
+              {ctaTexto}
               <ArrowDown size={18} weight="bold" className="animate-bounce" />
             </motion.button>
           </div>
