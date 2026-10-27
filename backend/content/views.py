@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from users.permissions import IsPlatformAdmin
+from apps.authentication.permissions import IsPortalAdmin
 
 from .models import VideoLink
 from .serializers import VideoLinkSerializer
@@ -14,13 +14,13 @@ class PublicVideoListView(generics.ListAPIView):
 
 
 class AdminVideoListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsPlatformAdmin]
+    permission_classes = [IsPortalAdmin]
     queryset = VideoLink.objects.all()
     serializer_class = VideoLinkSerializer
 
 
 class AdminVideoDetailView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsPlatformAdmin]
+    permission_classes = [IsPortalAdmin]
     queryset = VideoLink.objects.all()
     serializer_class = VideoLinkSerializer
 
