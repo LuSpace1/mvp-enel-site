@@ -130,8 +130,9 @@ export function CmsOrden() {
     setDirty(true)
   }
 
-  async function guardar(): Promise<boolean> {
-    if (!draft) return false
+  async function guardar(): Promise<CmsRevisionDetail | null> {
+    if (!draft) return null
+    if (!dirty) return draft
     setGuardando(true)
     try {
       const respuesta = await guardarBorrador({ ...draft.payload, order: orden }, draft.version)
@@ -139,10 +140,10 @@ export function CmsOrden() {
       setOrden(respuesta.draft.payload.order)
       setDirty(false)
       toast.success('Orden guardado en el borrador.')
-      return true
+      return respuesta.draft
     } catch (err) {
       toast.error(detalleError(err))
-      return false
+      return null
     } finally {
       setGuardando(false)
     }
@@ -153,7 +154,7 @@ export function CmsOrden() {
     if (!guardado) return
     setGuardando(true)
     try {
-      const respuesta = await publicarContenido('Cambio de orden de secciones')
+      const respuesta = await publicarContenido(guardado.version, 'Cambio de orden de secciones')
       setDraft(respuesta.draft)
       setPublished(respuesta.published)
       setOrden(respuesta.draft.payload.order)

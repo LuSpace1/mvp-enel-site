@@ -44,8 +44,14 @@ export async function guardarBorrador(
   return data
 }
 
-export async function publicarContenido(message = ''): Promise<CmsPublishResponse> {
-  const { data } = await http.post<CmsPublishResponse>('/cms/admin/publish/', { message })
+export async function publicarContenido(
+  version: number,
+  message = '',
+): Promise<CmsPublishResponse> {
+  const { data } = await http.post<CmsPublishResponse>('/cms/admin/publish/', {
+    version,
+    message,
+  })
   return data
 }
 

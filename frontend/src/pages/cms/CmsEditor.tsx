@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowClockwise,
@@ -183,6 +183,9 @@ export function CmsEditor() {
   const [lienzoPreview, setLienzoPreview] = useState({ escala: 0.5, alto: 900 })
   const [previewMarco, setPreviewMarco] = useState<HTMLDivElement | null>(null)
   const previewRef = useRef<HTMLIFrameElement>(null)
+  const ultimoPayloadEnviado = useRef<string | null>(null)
+  const edicionRef = useRef(0)
+  const guardandoRef = useRef(false)
 
   useEffect(() => {
     try {
@@ -193,8 +196,9 @@ export function CmsEditor() {
   }, [seccionesColapsadas])
 
   // La vista previa se dibuja a un ancho de escritorio o móvil real y se escala
-  // para ocupar el espacio disponible. Así el layout no cambia al ensanchar el panel.
-  useLayoutEffect(() => {
+  // para ocupar el espacio disponible. La medición no es crítica para el primer
+  // paint: el overlay de carga cubre el iframe hasta que está listo.
+  useEffect(() => {
     if (!previewVisible || !previewMarco) return
     const marco = previewMarco
     let frame = 0
@@ -327,20 +331,60 @@ export function CmsEditor() {
         },
       }
     })
+    edicionRef.current += 1
     setDirty(true)
   }
 
   async function persistir(silencioso = false): Promise<CmsRevisionDetail | null> {
     if (!draft) return null
     if (!dirty) return draft
+    if (guardandoRef.current) return null
 
+    const edicionEnviada = edicionRef.current
+    guardandoRef.current = true
     setSaving(true)
     try {
       const respuesta = await guardarBorrador(draft.payload, draft.version)
-      setDraft(respuesta.draft)
-      setHayCambiosPendientes(respuesta.has_unpublished_changes ?? true)
-      setDirty(false)
+      const huboEdicionesNuevas = edicionRef.current !== edicionEnviada
+      setHayCambiosPendientes(Boolean(respuesta.has_unpublished_changes) || huboEdicionesNuevas)
       setConflicto(false)
+
+      if (huboEdicionesNuevas) {
+        // La respuesta corresponde a un snapshot anterior: conserva lo editado
+        // mientras la peticion estaba en vuelo y adopta la nueva version.
+        setDraft((anterior) =>
+          anterior
+            ? {
+                ...anterior,
+                version: respuesta.draft.version,
+                payload: { ...anterior.payload, version: respuesta.draft.version },
+                updated_at: respuesta.draft.updated_at,
+                updated_by: respuesta.draft.updated_by,
+              }
+            : respuesta.draft,
+        )
+      } else {
+        const mismoContenido =
+          JSON.stringify(draft.payload) === JSON.stringify(respuesta.draft.payload)
+        if (mismoContenido) {
+          // Conserva las referencias locales (listas, editores) cuando el
+          // servidor solo incrementó la versión; evita remontar componentes.
+          setDraft((anterior) =>
+            anterior
+              ? {
+                  ...anterior,
+                  version: respuesta.draft.version,
+                  payload: { ...anterior.payload, version: respuesta.draft.version },
+                  updated_at: respuesta.draft.updated_at,
+                  updated_by: respuesta.draft.updated_by,
+                }
+              : respuesta.draft,
+          )
+        } else {
+          setDraft(respuesta.draft)
+        }
+        setDirty(false)
+      }
       return respuesta.draft
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
@@ -351,13 +395,20 @@ export function CmsEditor() {
       }
       return null
     } finally {
+      guardandoRef.current = false
       setSaving(false)
     }
   }
 
   async function guardar() {
+    const edicionAntes = edicionRef.current
     const guardado = await persistir()
-    if (guardado) toast.success('Borrador guardado.')
+    if (!guardado) return
+    if (edicionRef.current !== edicionAntes) {
+      toast.info('Se guardó la versión anterior. Tus cambios nuevos siguen pendientes.')
+    } else {
+      toast.success('Borrador guardado.')
+    }
   }
 
   const guardarRef = useRef(guardar)
@@ -366,13 +417,39 @@ export function CmsEditor() {
   persistirRef.current = persistir
 
   async function publicar() {
+    const edicionAntes = edicionRef.current
     const guardado = await persistir()
     if (!guardado) return
+    if (edicionRef.current !== edicionAntes) {
+      toast.info('Guardamos la versión anterior. Guarda tus cambios nuevos antes de publicar.')
+      return
+    }
 
     setSaving(true)
     try {
-      const respuesta = await publicarContenido(mensajePublicacion)
+      const respuesta = await publicarContenido(guardado.version, mensajePublicacion)
       setPublished(respuesta.published)
+      if (edicionRef.current !== edicionAntes) {
+        // Se publico el snapshot revisado; las ediciones posteriores siguen
+        // locales y deben guardarse sobre el nuevo borrador.
+        setDraft((anterior) =>
+          anterior
+            ? {
+                ...anterior,
+                version: respuesta.draft.version,
+                payload: { ...anterior.payload, version: respuesta.draft.version },
+                updated_at: respuesta.draft.updated_at,
+                updated_by: respuesta.draft.updated_by,
+              }
+            : respuesta.draft,
+        )
+        setHayCambiosPendientes(false)
+        setDirty(true)
+        setDialogoPublicar(false)
+        setMensajePublicacion('')
+        toast.info('Se publicó la versión revisada. Tus cambios nuevos siguen sin publicar.')
+        return
+      }
       setDraft(respuesta.draft)
       setHayCambiosPendientes(false)
       setDirty(false)
@@ -467,6 +544,9 @@ export function CmsEditor() {
     }
     if (!previewListo || !draft) return
     const timer = window.setTimeout(() => {
+      const serializado = JSON.stringify(draft.payload)
+      if (serializado === ultimoPayloadEnviado.current) return
+      ultimoPayloadEnviado.current = serializado
       previewRef.current?.contentWindow?.postMessage(
         { tipo: 'cms:draft', payload: draft.payload },
         window.location.origin,
@@ -489,11 +569,15 @@ export function CmsEditor() {
   function alternarPreview() {
     const siguiente = !previewVisible
     setPreviewVisible(siguiente)
-    if (!siguiente) setPreviewListo(false)
+    if (!siguiente) {
+      setPreviewListo(false)
+      ultimoPayloadEnviado.current = null
+    }
   }
 
   function recargarPreview() {
     setPreviewListo(false)
+    ultimoPayloadEnviado.current = null
     previewRef.current?.contentWindow?.location.reload()
   }
 
