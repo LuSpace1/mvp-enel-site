@@ -1,9 +1,10 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { preconnect, prefetchDNS } from 'react-dom'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { RutaProtegida } from '@/components/cms/RutaProtegida'
 import { Toaster } from '@/components/ui/sonner'
+import { useAuthStore } from '@/store/useAuthStore'
 import { Viaje } from '@/pages/Viaje'
 
 preconnect('https://www.youtube.com')
@@ -32,6 +33,15 @@ const CmsPreview = lazy(() =>
 )
 
 export function App() {
+  const access = useAuthStore((estado) => estado.access)
+  const actualizarPerfil = useAuthStore((estado) => estado.actualizarPerfil)
+
+  // Refresca roles/capacidades al abrir la app para reflejar cambios de CompAC
+  // sin obligar a cerrar sesión.
+  useEffect(() => {
+    if (access) void actualizarPerfil()
+  }, [access, actualizarPerfil])
+
   return (
     <BrowserRouter>
       <Suspense fallback={null}>

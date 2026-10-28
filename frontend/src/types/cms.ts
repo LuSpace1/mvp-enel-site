@@ -31,7 +31,6 @@ export interface CmsSectionSchema {
 export interface CmsSchemaResponse {
   sections: CmsSectionSchema[]
   default_order: string[]
-  can_publish: boolean
 }
 
 export interface RichTextDoc {
@@ -90,15 +89,20 @@ export interface CmsRevisionDetail extends CmsRevision {
 }
 
 export interface CmsAdminContent {
-  draft: CmsRevisionDetail
+  draft: CmsRevisionDetail | null
   published: CmsRevision
-  can_publish: boolean
+  has_unpublished_changes: boolean
   user: CmsUserRef
 }
 
 export interface CmsSaveDraftResponse {
   draft: CmsRevisionDetail
-  can_publish: boolean
+  has_unpublished_changes?: boolean
+}
+
+export interface CmsStartEditingResponse {
+  draft: CmsRevisionDetail
+  has_unpublished_changes: boolean
 }
 
 export interface CmsPublishResponse {
@@ -121,6 +125,7 @@ export interface CmsMedia {
 }
 
 export interface CmsCapabilities {
-  can_edit_cms: boolean
-  can_publish_cms: boolean
+  can_manage_cms: boolean
+  /** Campo heredado: solo para sesiones cacheadas durante la migración. */
+  can_edit_cms?: boolean
 }

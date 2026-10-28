@@ -5,8 +5,10 @@ import type {
   CmsPublicResponse,
   CmsPublishResponse,
   CmsRevision,
+  CmsRevisionDetail,
   CmsSaveDraftResponse,
   CmsSchemaResponse,
+  CmsStartEditingResponse,
 } from '@/types/cms'
 
 export async function obtenerContenidoPublico(): Promise<CmsPublicResponse> {
@@ -21,6 +23,11 @@ export async function obtenerSchema(): Promise<CmsSchemaResponse> {
 
 export async function obtenerContenidoAdmin(): Promise<CmsAdminContent> {
   const { data } = await http.get<CmsAdminContent>('/cms/admin/content/')
+  return data
+}
+
+export async function activarEdicion(): Promise<CmsStartEditingResponse> {
+  const { data } = await http.post<CmsStartEditingResponse>('/cms/admin/content/editing/', {})
   return data
 }
 
@@ -42,9 +49,19 @@ export async function publicarContenido(message = ''): Promise<CmsPublishRespons
   return data
 }
 
+export async function obtenerRevision(id: string): Promise<CmsRevisionDetail> {
+  const { data } = await http.get<CmsRevisionDetail>(`/cms/admin/revisions/${id}/`)
+  return data
+}
+
 export async function obtenerRevisiones(): Promise<CmsRevision[]> {
   const { data } = await http.get<{ results: CmsRevision[] }>('/cms/admin/revisions/')
   return data.results
+}
+
+export async function descartarBorrador(): Promise<CmsSaveDraftResponse> {
+  const { data } = await http.post<CmsSaveDraftResponse>('/cms/admin/content/discard/', {})
+  return data
 }
 
 export async function restaurarRevision(id: string): Promise<CmsSaveDraftResponse> {

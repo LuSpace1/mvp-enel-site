@@ -58,6 +58,7 @@ const Secciones = memo(function Secciones() {
 export function Viaje({ preview = false }: { preview?: boolean }) {
   const cargarContenido = useContenidoStore((estado) => estado.cargar)
   const cargarVideos = useVideosStore((estado) => estado.cargar)
+  const marcarIntroTerminada = useViajeStore((estado) => estado.marcarIntroTerminada)
 
   useEffect(() => {
     history.scrollRestoration = 'manual'
@@ -65,6 +66,14 @@ export function Viaje({ preview = false }: { preview?: boolean }) {
     void cargarContenido()
     void cargarVideos()
   }, [cargarContenido, cargarVideos])
+
+  // En la vista previa no existe la intro animada, así que la portada debe
+  // revelarse de inmediato en lugar de esperar al final del intro.
+  useEffect(() => {
+    if (!preview) return
+    marcarIntroTerminada()
+    return () => useViajeStore.setState({ introTerminada: false })
+  }, [preview, marcarIntroTerminada])
 
   return (
     <div className="text-enel-navy font-body min-h-svh bg-white">

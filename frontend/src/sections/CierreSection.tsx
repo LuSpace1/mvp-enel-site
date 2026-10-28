@@ -284,8 +284,6 @@ export function Footer() {
             </a>
           ))}
         </div>
-
-        <p className="text-[10px] tracking-wide text-white/30 uppercase">Prototipo MVP</p>
       </div>
     </footer>
   )

@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { ArrowRight, LockKey, User } from '@phosphor-icons/react'
+import { AlertCircle } from 'lucide-react'
 
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Card, CardContent } from '@/components/ui/card'
+import { Field, FieldGroup, FieldLabel, FieldSeparator } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { useAuthStore } from '@/store/useAuthStore'
 
@@ -23,7 +24,7 @@ export function CmsLogin() {
   const [password, setPassword] = useState('')
   const [sinPermiso, setSinPermiso] = useState(false)
 
-  if (access && user?.capabilities.can_edit_cms) {
+  if (access && (user?.capabilities.can_manage_cms || user?.capabilities.can_edit_cms)) {
     const destino = (location.state as { from?: string } | null)?.from ?? '/cms'
     return <Navigate to={destino} replace />
   }
@@ -34,7 +35,7 @@ export function CmsLogin() {
     try {
       await login(username.trim(), password)
       const actualizado = useAuthStore.getState().user
-      if (!actualizado?.capabilities.can_edit_cms) {
+      if (!actualizado?.capabilities.can_manage_cms && !actualizado?.capabilities.can_edit_cms) {
         setSinPermiso(true)
         return
       }
@@ -44,78 +45,89 @@ export function CmsLogin() {
     }
   }
 
-  return (
-    <div className="bg-enel-mist/60 flex min-h-svh items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="mb-6 flex items-center justify-center gap-3">
-          <img src={logoEnel} alt="Enel" className="h-9 w-auto" />
-          <span className="flex flex-col leading-tight">
-            <span className="text-enel-navy text-sm font-semibold">Enel Distribución</span>
-            <span className="text-[10px] font-medium tracking-[0.18em] text-neutral-500 uppercase">
-              CMS del portal
-            </span>
-          </span>
-        </div>
+  const cargando = status === 'loading'
+  const mensajeError = sinPermiso ? 'Tu cuenta no tiene un rol habilitado para el CMS.' : error
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Iniciar sesión</CardTitle>
-            <CardDescription>
-              Accede con tu cuenta corporativa provisionada para editar el contenido del portal.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={(e) => void enviar(e)}>
-              <FieldGroup>
+  return (
+    <div className="bg-background flex min-h-svh w-full items-center justify-center p-6 sm:p-10">
+      <div className="flex w-full max-w-5xl flex-col gap-6">
+        <Card className="overflow-hidden p-0">
+          <CardContent className="grid min-h-[28rem] p-0 md:grid-cols-2">
+            <form
+              onSubmit={(e) => void enviar(e)}
+              className="flex items-center p-6 md:p-10 lg:p-14"
+            >
+              <FieldGroup className="w-full">
+                <div className="flex flex-col items-start gap-2 text-left">
+                  <span className="text-muted-foreground inline-flex items-center gap-2 text-[10px] font-semibold tracking-[0.22em] uppercase">
+                    <span className="size-1.5 rounded-full bg-[#e4002b]" />
+                    Acceso interno
+                  </span>
+                  <h1 className="text-enel-navy text-3xl font-black tracking-tight">
+                    Portal Experiencia DX
+                  </h1>
+                  <p className="text-muted-foreground text-sm">Enel Distribución Chile</p>
+                </div>
+
                 <Field>
-                  <FieldLabel htmlFor="username">Usuario</FieldLabel>
-                  <div className="relative">
-                    <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-                    <Input
-                      id="username"
-                      autoComplete="username"
-                      className="pl-9"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enel ID o usuario"
-                      required
-                    />
-                  </div>
+                  <FieldLabel htmlFor="username">Usuario (ID Enel)</FieldLabel>
+                  <Input
+                    id="username"
+                    type="text"
+                    autoComplete="username"
+                    placeholder="A123456"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
                 </Field>
+
                 <Field>
                   <FieldLabel htmlFor="password">Contraseña</FieldLabel>
-                  <div className="relative">
-                    <LockKey className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-                    <Input
-                      id="password"
-                      type="password"
-                      autoComplete="current-password"
-                      className="pl-9"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </Field>
 
-                {(error || sinPermiso) && (
-                  <p className="text-destructive text-sm">
-                    {sinPermiso ? 'Tu cuenta no tiene un rol habilitado para el CMS.' : error}
-                  </p>
+                {mensajeError && (
+                  <Alert variant="destructive">
+                    <AlertCircle />
+                    <AlertDescription>{mensajeError}</AlertDescription>
+                  </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={status === 'loading'}>
-                  {status === 'loading' ? 'Ingresando…' : 'Ingresar'}
-                  <ArrowRight data-icon="inline-end" />
-                </Button>
+                <Field>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={cargando || !username || !password}
+                  >
+                    {cargando ? 'Iniciando sesión…' : 'Ingresar'}
+                  </Button>
+                </Field>
+
+                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
+                  Gestión de contenido
+                </FieldSeparator>
               </FieldGroup>
             </form>
+
+            <div className="paper-sheet relative hidden items-center justify-center overflow-hidden p-10 md:flex lg:p-14">
+              <div className="relative flex flex-col items-center gap-6 text-center">
+                <img src={logoEnel} alt="Enel Group" className="h-auto w-52 object-contain" />
+                <p className="text-[10px] tracking-[0.24em] text-[#8a8378] uppercase">
+                  Registro editorial · Portal Experiencia DX
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-
-        <p className="text-muted-foreground mt-6 text-center text-xs">
-          En producción, las identidades y roles los aprovisiona CompAC por SCIM.
-        </p>
       </div>
     </div>
   )

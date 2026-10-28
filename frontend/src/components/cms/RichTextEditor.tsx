@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Fragment, useEffect, type ReactNode } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import {
@@ -16,9 +16,18 @@ import {
 } from '@phosphor-icons/react'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import type { RichTextDoc } from '@/types/cms'
 
 const DOC_VACIO: RichTextDoc = { type: 'doc', content: [{ type: 'paragraph' }] }
+
+interface Control {
+  label: string
+  icono: ReactNode
+  activo?: boolean
+  deshabilitado?: boolean
+  onClick: () => void
+}
 
 export function RichTextEditor({
   value,
@@ -48,7 +57,7 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class: 'tiptap',
-        'data-placeholder': placeholder,
+        'aria-label': 'Editor de texto enriquecido',
       },
     },
     onUpdate: ({ editor: instancia }) => {
@@ -82,124 +91,128 @@ export function RichTextEditor({
     editor!.chain().focus().extendMarkRange('link').setLink({ href: href.trim() }).run()
   }
 
+  const grupos: Control[][] = [
+    [
+      {
+        label: 'Negrita',
+        icono: <TextB className="size-4" />,
+        activo: editor.isActive('bold'),
+        onClick: () => editor.chain().focus().toggleBold().run(),
+      },
+      {
+        label: 'Cursiva',
+        icono: <TextItalic className="size-4" />,
+        activo: editor.isActive('italic'),
+        onClick: () => editor.chain().focus().toggleItalic().run(),
+      },
+      {
+        label: 'Subrayado',
+        icono: <TextUnderline className="size-4" />,
+        activo: editor.isActive('underline'),
+        onClick: () => editor.chain().focus().toggleUnderline().run(),
+      },
+    ],
+    [
+      {
+        label: 'Título nivel 2',
+        icono: <TextHTwo className="size-4" />,
+        activo: editor.isActive('heading', { level: 2 }),
+        onClick: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      },
+      {
+        label: 'Título nivel 3',
+        icono: <TextHThree className="size-4" />,
+        activo: editor.isActive('heading', { level: 3 }),
+        onClick: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+      },
+    ],
+    [
+      {
+        label: 'Lista con viñetas',
+        icono: <ListBullets className="size-4" />,
+        activo: editor.isActive('bulletList'),
+        onClick: () => editor.chain().focus().toggleBulletList().run(),
+      },
+      {
+        label: 'Lista numerada',
+        icono: <ListNumbers className="size-4" />,
+        activo: editor.isActive('orderedList'),
+        onClick: () => editor.chain().focus().toggleOrderedList().run(),
+      },
+      {
+        label: 'Cita',
+        icono: <Quotes className="size-4" />,
+        activo: editor.isActive('blockquote'),
+        onClick: () => editor.chain().focus().toggleBlockquote().run(),
+      },
+      {
+        label: 'Enlace',
+        icono: <LinkSimple className="size-4" />,
+        activo: editor.isActive('link'),
+        onClick: editarEnlace,
+      },
+    ],
+    [
+      {
+        label: 'Deshacer',
+        icono: <ArrowCounterClockwise className="size-4" />,
+        deshabilitado: !editor.can().undo(),
+        onClick: () => editor.chain().focus().undo().run(),
+      },
+      {
+        label: 'Rehacer',
+        icono: <ArrowClockwise className="size-4" />,
+        deshabilitado: !editor.can().redo(),
+        onClick: () => editor.chain().focus().redo().run(),
+      },
+    ],
+  ]
+
   return (
-    <div className="bg-background overflow-hidden rounded-md border">
-      <div className="bg-muted/60 flex flex-wrap items-center gap-1 border-b p-1.5">
-        <Button
-          type="button"
-          variant={editor.isActive('bold') ? 'secondary' : 'ghost'}
-          size="sm"
-          aria-label="Negrita"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-        >
-          <TextB />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('italic') ? 'secondary' : 'ghost'}
-          size="sm"
-          aria-label="Cursiva"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-        >
-          <TextItalic />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('underline') ? 'secondary' : 'ghost'}
-          size="sm"
-          aria-label="Subrayado"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-        >
-          <TextUnderline />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('heading', { level: 2 }) ? 'secondary' : 'ghost'}
-          size="sm"
-          aria-label="Título nivel 2"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        >
-          <TextHTwo />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('heading', { level: 3 }) ? 'secondary' : 'ghost'}
-          size="sm"
-          aria-label="Título nivel 3"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        >
-          <TextHThree />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('bulletList') ? 'secondary' : 'ghost'}
-          size="sm"
-          aria-label="Lista con viñetas"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-        >
-          <ListBullets />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('orderedList') ? 'secondary' : 'ghost'}
-          size="sm"
-          aria-label="Lista numerada"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        >
-          <ListNumbers />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('blockquote') ? 'secondary' : 'ghost'}
-          size="sm"
-          aria-label="Cita"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        >
-          <Quotes />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('link') ? 'secondary' : 'ghost'}
-          size="sm"
-          aria-label="Enlace"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={editarEnlace}
-        >
-          <LinkSimple />
-        </Button>
-        <span className="bg-border mx-1 h-5 w-px" />
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          aria-label="Deshacer"
-          disabled={!editor.can().undo()}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().undo().run()}
-        >
-          <ArrowCounterClockwise />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          aria-label="Rehacer"
-          disabled={!editor.can().redo()}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().redo().run()}
-        >
-          <ArrowClockwise />
-        </Button>
+    <div className="focus-within:border-enel-blue/40 focus-within:ring-enel-blue/10 overflow-hidden rounded-xl border border-black/10 bg-white shadow-xs transition-shadow focus-within:ring-4">
+      <div
+        role="toolbar"
+        aria-label="Formato de texto"
+        className="bg-enel-mist/60 flex flex-wrap items-center gap-0.5 border-b border-black/5 px-2 py-1.5"
+      >
+        {grupos.map((grupo, indice) => (
+          <Fragment key={indice}>
+            {indice > 0 && <span className="mx-1 h-5 w-px shrink-0 bg-black/10" />}
+            <div className="flex items-center gap-0.5">
+              {grupo.map((control) => (
+                <Button
+                  key={control.label}
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={control.label}
+                  aria-pressed={control.activo}
+                  title={control.label}
+                  disabled={control.deshabilitado}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={control.onClick}
+                  className={cn(
+                    'text-muted-foreground hover:text-enel-navy hover:bg-white/80',
+                    control.activo &&
+                      'text-enel-navy bg-white shadow-sm ring-1 ring-black/5 hover:bg-white',
+                  )}
+                >
+                  {control.icono}
+                </Button>
+              ))}
+            </div>
+          </Fragment>
+        ))}
       </div>
-      <EditorContent editor={editor} />
+
+      <div className="relative">
+        <EditorContent editor={editor} />
+        {editor.isEmpty && (
+          <p className="text-muted-foreground pointer-events-none absolute top-3 left-4 text-sm">
+            {placeholder}
+          </p>
+        )}
+      </div>
     </div>
   )
 }
