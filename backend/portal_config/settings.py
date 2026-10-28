@@ -167,8 +167,16 @@ SCIM_THROTTLE_RATE = os.getenv("SCIM_THROTTLE_RATE", "600/min")
 OAUTH_TOKEN_THROTTLE_RATE = os.getenv("OAUTH_TOKEN_THROTTLE_RATE", "30/min")
 
 
-# CORS (el frontend local usa el proxy de Vite).
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS. El frontend local usa el proxy de Vite, por lo que no necesita CORS.
+# En produccion define los origenes exactos; no se abre el comodin por defecto.
+CORS_ALLOW_ALL_ORIGINS = (
+    os.getenv("CORS_ALLOW_ALL_ORIGINS", "False").strip().lower() == "true"
+)
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 
 # Validacion de contrasenas (solo aplica al Admin local; CompAC no envia contrasenas).
