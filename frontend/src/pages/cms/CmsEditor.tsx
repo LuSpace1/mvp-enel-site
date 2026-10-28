@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowClockwise,
@@ -131,6 +131,8 @@ function fechaCorta(valor: string | null | undefined): string {
 }
 
 const CLAVE_SECCIONES = 'cms:secciones-colapsadas'
+const PREVIEW_ESCRITORIO_ANCHO = 1440
+const PREVIEW_MOVIL = { ancho: 390, alto: 844 }
 
 function detalleError(error: unknown): string {
   if (isAxiosError(error)) {
@@ -178,6 +180,8 @@ export function CmsEditor() {
       return false
     }
   })
+  const [lienzoPreview, setLienzoPreview] = useState({ escala: 0.5, alto: 900 })
+  const [previewMarco, setPreviewMarco] = useState<HTMLDivElement | null>(null)
   const previewRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
@@ -187,6 +191,52 @@ export function CmsEditor() {
       // La preferencia es cosmética; si el navegador bloquea el storage, seguimos.
     }
   }, [seccionesColapsadas])
+
+  // La vista previa se dibuja a un ancho de escritorio o móvil real y se escala
+  // para ocupar el espacio disponible. Así el layout no cambia al ensanchar el panel.
+  useLayoutEffect(() => {
+    if (!previewVisible || !previewMarco) return
+    const marco = previewMarco
+    let frame = 0
+
+    function ajustar() {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const { width, height } = marco.getBoundingClientRect()
+        if (!width || !height) return
+        if (modoPreview === 'movil') {
+          const disponibleAncho = Math.max(width - 24, 1)
+          const disponibleAlto = Math.max(height - 24, 1)
+          const escala = Math.min(
+            disponibleAncho / PREVIEW_MOVIL.ancho,
+            disponibleAlto / PREVIEW_MOVIL.alto,
+            1,
+          )
+          setLienzoPreview((anterior) =>
+            Math.abs(anterior.escala - escala) < 0.001 && anterior.alto === PREVIEW_MOVIL.alto
+              ? anterior
+              : { escala, alto: PREVIEW_MOVIL.alto },
+          )
+        } else {
+          const escala = Math.min(width / PREVIEW_ESCRITORIO_ANCHO, 1)
+          const alto = Math.round(height / escala)
+          setLienzoPreview((anterior) =>
+            Math.abs(anterior.escala - escala) < 0.001 && anterior.alto === alto
+              ? anterior
+              : { escala, alto },
+          )
+        }
+      })
+    }
+
+    ajustar()
+    const observador = new ResizeObserver(ajustar)
+    observador.observe(marco)
+    return () => {
+      observador.disconnect()
+      cancelAnimationFrame(frame)
+    }
+  }, [previewVisible, modoPreview, previewMarco])
 
   async function cargar() {
     setCargando(true)
@@ -540,6 +590,11 @@ export function CmsEditor() {
   const faltantesActiva = faltantes.get(activa) ?? 0
   const IconoActivo = iconoDe(activa)
   const indiceActivo = Math.max(0, order.indexOf(activa))
+  const esMovilPreview = modoPreview === 'movil'
+  const anchoLienzoPreview = esMovilPreview ? PREVIEW_MOVIL.ancho : PREVIEW_ESCRITORIO_ANCHO
+  const altoLienzoPreview = lienzoPreview.alto
+  const anchoMarcoPreview = esMovilPreview ? anchoLienzoPreview + 20 : anchoLienzoPreview
+  const altoMarcoPreview = esMovilPreview ? altoLienzoPreview + 20 : altoLienzoPreview
 
   return (
     <div className="min-h-svh">
@@ -984,14 +1039,20 @@ export function CmsEditor() {
                 <div className="xl:sticky xl:top-24">
                   <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm xl:flex xl:h-[calc(100svh-8rem)] xl:flex-col">
                     <div className="flex shrink-0 items-center justify-between gap-2 border-b border-black/5 px-3 py-2">
-                      <div className="text-enel-navy flex items-center gap-2 text-[11px] font-medium">
-                        <span className="relative flex size-1.5">
+                      <div className="text-enel-navy flex min-w-0 items-center gap-2 text-[11px] font-medium">
+                        <span className="relative flex size-1.5 shrink-0">
                           <span className="bg-primary absolute inline-flex size-full animate-ping rounded-full opacity-50" />
                           <span className="bg-primary relative inline-flex size-1.5 rounded-full" />
                         </span>
-                        Vista previa en vivo
+                        <span className="truncate">Vista previa en vivo</span>
+                        <span
+                          className="text-muted-foreground shrink-0 text-[10px] font-normal tabular-nums"
+                          title="La vista previa se ajusta automáticamente al espacio disponible"
+                        >
+                          {Math.round(lienzoPreview.escala * 100)}%
+                        </span>
                       </div>
-                      <div className="flex items-center gap-0.5">
+                      <div className="flex shrink-0 items-center gap-0.5">
                         <Button
                           type="button"
                           variant={modoPreview === 'escritorio' ? 'secondary' : 'ghost'}
@@ -1029,22 +1090,47 @@ export function CmsEditor() {
                     </div>
 
                     <div
+                      ref={setPreviewMarco}
                       className={cn(
-                        'bg-muted/40 relative flex min-h-0 flex-1 justify-center',
+                        'bg-muted/40 relative flex h-[68svh] min-h-0 items-center justify-center overflow-hidden xl:h-auto xl:flex-1',
                         modoPreview === 'movil' && 'p-3',
                       )}
                     >
-                      <iframe
-                        ref={previewRef}
-                        src="/cms/preview?embed=1"
-                        title="Vista previa en vivo del portal"
-                        className={cn(
-                          'border-0 bg-white',
-                          modoPreview === 'movil'
-                            ? 'h-[58svh] w-[390px] max-w-full rounded-xl border border-black/10 shadow-lg xl:h-full'
-                            : 'h-[68svh] w-full xl:h-full',
-                        )}
-                      />
+                      <div
+                        className="relative shrink-0"
+                        style={{
+                          width: anchoMarcoPreview * lienzoPreview.escala,
+                          height: altoMarcoPreview * lienzoPreview.escala,
+                        }}
+                      >
+                        <div
+                          className={cn(
+                            'absolute top-0 left-0 bg-white',
+                            esMovilPreview
+                              ? 'rounded-[2.6rem] border-[10px] border-[#141413] bg-[#141413] shadow-[0_30px_80px_-32px_rgba(0,0,0,0.6)]'
+                              : 'overflow-hidden rounded-lg shadow-[0_18px_50px_-28px_rgba(16,20,24,0.5)] ring-1 ring-black/10',
+                          )}
+                          style={{
+                            width: anchoMarcoPreview,
+                            height: altoMarcoPreview,
+                            transform: `scale(${lienzoPreview.escala})`,
+                            transformOrigin: 'top left',
+                          }}
+                        >
+                          <iframe
+                            ref={previewRef}
+                            src="/cms/preview?embed=1"
+                            title="Vista previa en vivo del portal"
+                            width={anchoLienzoPreview}
+                            height={altoLienzoPreview}
+                            className={cn(
+                              'block border-0 bg-white',
+                              esMovilPreview && 'rounded-[2rem]',
+                            )}
+                            style={{ width: anchoLienzoPreview, height: altoLienzoPreview }}
+                          />
+                        </div>
+                      </div>
                       {!previewListo && (
                         <div className="text-muted-foreground absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-white/70 text-xs backdrop-blur-[1px]">
                           <span className="border-primary size-4 animate-spin rounded-full border-2 border-t-transparent" />
