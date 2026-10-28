@@ -3,11 +3,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import IdentityAuditLog, User
 from .permissions import is_portal_admin, user_has_group
-from .roles import (
-    admin_role_name,
-    cms_editor_role_name,
-    cms_publisher_role_name,
-)
+from .roles import admin_role_name, cms_admin_role_name
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -47,18 +43,14 @@ class UserSerializer(serializers.ModelSerializer):
         roles: list[str] = []
         if is_portal_admin(obj):
             roles.append(admin_role_name())
-        for role_name in (cms_editor_role_name(), cms_publisher_role_name()):
-            if user_has_group(obj, [role_name]):
-                roles.append(role_name)
-        return roles
+        if user_has_group(obj, [cms_admin_role_name()]):
+            roles.append(cms_admin_role_name())
+        return list(dict.fromkeys(roles))
 
     def get_capabilities(self, obj) -> dict[str, bool]:
-        from apps.cms.permissions import can_edit_cms, can_publish_cms
+        from apps.cms.permissions import can_manage_cms
 
-        return {
-            "can_edit_cms": can_edit_cms(obj),
-            "can_publish_cms": can_publish_cms(obj),
-        }
+        return {"can_manage_cms": can_manage_cms(obj)}
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

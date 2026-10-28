@@ -1,39 +1,28 @@
-"""Permisos del CMS basados en grupos provisionados por CompAC."""
+"""Permisos del CMS: un unico rol de administracion editorial."""
 
 from rest_framework.permissions import BasePermission
 
-from apps.authentication.permissions import is_portal_admin, user_has_group
-from apps.authentication.roles import cms_editor_role_name, cms_publisher_role_name
+from apps.authentication.permissions import user_has_group
+from apps.authentication.roles import cms_admin_role_name
 
 __all__ = [
-    "CanEditCms",
-    "CanPublishCms",
-    "can_edit_cms",
-    "can_publish_cms",
+    "CanManageCms",
+    "can_manage_cms",
 ]
 
 
-def can_edit_cms(user) -> bool:
-    if is_portal_admin(user):
-        return True
-    return user_has_group(user, [cms_editor_role_name(), cms_publisher_role_name()])
+def can_manage_cms(user) -> bool:
+    """
+    El usuario puede administrar todo el CMS.
+
+    Solo `CMS_Admin` (o un superusuario) tiene acceso. `Portal_Admin` no otorga
+    permisos editoriales: es un rol tecnico separado para identidad/SCIM.
+    """
+    return user_has_group(user, [cms_admin_role_name()])
 
 
-def can_publish_cms(user) -> bool:
-    if is_portal_admin(user):
-        return True
-    return user_has_group(user, [cms_publisher_role_name()])
-
-
-class CanEditCms(BasePermission):
-    """Editor o publicador del CMS (o administrador del portal)."""
+class CanManageCms(BasePermission):
+    """Permiso unico para editar, publicar, reordenar y restaurar el CMS."""
 
     def has_permission(self, request, view):
-        return can_edit_cms(request.user)
-
-
-class CanPublishCms(BasePermission):
-    """Solo el publicador del CMS (o administrador del portal) publica y reordena."""
-
-    def has_permission(self, request, view):
-        return can_publish_cms(request.user)
+        return can_manage_cms(request.user)

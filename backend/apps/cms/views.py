@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import ContentRevision, MediaAsset
-from .permissions import CanEditCms, CanPublishCms, can_publish_cms
+from .permissions import CanManageCms
 from .registry import schema
 from .serializers import (
     DraftSaveSerializer,
@@ -29,6 +29,8 @@ from .serializers import (
 from .services import (
     RevisionConflict,
     create_media,
+    discard_draft,
+    ensure_draft,
     get_draft,
     get_published,
     list_revisions,
@@ -50,6 +52,14 @@ EXTENSION_BY_FORMAT = {"JPEG": "jpg", "PNG": "png", "WEBP": "webp"}
 def _etag(payload) -> str:
     raw = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
+
+
+def _has_unpublished_changes(draft: ContentRevision, published: ContentRevision) -> bool:
+    """Compara solo contenido y orden; la version del borrador cambia en cada guardado."""
+    return (
+        draft.payload.get("order") != published.payload.get("order")
+        or draft.payload.get("sections") != published.payload.get("sections")
+    )
 
 
 def _not_modified(request, etag: str) -> bool:
@@ -90,25 +100,42 @@ class PublicContentView(APIView):
 
 
 class CmsSchemaView(APIView):
-    permission_classes = [CanEditCms]
+    permission_classes = [CanManageCms]
 
     def get(self, request):
-        data = schema()
-        data["can_publish"] = can_publish_cms(request.user)
-        return Response(data)
+        return Response(schema())
+
+
+class StartEditingView(APIView):
+    """Crea (o reutiliza) el borrador cuando la persona activa el modo edicion."""
+
+    permission_classes = [CanManageCms]
+
+    def post(self, request):
+        published = get_published()
+        draft = ensure_draft(request.user)
+        return Response(
+            {
+                "draft": RevisionDetailSerializer(draft).data,
+                "has_unpublished_changes": _has_unpublished_changes(draft, published),
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class AdminContentView(APIView):
-    permission_classes = [CanEditCms]
+    permission_classes = [CanManageCms]
 
     def get(self, request):
         draft = get_draft()
         published = get_published()
         return Response(
             {
-                "draft": RevisionDetailSerializer(draft).data,
+                "draft": RevisionDetailSerializer(draft).data if draft else None,
                 "published": RevisionSerializer(published).data,
-                "can_publish": can_publish_cms(request.user),
+                "has_unpublished_changes": (
+                    _has_unpublished_changes(draft, published) if draft else False
+                ),
                 "user": {
                     "id": str(request.user.pk),
                     "username": request.user.username,
@@ -134,27 +161,34 @@ class AdminContentView(APIView):
                 {
                     "detail": str(exc),
                     "code": "revision_conflict",
-                    "current_version": current.version,
+                    "current_version": current.version if current else None,
                 },
                 status=status.HTTP_409_CONFLICT,
             )
+        published = get_published()
         return Response(
             {
                 "draft": RevisionDetailSerializer(draft).data,
-                "can_publish": can_publish_cms(request.user),
+                "has_unpublished_changes": _has_unpublished_changes(draft, published),
             }
         )
 
 
 class PublishView(APIView):
-    permission_classes = [CanPublishCms]
+    permission_classes = [CanManageCms]
 
     def post(self, request):
         serializer = PublishSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        published, draft = publish(
-            request.user, serializer.validated_data.get("message", "")
-        )
+        try:
+            published, draft = publish(
+                request.user, serializer.validated_data.get("message", "")
+            )
+        except RevisionConflict as exc:
+            return Response(
+                {"detail": str(exc), "code": "editing_not_active"},
+                status=status.HTTP_409_CONFLICT,
+            )
         return Response(
             {
                 "published": RevisionSerializer(published).data,
@@ -165,15 +199,33 @@ class PublishView(APIView):
 
 
 class RevisionListView(APIView):
-    permission_classes = [CanEditCms]
+    permission_classes = [CanManageCms]
 
     def get(self, request):
         revisions = list_revisions()[:200]
         return Response({"results": RevisionSerializer(revisions, many=True).data})
 
 
+class RevisionDetailView(APIView):
+    permission_classes = [CanManageCms]
+
+    def get(self, request, pk):
+        revision = (
+            ContentRevision.objects.select_related(
+                "created_by", "updated_by", "published_by"
+            )
+            .filter(pk=pk)
+            .first()
+        )
+        if revision is None:
+            return Response(
+                {"detail": "Revision no encontrada."}, status=status.HTTP_404_NOT_FOUND
+            )
+        return Response(RevisionDetailSerializer(revision).data)
+
+
 class RevisionRestoreView(APIView):
-    permission_classes = [CanEditCms]
+    permission_classes = [CanManageCms]
 
     def post(self, request, pk):
         revision = ContentRevision.objects.filter(pk=pk).first()
@@ -188,11 +240,24 @@ class RevisionRestoreView(APIView):
                 {"detail": str(exc), "code": "revision_conflict"},
                 status=status.HTTP_409_CONFLICT,
             )
+        return Response({"draft": RevisionDetailSerializer(draft).data})
+
+
+class DiscardDraftView(APIView):
+    """Devuelve el borrador a la ultima publicacion, descartando cambios."""
+
+    permission_classes = [CanManageCms]
+
+    def post(self, request):
+        try:
+            draft = discard_draft(request.user)
+        except RevisionConflict as exc:
+            return Response(
+                {"detail": str(exc), "code": "revision_conflict"},
+                status=status.HTTP_409_CONFLICT,
+            )
         return Response(
-            {
-                "draft": RevisionDetailSerializer(draft).data,
-                "can_publish": can_publish_cms(request.user),
-            }
+            {"draft": RevisionDetailSerializer(draft).data, "has_unpublished_changes": False}
         )
 
 
@@ -263,7 +328,7 @@ def _process_image(upload) -> tuple[bytes, str, int, int]:
 
 
 class MediaUploadView(APIView):
-    permission_classes = [CanEditCms]
+    permission_classes = [CanManageCms]
 
     def post(self, request):
         serializer = MediaUploadSerializer(data=request.data)

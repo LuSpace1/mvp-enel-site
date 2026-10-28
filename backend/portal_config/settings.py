@@ -146,8 +146,7 @@ PORTAL_ADMIN_ROLE = os.getenv("PORTAL_ADMIN_ROLE", "Portal_Admin")
 
 # Roles del CMS. Nombres propuestos en docs/CMS_FEATURE.md, pendientes de
 # confirmacion con Enel/CompAC; configurables por entorno.
-CMS_EDITOR_ROLE = os.getenv("CMS_EDITOR_ROLE", "CMS_Editor")
-CMS_PUBLISHER_ROLE = os.getenv("CMS_PUBLISHER_ROLE", "CMS_Publisher")
+CMS_ADMIN_ROLE = os.getenv("CMS_ADMIN_ROLE", "CMS_Admin")
 
 # Limites de imagenes del CMS (MVP: binarios en la base de datos).
 CMS_IMAGE_MAX_BYTES = int(os.getenv("CMS_IMAGE_MAX_BYTES", str(5 * 1024 * 1024)))
