@@ -24,7 +24,9 @@ urlpatterns = [
         StartEditingView.as_view(),
         name="cms_start_editing",
     ),
-    path("admin/content/discard/", DiscardDraftView.as_view(), name="cms_discard_draft"),
+    path(
+        "admin/content/discard/", DiscardDraftView.as_view(), name="cms_discard_draft"
+    ),
     path("admin/publish/", PublishView.as_view(), name="cms_publish"),
     path("admin/revisions/", RevisionListView.as_view(), name="cms_revisions"),
     path(

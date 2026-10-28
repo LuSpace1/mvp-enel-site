@@ -79,11 +79,12 @@ class RevisionDetailSerializer(RevisionSerializer):
 
 class DraftSaveSerializer(serializers.Serializer):
     payload = serializers.JSONField()
-    version = serializers.IntegerField(required=False, allow_null=True, min_value=1)
+    version = serializers.IntegerField(min_value=1)
     message = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
 
 class PublishSerializer(serializers.Serializer):
+    version = serializers.IntegerField(min_value=1)
     message = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
 

@@ -54,12 +54,15 @@ def _etag(payload) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def _has_unpublished_changes(draft: ContentRevision, published: ContentRevision) -> bool:
+def _has_unpublished_changes(
+    draft: ContentRevision, published: ContentRevision
+) -> bool:
     """Compara solo contenido y orden; la version del borrador cambia en cada guardado."""
-    return (
-        draft.payload.get("order") != published.payload.get("order")
-        or draft.payload.get("sections") != published.payload.get("sections")
-    )
+    draft_payload = draft.payload
+    published_payload = published.payload
+    return draft_payload.get("order") != published_payload.get(
+        "order"
+    ) or draft_payload.get("sections") != published_payload.get("sections")
 
 
 def _not_modified(request, etag: str) -> bool:
@@ -182,11 +185,13 @@ class PublishView(APIView):
         serializer.is_valid(raise_exception=True)
         try:
             published, draft = publish(
-                request.user, serializer.validated_data.get("message", "")
+                request.user,
+                expected_version=serializer.validated_data["version"],
+                message=serializer.validated_data.get("message", ""),
             )
         except RevisionConflict as exc:
             return Response(
-                {"detail": str(exc), "code": "editing_not_active"},
+                {"detail": str(exc), "code": "revision_conflict"},
                 status=status.HTTP_409_CONFLICT,
             )
         return Response(
@@ -257,7 +262,10 @@ class DiscardDraftView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
         return Response(
-            {"draft": RevisionDetailSerializer(draft).data, "has_unpublished_changes": False}
+            {
+                "draft": RevisionDetailSerializer(draft).data,
+                "has_unpublished_changes": False,
+            }
         )
 
 
@@ -271,6 +279,16 @@ def _process_image(upload) -> tuple[bytes, str, int, int]:
             ("image/jpeg", "image/png", "image/webp"),
         )
     )
+
+    size = getattr(upload, "size", None)
+    if size is not None and size > max_bytes:
+        raise ValidationError(
+            {
+                "file": [
+                    f"La imagen supera el maximo de {max_bytes // (1024 * 1024)} MB."
+                ]
+            }
+        )
 
     raw = upload.read()
     if not raw:
@@ -355,16 +373,23 @@ class MediaDetailView(APIView):
     authentication_classes = []
 
     def get(self, request, pk):
+        # MediaAsset es inmutable: cada subida crea un pk nuevo. Ese pk sirve
+        # como ETag. Solo consultamos la existencia cuando hay revalidacion,
+        # para no añadir una query al camino normal 200.
+        etag = str(pk)
+        if request.headers.get("If-None-Match"):
+            exists = MediaAsset.objects.filter(pk=pk).exists()
+            if exists and _not_modified(request, etag):
+                response = Response(status=status.HTTP_304_NOT_MODIFIED)
+                response["ETag"] = f'"{etag}"'
+                response["Cache-Control"] = "public, max-age=31536000, immutable"
+                return response
+
         asset = MediaAsset.objects.filter(pk=pk).first()
         if asset is None:
             return Response(
                 {"detail": "Imagen no encontrada."}, status=status.HTTP_404_NOT_FOUND
             )
-        if _not_modified(request, asset.checksum):
-            response = Response(status=status.HTTP_304_NOT_MODIFIED)
-            response["ETag"] = f'"{asset.checksum}"'
-            response["Cache-Control"] = "public, max-age=31536000, immutable"
-            return response
 
         payload = bytes(asset.file)
         response = FileResponse(io.BytesIO(payload), content_type=asset.mime_type)
@@ -378,5 +403,5 @@ class MediaDetailView(APIView):
         )
         response["Content-Disposition"] = content_disposition_header(False, filename)
         response["Cache-Control"] = "public, max-age=31536000, immutable"
-        response["ETag"] = f'"{asset.checksum}"'
+        response["ETag"] = f'"{etag}"'
         return response
