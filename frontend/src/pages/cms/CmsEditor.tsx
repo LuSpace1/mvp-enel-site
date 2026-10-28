@@ -25,6 +25,7 @@ import {
   NewspaperClipping,
   PencilSimpleLine,
   ShieldCheck,
+  SidebarSimple,
   Tag,
   TreeStructure,
   WarningCircle,
@@ -129,6 +130,8 @@ function fechaCorta(valor: string | null | undefined): string {
   })
 }
 
+const CLAVE_SECCIONES = 'cms:secciones-colapsadas'
+
 function detalleError(error: unknown): string {
   if (isAxiosError(error)) {
     const data = error.response?.data
@@ -168,7 +171,22 @@ export function CmsEditor() {
   )
   const [previewListo, setPreviewListo] = useState(false)
   const [modoPreview, setModoPreview] = useState<'escritorio' | 'movil'>('escritorio')
+  const [seccionesColapsadas, setSeccionesColapsadas] = useState(() => {
+    try {
+      return window.localStorage.getItem(CLAVE_SECCIONES) === '1'
+    } catch {
+      return false
+    }
+  })
   const previewRef = useRef<HTMLIFrameElement>(null)
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(CLAVE_SECCIONES, seccionesColapsadas ? '1' : '0')
+    } catch {
+      // La preferencia es cosmética; si el navegador bloquea el storage, seguimos.
+    }
+  }, [seccionesColapsadas])
 
   async function cargar() {
     setCargando(true)
@@ -639,21 +657,27 @@ export function CmsEditor() {
           <div
             className={cn(
               'grid gap-6',
-              previewVisible ? 'xl:grid-cols-[minmax(0,1fr)_minmax(380px,42%)]' : 'grid-cols-1',
+              previewVisible
+                ? seccionesColapsadas
+                  ? 'xl:grid-cols-[minmax(0,1fr)_minmax(420px,52%)]'
+                  : 'xl:grid-cols-[minmax(0,1fr)_minmax(360px,42%)]'
+                : 'grid-cols-1',
             )}
           >
             <div
               className={cn(
                 'grid min-w-0 gap-6',
-                previewVisible
-                  ? 'grid-cols-1 2xl:grid-cols-[220px_minmax(0,1fr)]'
-                  : 'lg:grid-cols-[300px_minmax(0,1fr)]',
+                seccionesColapsadas
+                  ? 'grid-cols-1'
+                  : previewVisible
+                    ? 'grid-cols-1 2xl:grid-cols-[220px_minmax(0,1fr)]'
+                    : 'lg:grid-cols-[300px_minmax(0,1fr)]',
               )}
             >
               <aside
                 className={cn(
-                  'flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start',
-                  previewVisible && 'hidden 2xl:flex',
+                  'flex-col gap-4 lg:sticky lg:top-24 lg:self-start',
+                  seccionesColapsadas ? 'hidden' : previewVisible ? 'hidden 2xl:flex' : 'flex',
                 )}
               >
                 <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-[#fbfcfd] shadow-sm">
@@ -662,9 +686,22 @@ export function CmsEditor() {
                       <p className="text-enel-navy text-[11px] font-semibold tracking-[0.14em] uppercase">
                         Secciones
                       </p>
-                      <span className="text-muted-foreground/70 text-[11px] tabular-nums">
-                        {order.length}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground/70 text-[11px] tabular-nums">
+                          {order.length}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          className="text-muted-foreground hover:text-foreground -mr-1"
+                          onClick={() => setSeccionesColapsadas(true)}
+                          aria-label="Ocultar lista de secciones"
+                          title="Ocultar lista de secciones"
+                        >
+                          <SidebarSimple className="size-3.5" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="relative mt-2.5">
                       <MagnifyingGlass className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
@@ -783,42 +820,65 @@ export function CmsEditor() {
               </aside>
 
               <section className="flex min-w-0 flex-col gap-4">
-                {previewVisible && (
-                  <div className="overflow-hidden rounded-xl border border-black/[0.06] bg-white shadow-sm 2xl:hidden">
-                    <div className="flex gap-1 overflow-x-auto p-1.5">
-                      {order.map((clave) => {
-                        const seccion = seccionesPorClave.get(clave)
-                        if (!seccion) return null
-                        const etiqueta =
-                          (draft.payload.sections[clave]?.nav_label as string | undefined) ??
-                          seccion.label
-                        const estaActiva = activa === clave
-                        const pendientes = faltantes.get(clave) ?? 0
-                        return (
-                          <button
-                            key={clave}
-                            type="button"
-                            aria-current={estaActiva ? 'true' : undefined}
-                            onClick={() => setActiva(clave)}
-                            className={cn(
-                              'flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors',
-                              estaActiva
-                                ? 'bg-primary text-primary-foreground'
-                                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                            )}
-                          >
-                            {etiqueta}
-                            {pendientes > 0 && (
-                              <span
-                                className={cn(
-                                  'size-1.5 rounded-full',
-                                  estaActiva ? 'bg-white/70' : 'bg-amber-400',
-                                )}
-                              />
-                            )}
-                          </button>
-                        )
-                      })}
+                {(previewVisible || seccionesColapsadas) && (
+                  <div
+                    className={cn(
+                      'overflow-hidden rounded-xl border border-black/[0.06] bg-white shadow-sm',
+                      !seccionesColapsadas && '2xl:hidden',
+                    )}
+                  >
+                    <div className="flex items-center gap-2 p-1.5">
+                      <span className="text-muted-foreground hidden shrink-0 pl-1 text-[10px] font-semibold tracking-[0.14em] uppercase sm:inline">
+                        Secciones
+                      </span>
+                      <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+                        {order.map((clave) => {
+                          const seccion = seccionesPorClave.get(clave)
+                          if (!seccion) return null
+                          const etiqueta =
+                            (draft.payload.sections[clave]?.nav_label as string | undefined) ??
+                            seccion.label
+                          const estaActiva = activa === clave
+                          const pendientes = faltantes.get(clave) ?? 0
+                          return (
+                            <button
+                              key={clave}
+                              type="button"
+                              aria-current={estaActiva ? 'true' : undefined}
+                              onClick={() => setActiva(clave)}
+                              className={cn(
+                                'flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors',
+                                estaActiva
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                              )}
+                            >
+                              {etiqueta}
+                              {pendientes > 0 && (
+                                <span
+                                  className={cn(
+                                    'size-1.5 rounded-full',
+                                    estaActiva ? 'bg-white/70' : 'bg-amber-400',
+                                  )}
+                                />
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {seccionesColapsadas && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          className="text-muted-foreground hover:text-foreground shrink-0"
+                          onClick={() => setSeccionesColapsadas(false)}
+                          aria-label="Mostrar lista de secciones"
+                          title="Mostrar lista de secciones"
+                        >
+                          <SidebarSimple className="size-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}
