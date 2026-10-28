@@ -72,10 +72,10 @@ El panel está en `http://localhost:5173/cms` y usa el login local del MVP (el S
 Las cuentas se crean desde `/django-admin/`:
 
 1. Crea el usuario con `uv run python manage.py createsuperuser` o desde el Admin.
-2. Crea los grupos `CMS_Editor` y `CMS_Publisher`.
-3. Asigna cada grupo al usuario que corresponda.
+2. Crea el grupo `CMS_Admin` y asígnalo a las personas administradoras del CMS.
+3. Asigna el grupo a cada usuario que corresponda. `Portal_Admin` queda reservado para soporte técnico.
 
-El contenido publicado se sirve desde `GET /api/cms/public/`. Si la API no responde, el frontend usa el contenido por defecto del código. Los borradores no se publican hasta que una persona con rol publicador los publica; la publicación es atómica e incluye contenido y orden.
+El contenido publicado se sirve desde `GET /api/cms/public/`. Si la API no responde, el frontend usa el contenido por defecto del código. El borrador se crea al activar el modo edición y no se publica hasta que una persona administradora lo publica; la publicación es atómica e incluye contenido y orden.
 
 En una base recién migrada, la primera petición al CMS materializa el contenido inicial del portal (incluido el enlace actual del video del hero) como publicación y borrador. No hay comandos de seed ni datos de demostración en el repositorio.
 
