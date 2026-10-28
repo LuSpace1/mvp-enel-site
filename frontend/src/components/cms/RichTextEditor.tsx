@@ -1,4 +1,4 @@
-import { Fragment, useEffect, type ReactNode } from 'react'
+import { Fragment, useEffect, useRef, type ReactNode } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import {
@@ -38,6 +38,7 @@ export function RichTextEditor({
   onChange: (doc: RichTextDoc) => void
   placeholder?: string
 }) {
+  const docPropio = useRef<RichTextDoc | null>(null)
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -61,12 +62,17 @@ export function RichTextEditor({
       },
     },
     onUpdate: ({ editor: instancia }) => {
-      onChange(instancia.getJSON() as RichTextDoc)
+      const doc = instancia.getJSON() as RichTextDoc
+      docPropio.current = doc
+      onChange(doc)
     },
   })
 
   useEffect(() => {
     if (!editor) return
+    // Las actualizaciones que nacen del propio editor ya tienen el contenido
+    // correcto; solo sincronizamos cambios externos (carga, restaurar, descartar).
+    if (value === docPropio.current) return
     const actual = JSON.stringify(editor.getJSON())
     const nuevo = JSON.stringify(value ?? DOC_VACIO)
     if (actual !== nuevo) {

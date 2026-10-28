@@ -17,6 +17,41 @@ interface ContenidoState {
   limpiar: () => void
 }
 
+function mismaLista(a: string[], b: string[]): boolean {
+  if (a === b) return true
+  if (a.length !== b.length) return false
+  return a.every((valor, indice) => valor === b[indice])
+}
+
+/** Reutiliza secciones sin cambios para que sus suscriptores no se rerendericen. */
+function fusionarPayload(anterior: CmsPayload | null, siguiente: CmsPayload): CmsPayload {
+  if (!anterior) return siguiente
+
+  const claves = new Set([...Object.keys(anterior.sections), ...Object.keys(siguiente.sections)])
+  const secciones = { ...siguiente.sections }
+  let seccionesIguales = claves.size === Object.keys(siguiente.sections).length
+
+  for (const clave of claves) {
+    const previa = anterior.sections[clave]
+    const nueva = siguiente.sections[clave]
+    if (previa && nueva && JSON.stringify(previa) === JSON.stringify(nueva)) {
+      secciones[clave] = previa
+    } else {
+      seccionesIguales = false
+    }
+  }
+
+  const order = mismaLista(anterior.order, siguiente.order) ? anterior.order : siguiente.order
+  if (seccionesIguales && order === anterior.order && anterior.version === siguiente.version) {
+    return anterior
+  }
+  return {
+    ...siguiente,
+    order,
+    sections: seccionesIguales ? anterior.sections : secciones,
+  }
+}
+
 export const useContenidoStore = create<ContenidoState>((set, get) => ({
   payload: null,
   status: 'idle',
@@ -28,20 +63,28 @@ export const useContenidoStore = create<ContenidoState>((set, get) => ({
     set({ status: 'loading', error: null })
     try {
       const data = await obtenerContenidoPublico()
-      set({ payload: data.payload, status: 'loaded', error: null })
+      set((actual) => ({
+        payload: fusionarPayload(actual.payload, data.payload),
+        status: 'loaded',
+        error: null,
+      }))
     } catch {
       // El sitio sigue funcionando con el contenido por defecto del codigo.
       set({ status: 'error', error: 'No se pudo cargar el contenido publicado.' })
     }
   },
 
-  setPayload: (payload) => set({ payload, status: 'loaded', error: null }),
+  setPayload: (payload) =>
+    set((actual) => ({
+      payload: fusionarPayload(actual.payload, payload),
+      status: 'loaded',
+      error: null,
+    })),
   limpiar: () => set({ payload: null, status: 'idle', error: null }),
 }))
 
 export function useSeccion(key: string): CmsSectionValues | undefined {
-  const payload = useContenidoStore((estado) => estado.payload)
-  return payload?.sections?.[key]
+  return useContenidoStore((estado) => estado.payload?.sections?.[key])
 }
 
 /** Campo editorial con fallback al contenido fijo del codigo. */

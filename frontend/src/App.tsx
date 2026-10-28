@@ -5,12 +5,12 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { RutaProtegida } from '@/components/cms/RutaProtegida'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuthStore } from '@/store/useAuthStore'
-import { Viaje } from '@/pages/Viaje'
 
 preconnect('https://www.youtube.com')
 preconnect('https://i.ytimg.com')
 prefetchDNS('https://picsum.photos')
 
+const Viaje = lazy(() => import('@/pages/Viaje').then((modulo) => ({ default: modulo.Viaje })))
 const CmsLogin = lazy(() =>
   import('@/pages/cms/CmsLogin').then((modulo) => ({ default: modulo.CmsLogin })),
 )
@@ -32,6 +32,18 @@ const CmsPreview = lazy(() =>
   import('@/pages/cms/CmsPreview').then((modulo) => ({ default: modulo.CmsPreview })),
 )
 
+function CargandoRuta() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="text-muted-foreground flex min-h-svh items-center justify-center text-sm"
+    >
+      Cargando…
+    </div>
+  )
+}
+
 export function App() {
   const access = useAuthStore((estado) => estado.access)
   const actualizarPerfil = useAuthStore((estado) => estado.actualizarPerfil)
@@ -44,7 +56,7 @@ export function App() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={null}>
+      <Suspense fallback={<CargandoRuta />}>
         <Routes>
           <Route path="/" element={<Viaje />} />
           <Route path="/cms/login" element={<CmsLogin />} />

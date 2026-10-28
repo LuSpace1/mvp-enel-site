@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { lazy, Suspense, useId, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, CaretDown, Plus, Trash } from '@phosphor-icons/react'
 
 import { Button } from '@/components/ui/button'
@@ -14,9 +14,14 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { ImageField } from '@/components/cms/ImageField'
-import { RichTextEditor } from '@/components/cms/RichTextEditor'
 import { cn } from '@/lib/utils'
 import type { CmsFieldSchema, CmsFieldValue, CmsListItem, RichTextDoc } from '@/types/cms'
+
+const RichTextEditor = lazy(() =>
+  import('@/components/cms/RichTextEditor').then((modulo) => ({
+    default: modulo.RichTextEditor,
+  })),
+)
 
 function valorLista(field: CmsFieldSchema): CmsListItem {
   const item: CmsListItem = {}
@@ -152,9 +157,28 @@ function ListaEditor({
 }) {
   const items = Array.isArray(value) ? (value as CmsListItem[]) : []
   const maximo = field.max_items ?? 40
+  const ids = useRef(new WeakMap<object, string>())
+  const contador = useRef(0)
+
+  // Clave estable para que mover o editar un elemento no pierda su estado de
+  // expansión. El payload no admite campos internos extra, así que la clave
+  // vive solo en memoria y no se envía al backend.
+  function idDe(item: CmsListItem): string {
+    let id = ids.current.get(item)
+    if (!id) {
+      contador.current += 1
+      id = `item-${contador.current}`
+      ids.current.set(item, id)
+    }
+    return id
+  }
 
   function actualizar(indice: number, clave: string, nuevo: CmsFieldValue) {
-    const copia = items.map((item, i) => (i === indice ? { ...item, [clave]: nuevo } : item))
+    const actual = items[indice]
+    if (!actual) return
+    const copiaItem = { ...actual, [clave]: nuevo }
+    ids.current.set(copiaItem, idDe(actual))
+    const copia = items.map((item, i) => (i === indice ? copiaItem : item))
     onChange(copia)
   }
 
@@ -179,7 +203,7 @@ function ListaEditor({
 
       {items.map((item, indice) => (
         <ListaItem
-          key={indice}
+          key={idDe(item)}
           field={field}
           item={item}
           indice={indice}
@@ -343,14 +367,20 @@ export function CampoEditor({
       )}
 
       {field.type === 'rich' && (
-        <RichTextEditor
-          value={
-            value && typeof value === 'object' && !Array.isArray(value)
-              ? (value as RichTextDoc)
-              : undefined
+        <Suspense
+          fallback={
+            <div className="bg-muted/40 h-40 animate-pulse rounded-xl" aria-hidden="true" />
           }
-          onChange={(doc) => onChange(doc)}
-        />
+        >
+          <RichTextEditor
+            value={
+              value && typeof value === 'object' && !Array.isArray(value)
+                ? (value as RichTextDoc)
+                : undefined
+            }
+            onChange={(doc) => onChange(doc)}
+          />
+        </Suspense>
       )}
 
       {field.help_text && (
