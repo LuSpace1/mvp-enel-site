@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
+import { Link } from 'react-router-dom'
 import {
   ArrowDown,
   ArrowUp,
@@ -14,18 +15,21 @@ import { isAxiosError } from 'axios'
 import { toast } from 'sonner'
 
 import { CmsPageHeader } from '@/components/cms/CmsPageHeader'
+import { VistaPreviaPortal } from '@/components/cms/VistaPreviaPortal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useEstadoEditor } from '@/lib/cms/estadoEditor'
 import { cn } from '@/lib/utils'
 import {
   activarEdicion,
   guardarBorrador,
   obtenerContenidoAdmin,
+  obtenerContenidoPublico,
   obtenerSchema,
   publicarContenido,
 } from '@/services/cms'
-import type { CmsRevision, CmsRevisionDetail, CmsSchemaResponse } from '@/types/cms'
+import type { CmsPayload, CmsRevision, CmsRevisionDetail, CmsSchemaResponse } from '@/types/cms'
 
 function detalleError(error: unknown): string {
   if (isAxiosError(error)) {
@@ -54,6 +58,7 @@ export function CmsOrden() {
   const [schema, setSchema] = useState<CmsSchemaResponse | null>(null)
   const [draft, setDraft] = useState<CmsRevisionDetail | null>(null)
   const [published, setPublished] = useState<CmsRevision | null>(null)
+  const [publicadoPayload, setPublicadoPayload] = useState<CmsPayload | null>(null)
   const [orden, setOrden] = useState<string[]>([])
   const [dirty, setDirty] = useState(false)
   const [cargando, setCargando] = useState(true)
@@ -62,16 +67,27 @@ export function CmsOrden() {
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const [sobre, setSobre] = useState<string | null>(null)
   const [activando, setActivando] = useState(false)
+  const setDirtyGlobal = useEstadoEditor((estado) => estado.setDirty)
+
+  useEffect(() => {
+    setDirtyGlobal(dirty)
+    return () => setDirtyGlobal(false)
+  }, [dirty, setDirtyGlobal])
 
   async function cargar() {
     setCargando(true)
     setError(null)
     try {
-      const [esquema, contenido] = await Promise.all([obtenerSchema(), obtenerContenidoAdmin()])
+      const [esquema, contenido, publico] = await Promise.all([
+        obtenerSchema(),
+        obtenerContenidoAdmin(),
+        obtenerContenidoPublico().catch(() => null),
+      ])
       setSchema(esquema)
       setDraft(contenido.draft)
       setPublished(contenido.published)
-      setOrden(contenido.draft?.payload.order ?? [])
+      setPublicadoPayload(publico?.payload ?? null)
+      setOrden(contenido.draft?.payload.order ?? publico?.payload.order ?? esquema.default_order)
       setDirty(false)
     } catch (err) {
       setError(detalleError(err))
@@ -98,6 +114,12 @@ export function CmsOrden() {
     )
     return mapa
   }, [schema])
+
+  const payloadVisible = draft?.payload ?? publicadoPayload
+  const payloadPreview = useMemo(
+    () => (payloadVisible ? { ...payloadVisible, order: orden } : null),
+    [payloadVisible, orden],
+  )
 
   function reordenar(origen: string, destino: string) {
     if (origen === destino) return
@@ -150,14 +172,19 @@ export function CmsOrden() {
   }
 
   async function publicar() {
-    const guardado = await guardar()
-    if (!guardado) return
+    if (!draft) return
+    if (dirty) {
+      toast.info('Guarda los cambios antes de publicar.')
+      return
+    }
     setGuardando(true)
     try {
-      const respuesta = await publicarContenido(guardado.version, 'Cambio de orden de secciones')
-      setDraft(respuesta.draft)
+      const respuesta = await publicarContenido(draft.version, 'Cambio de orden de secciones')
       setPublished(respuesta.published)
-      setOrden(respuesta.draft.payload.order)
+      setPublicadoPayload(draft.payload)
+      // La publicación cierra la sesión de edición: volvemos al modo lectura.
+      setDraft(null)
+      setOrden(draft.payload.order)
       setDirty(false)
       toast.success('Nuevo orden publicado en el portal.')
     } catch (err) {
@@ -221,43 +248,8 @@ export function CmsOrden() {
     }
   }
 
-  if (!draft) {
-    return (
-      <div className="min-h-svh">
-        <CmsPageHeader
-          back={{ to: '/cms', label: 'Volver al contenido' }}
-          eyebrow="Orden del recorrido"
-          title="Orden de secciones"
-          description={
-            <span className="text-muted-foreground text-xs">
-              Modo lectura · no hay un borrador activo.
-            </span>
-          }
-          actions={
-            <Button onClick={() => void activarModoEdicion()} disabled={activando}>
-              <PencilSimpleLine data-icon="inline-start" />
-              {activando ? 'Activando…' : 'Activar modo edición'}
-            </Button>
-          }
-        />
-        <div className="mx-auto max-w-lg px-4 py-16 md:py-24">
-          <div className="rounded-2xl border border-black/[0.06] bg-white p-8 text-center shadow-sm">
-            <span className="bg-enel-blue/10 text-enel-blue mx-auto flex size-12 items-center justify-center rounded-xl">
-              <PencilSimpleLine className="size-6" weight="duotone" />
-            </span>
-            <h2 className="text-enel-navy mt-4 text-lg font-semibold">Modo lectura</h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              El orden publicado no se modifica hasta que actives el modo edición.
-            </p>
-            <Button className="mt-5" onClick={() => void activarModoEdicion()} disabled={activando}>
-              <PencilSimpleLine data-icon="inline-start" />
-              {activando ? 'Activando…' : 'Activar modo edición'}
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const enEdicion = Boolean(draft)
+  const versionVisible = enEdicion ? draft?.version : published?.version
 
   return (
     <div className="min-h-svh">
@@ -266,43 +258,102 @@ export function CmsOrden() {
         eyebrow="Orden del recorrido"
         title="Orden de secciones"
         description={
-          <span className="text-muted-foreground text-xs">
-            Arrastra las secciones para definir cómo se recorre el portal.
-            {dirty ? ' Hay cambios sin guardar.' : ''}
-          </span>
+          enEdicion ? (
+            <span className="text-muted-foreground text-xs">
+              Arrastra las secciones para definir cómo se recorre el portal. Este borrador es el
+              mismo que editas en Contenido.
+              {dirty ? ' Hay cambios sin guardar.' : ''}
+            </span>
+          ) : (
+            <span className="text-muted-foreground text-xs">
+              Modo lectura · así está publicado el portal en este momento.
+            </span>
+          )
         }
         actions={
-          <>
-            <Button variant="outline" onClick={() => void guardar()} disabled={!dirty || guardando}>
-              <FloppyDisk data-icon="inline-start" />
-              Guardar orden
+          enEdicion ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => void guardar()}
+                disabled={!dirty || guardando}
+              >
+                <FloppyDisk data-icon="inline-start" />
+                Guardar orden
+              </Button>
+              <span
+                className="inline-flex"
+                title={
+                  dirty
+                    ? 'Guarda los cambios antes de publicar.'
+                    : guardando
+                      ? 'Guardando los cambios…'
+                      : undefined
+                }
+              >
+                <Button onClick={() => void publicar()} disabled={guardando || dirty}>
+                  <CloudArrowUp data-icon="inline-start" />
+                  Publicar orden
+                </Button>
+              </span>
+            </>
+          ) : (
+            <Button asChild variant="outline">
+              <Link to="/cms/revisiones">Ver historial</Link>
             </Button>
-            <Button onClick={() => void publicar()} disabled={guardando}>
-              <CloudArrowUp data-icon="inline-start" />
-              Publicar orden
-            </Button>
-          </>
+          )
         }
       />
 
-      <div className="mx-auto max-w-[1200px] px-4 py-6 md:px-8 md:py-8">
-        <div className="flex flex-col gap-4">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mx-auto max-w-[1440px] px-4 py-6 md:px-8 md:py-8">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,44%)]">
+          <div className="flex min-w-0 flex-col gap-4">
+            {!enEdicion && (
+              <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-sm md:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <span className="bg-enel-blue/10 text-enel-blue flex size-11 shrink-0 items-center justify-center rounded-xl">
+                    <PencilSimpleLine className="size-5" weight="duotone" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-enel-navy text-base font-semibold">Modo lectura</h2>
+                    <p className="text-muted-foreground mt-1 max-w-xl text-sm leading-relaxed">
+                      Estás viendo el orden publicado. Para arrastrar o mover secciones, activa el
+                      modo edición: recién entonces se crea un borrador.
+                    </p>
+                  </div>
+                  <Button
+                    className="shrink-0"
+                    onClick={() => void activarModoEdicion()}
+                    disabled={activando}
+                  >
+                    <PencilSimpleLine data-icon="inline-start" />
+                    {activando ? 'Activando…' : 'Activar modo edición'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-5 py-4">
                 <div>
                   <h2 className="text-enel-navy text-base font-semibold">Recorrido del portal</h2>
                   <p className="text-muted-foreground text-xs">
-                    {dirty
-                      ? 'Tienes cambios sin guardar en el borrador.'
-                      : 'Así se verá el orden en el portal.'}
+                    {enEdicion
+                      ? dirty
+                        ? 'Tienes cambios sin guardar en el borrador.'
+                        : 'Así se verá el orden en el portal.'
+                      : 'Este es el orden que ve el portal público.'}
                   </p>
                 </div>
                 <Badge
                   variant={dirty ? 'secondary' : 'outline'}
                   className="text-[10px] tabular-nums"
                 >
-                  {dirty ? 'Sin guardar' : `v${draft.version}`}
+                  {enEdicion
+                    ? dirty
+                      ? 'Sin guardar'
+                      : `v${draft?.version}`
+                    : `Publicado · v${published?.version ?? '—'}`}
                 </Badge>
               </div>
 
@@ -310,16 +361,16 @@ export function CmsOrden() {
                 {orden.map((clave, indice) => {
                   const detalle = detallePorClave.get(clave)
                   const etiqueta =
-                    (draft.payload.sections[clave]?.nav_label as string | undefined) ??
+                    (payloadVisible?.sections[clave]?.nav_label as string | undefined) ??
                     detalle?.label ??
                     clave
                   const fija = !detalle?.reorderable
                   const anterior = indice > 0 ? detallePorClave.get(orden[indice - 1] ?? '') : null
                   const siguiente =
                     indice < orden.length - 1 ? detallePorClave.get(orden[indice + 1] ?? '') : null
-                  const puedeSubir = !fija && Boolean(anterior?.reorderable)
-                  const puedeBajar = !fija && Boolean(siguiente?.reorderable)
-                  const arrastrable = !fija
+                  const puedeSubir = enEdicion && !fija && Boolean(anterior?.reorderable)
+                  const puedeBajar = enEdicion && !fija && Boolean(siguiente?.reorderable)
+                  const arrastrable = enEdicion && !fija
 
                   return (
                     <li key={clave}>
@@ -386,43 +437,46 @@ export function CmsOrden() {
                           </p>
                         </div>
 
-                        {arrastrable ? (
+                        {arrastrable && (
                           <span
                             className="text-muted-foreground/40 group-hover:text-muted-foreground hidden shrink-0 sm:block"
                             aria-hidden="true"
                           >
                             <DotsSixVertical className="size-5" />
                           </span>
-                        ) : (
+                        )}
+                        {!enEdicion && fija && (
                           <span className="hidden shrink-0 sm:block" aria-hidden="true">
                             <LockKey className="text-muted-foreground/30 size-4" />
                           </span>
                         )}
 
-                        <div className="flex shrink-0 items-center gap-0.5">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label={`Mover ${etiqueta} arriba`}
-                            title="Mover arriba"
-                            disabled={!puedeSubir}
-                            onClick={() => mover(indice, -1)}
-                          >
-                            <ArrowUp className="size-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label={`Mover ${etiqueta} abajo`}
-                            title="Mover abajo"
-                            disabled={!puedeBajar}
-                            onClick={() => mover(indice, 1)}
-                          >
-                            <ArrowDown className="size-4" />
-                          </Button>
-                        </div>
+                        {enEdicion && (
+                          <div className="flex shrink-0 items-center gap-0.5">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label={`Mover ${etiqueta} arriba`}
+                              title="Mover arriba"
+                              disabled={!puedeSubir}
+                              onClick={() => mover(indice, -1)}
+                            >
+                              <ArrowUp className="size-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label={`Mover ${etiqueta} abajo`}
+                              title="Mover abajo"
+                              disabled={!puedeBajar}
+                              onClick={() => mover(indice, 1)}
+                            >
+                              <ArrowDown className="size-4" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </li>
                   )
@@ -431,8 +485,17 @@ export function CmsOrden() {
 
               <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/5 bg-[#fbfcfd] px-5 py-3">
                 <span className="text-muted-foreground inline-flex items-center gap-1.5 text-[11px]">
-                  <DotsSixVertical className="size-3.5" />
-                  Arrastra una fila o usa las flechas
+                  {enEdicion ? (
+                    <>
+                      <DotsSixVertical className="size-3.5" />
+                      Arrastra una fila o usa las flechas
+                    </>
+                  ) : (
+                    <>
+                      <LockKey className="size-3.5" />
+                      Orden publicado y visible en el portal
+                    </>
+                  )}
                 </span>
                 <span className="text-muted-foreground/70 text-[11px] tabular-nums">
                   {orden.length} secciones
@@ -440,67 +503,77 @@ export function CmsOrden() {
               </div>
             </div>
 
-            <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
-              <div className="bg-enel-navy relative overflow-hidden rounded-2xl p-5 text-white shadow-sm">
-                <div className="bg-enel-blue/30 pointer-events-none absolute -top-10 -right-10 size-32 rounded-full blur-2xl" />
-                <p className="relative text-[10px] font-semibold tracking-[0.16em] text-white/45 uppercase">
-                  Estado del borrador
-                </p>
-                <p className="relative mt-1.5 text-2xl font-semibold tabular-nums">
-                  v{draft.version}
-                </p>
-                <p className="relative mt-1 inline-flex items-center gap-1.5 text-[11px] text-white/55">
-                  <span
-                    className={cn(
-                      'size-1.5 rounded-full',
-                      dirty ? 'bg-amber-400' : 'bg-emerald-400',
-                    )}
-                  />
-                  {dirty ? 'Cambios sin guardar' : 'Orden guardado'}
-                </p>
-                <div className="relative mt-4 space-y-1.5 border-t border-white/10 pt-3 text-[11px]">
-                  <div className="flex justify-between gap-3">
-                    <span className="text-white/40">Última publicación</span>
-                    <span className="text-right text-white/80">
-                      {fechaHora(published?.published_at)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between gap-3">
-                    <span className="text-white/40">Autor</span>
-                    <span className="max-w-[9rem] truncate text-right text-white/80">
-                      {published?.published_by?.name ?? '—'}
-                    </span>
-                  </div>
+            <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-sm">
+              <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.16em] uppercase">
+                Cómo funciona
+              </p>
+              <ul className="mt-3 flex flex-col gap-3 text-xs leading-relaxed">
+                <li className="flex gap-2.5">
+                  <CheckCircle className="text-enel-blue mt-0.5 size-4 shrink-0" weight="fill" />
+                  <span>
+                    <strong className="text-enel-navy font-medium">Inicio</strong> y{' '}
+                    <strong className="text-enel-navy font-medium">Cierre</strong> están fijados en
+                    los extremos del recorrido.
+                  </span>
+                </li>
+                <li className="flex gap-2.5">
+                  <CheckCircle className="text-enel-blue mt-0.5 size-4 shrink-0" weight="fill" />
+                  <span>Arrastra una sección o usa las flechas para moverla.</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <CheckCircle className="text-enel-blue mt-0.5 size-4 shrink-0" weight="fill" />
+                  <span>
+                    El orden alimenta la página, el header y el índice lateral del portal.
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <aside className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-24 xl:self-start">
+            <div className="bg-enel-navy relative overflow-hidden rounded-2xl p-5 text-white shadow-sm">
+              <div className="bg-enel-blue/30 pointer-events-none absolute -top-10 -right-10 size-32 rounded-full blur-2xl" />
+              <p className="relative text-[10px] font-semibold tracking-[0.16em] text-white/45 uppercase">
+                {enEdicion ? 'Estado del borrador' : 'Contenido publicado'}
+              </p>
+              <p className="relative mt-1.5 text-2xl font-semibold tabular-nums">
+                v{versionVisible ?? '—'}
+              </p>
+              <p className="relative mt-1 inline-flex items-center gap-1.5 text-[11px] text-white/55">
+                <span
+                  className={cn(
+                    'size-1.5 rounded-full',
+                    enEdicion && dirty ? 'bg-amber-400' : 'bg-emerald-400',
+                  )}
+                />
+                {enEdicion
+                  ? dirty
+                    ? 'Cambios sin guardar'
+                    : 'Orden guardado'
+                  : 'Visible en el portal'}
+              </p>
+              <div className="relative mt-4 space-y-1.5 border-t border-white/10 pt-3 text-[11px]">
+                <div className="flex justify-between gap-3">
+                  <span className="text-white/40">Última publicación</span>
+                  <span className="text-right text-white/80">
+                    {fechaHora(published?.published_at)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-white/40">Autor</span>
+                  <span className="max-w-[9rem] truncate text-right text-white/80">
+                    {published?.published_by?.name ?? '—'}
+                  </span>
                 </div>
               </div>
+            </div>
 
-              <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-sm">
-                <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.16em] uppercase">
-                  Cómo funciona
-                </p>
-                <ul className="mt-3 flex flex-col gap-3 text-xs leading-relaxed">
-                  <li className="flex gap-2.5">
-                    <CheckCircle className="text-enel-blue mt-0.5 size-4 shrink-0" weight="fill" />
-                    <span>
-                      <strong className="text-enel-navy font-medium">Inicio</strong> y{' '}
-                      <strong className="text-enel-navy font-medium">Cierre</strong> están fijados
-                      en los extremos del recorrido.
-                    </span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <CheckCircle className="text-enel-blue mt-0.5 size-4 shrink-0" weight="fill" />
-                    <span>Arrastra una sección o usa las flechas para moverla.</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <CheckCircle className="text-enel-blue mt-0.5 size-4 shrink-0" weight="fill" />
-                    <span>
-                      El orden alimenta la página, el header y el índice lateral del portal.
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </aside>
-          </div>
+            <VistaPreviaPortal
+              payload={payloadPreview}
+              enVivo={enEdicion}
+              className="h-[62svh] xl:h-[calc(100svh-19rem)]"
+            />
+          </aside>
         </div>
       </div>
     </div>

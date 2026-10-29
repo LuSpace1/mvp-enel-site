@@ -107,7 +107,8 @@ export interface CmsStartEditingResponse {
 
 export interface CmsPublishResponse {
   published: CmsRevision
-  draft: CmsRevisionDetail
+  /** La publicación cierra la sesión de edición: no deja un borrador nuevo. */
+  draft: CmsRevisionDetail | null
 }
 
 export interface CmsMedia {

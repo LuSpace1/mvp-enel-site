@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowClockwise,
   ArrowRight,
   BookOpen,
   Buildings,
+  CaretLeft,
+  CaretRight,
   CheckCircle,
   ClockCounterClockwise,
   CloudArrowUp,
-  Desktop,
-  DeviceMobile,
   Eye,
   EyeSlash,
   Files,
@@ -35,6 +34,7 @@ import { toast } from 'sonner'
 
 import { CmsPageHeader } from '@/components/cms/CmsPageHeader'
 import { CampoEditor } from '@/components/cms/CampoEditor'
+import { VistaPreviaPortal } from '@/components/cms/VistaPreviaPortal'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -65,11 +65,13 @@ import {
   descartarBorrador,
   guardarBorrador,
   obtenerContenidoAdmin,
+  obtenerContenidoPublico,
   obtenerSchema,
   publicarContenido,
 } from '@/services/cms'
 import type {
   CmsFieldValue,
+  CmsPayload,
   CmsRevision,
   CmsRevisionDetail,
   CmsSchemaResponse,
@@ -131,8 +133,6 @@ function fechaCorta(valor: string | null | undefined): string {
 }
 
 const CLAVE_SECCIONES = 'cms:secciones-colapsadas'
-const PREVIEW_ESCRITORIO_ANCHO = 1440
-const PREVIEW_MOVIL = { ancho: 390, alto: 844 }
 
 function detalleError(error: unknown): string {
   if (isAxiosError(error)) {
@@ -148,6 +148,86 @@ function detalleError(error: unknown): string {
     return `Error ${error.response?.status ?? ''}`.trim()
   }
   return 'Ocurrió un error inesperado.'
+}
+
+/**
+ * Desplazamiento horizontal por proximidad al borde. El trackpad ya funciona,
+ * pero con mouse no hay una barra visible: al acercar el puntero a un extremo
+ * la lista se mueve sola, con velocidad proporcional a la cercanía.
+ */
+function useDesplazamientoEnBordes() {
+  const ref = useRef<HTMLDivElement>(null)
+  const frame = useRef<number | null>(null)
+  const velocidad = useRef(0)
+  const [hayIzquierda, setHayIzquierda] = useState(false)
+  const [hayDerecha, setHayDerecha] = useState(false)
+
+  function actualizarBordes() {
+    const elemento = ref.current
+    if (!elemento) return
+    const izquierda = elemento.scrollLeft > 2
+    const derecha = elemento.scrollLeft + elemento.clientWidth < elemento.scrollWidth - 2
+    setHayIzquierda((valor) => (valor === izquierda ? valor : izquierda))
+    setHayDerecha((valor) => (valor === derecha ? valor : derecha))
+  }
+
+  function detener() {
+    velocidad.current = 0
+    if (frame.current !== null) {
+      cancelAnimationFrame(frame.current)
+      frame.current = null
+    }
+  }
+
+  function animar() {
+    const elemento = ref.current
+    if (!elemento || velocidad.current === 0) {
+      detener()
+      return
+    }
+    const anterior = elemento.scrollLeft
+    elemento.scrollLeft = anterior + velocidad.current
+    if (elemento.scrollLeft === anterior) {
+      detener()
+      return
+    }
+    frame.current = requestAnimationFrame(animar)
+  }
+
+  function mover(evento: React.PointerEvent<HTMLDivElement>) {
+    if (evento.pointerType !== 'mouse') return
+    const elemento = ref.current
+    if (!elemento) return
+    const rect = elemento.getBoundingClientRect()
+    const posicion = evento.clientX - rect.left
+    const zona = Math.min(64, rect.width / 4)
+    let siguiente = 0
+    if (posicion < zona) {
+      siguiente = -((zona - posicion) / zona) * 14
+    } else if (posicion > rect.width - zona) {
+      siguiente = ((posicion - (rect.width - zona)) / zona) * 14
+    }
+    velocidad.current = siguiente
+    if (siguiente === 0) {
+      detener()
+      return
+    }
+    if (frame.current === null) frame.current = requestAnimationFrame(animar)
+  }
+
+  useEffect(() => {
+    const elemento = ref.current
+    if (!elemento) return
+    actualizarBordes()
+    const observador = new ResizeObserver(actualizarBordes)
+    observador.observe(elemento)
+    return () => {
+      observador.disconnect()
+      detener()
+    }
+  }, [])
+
+  return { ref, hayIzquierda, hayDerecha, mover, detener, actualizarBordes }
 }
 
 export function CmsEditor() {
@@ -171,8 +251,7 @@ export function CmsEditor() {
   const [previewVisible, setPreviewVisible] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1280px)').matches,
   )
-  const [previewListo, setPreviewListo] = useState(false)
-  const [modoPreview, setModoPreview] = useState<'escritorio' | 'movil'>('escritorio')
+  const [publicadoPayload, setPublicadoPayload] = useState<CmsPayload | null>(null)
   const [seccionesColapsadas, setSeccionesColapsadas] = useState(() => {
     try {
       return window.localStorage.getItem(CLAVE_SECCIONES) === '1'
@@ -180,10 +259,7 @@ export function CmsEditor() {
       return false
     }
   })
-  const [lienzoPreview, setLienzoPreview] = useState({ escala: 0.5, alto: 900 })
-  const [previewMarco, setPreviewMarco] = useState<HTMLDivElement | null>(null)
-  const previewRef = useRef<HTMLIFrameElement>(null)
-  const ultimoPayloadEnviado = useRef<string | null>(null)
+  const barraSecciones = useDesplazamientoEnBordes()
   const edicionRef = useRef(0)
   const guardandoRef = useRef(false)
 
@@ -195,61 +271,19 @@ export function CmsEditor() {
     }
   }, [seccionesColapsadas])
 
-  // La vista previa se dibuja a un ancho de escritorio o móvil real y se escala
-  // para ocupar el espacio disponible. La medición no es crítica para el primer
-  // paint: el overlay de carga cubre el iframe hasta que está listo.
-  useEffect(() => {
-    if (!previewVisible || !previewMarco) return
-    const marco = previewMarco
-    let frame = 0
-
-    function ajustar() {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => {
-        const { width, height } = marco.getBoundingClientRect()
-        if (!width || !height) return
-        if (modoPreview === 'movil') {
-          const disponibleAncho = Math.max(width - 24, 1)
-          const disponibleAlto = Math.max(height - 24, 1)
-          const escala = Math.min(
-            disponibleAncho / PREVIEW_MOVIL.ancho,
-            disponibleAlto / PREVIEW_MOVIL.alto,
-            1,
-          )
-          setLienzoPreview((anterior) =>
-            Math.abs(anterior.escala - escala) < 0.001 && anterior.alto === PREVIEW_MOVIL.alto
-              ? anterior
-              : { escala, alto: PREVIEW_MOVIL.alto },
-          )
-        } else {
-          const escala = Math.min(width / PREVIEW_ESCRITORIO_ANCHO, 1)
-          const alto = Math.round(height / escala)
-          setLienzoPreview((anterior) =>
-            Math.abs(anterior.escala - escala) < 0.001 && anterior.alto === alto
-              ? anterior
-              : { escala, alto },
-          )
-        }
-      })
-    }
-
-    ajustar()
-    const observador = new ResizeObserver(ajustar)
-    observador.observe(marco)
-    return () => {
-      observador.disconnect()
-      cancelAnimationFrame(frame)
-    }
-  }, [previewVisible, modoPreview, previewMarco])
-
   async function cargar() {
     setCargando(true)
     setError(null)
     try {
-      const [esquema, contenido] = await Promise.all([obtenerSchema(), obtenerContenidoAdmin()])
+      const [esquema, contenido, publico] = await Promise.all([
+        obtenerSchema(),
+        obtenerContenidoAdmin(),
+        obtenerContenidoPublico().catch(() => null),
+      ])
       setSchema(esquema)
       setDraft(contenido.draft)
       setPublished(contenido.published)
+      setPublicadoPayload(publico?.payload ?? null)
       setHayCambiosPendientes(contenido.has_unpublished_changes)
       if (contenido.draft) {
         setActiva((actual) =>
@@ -335,7 +369,7 @@ export function CmsEditor() {
     setDirty(true)
   }
 
-  async function persistir(silencioso = false): Promise<CmsRevisionDetail | null> {
+  async function persistir(): Promise<CmsRevisionDetail | null> {
     if (!draft) return null
     if (!dirty) return draft
     if (guardandoRef.current) return null
@@ -390,7 +424,7 @@ export function CmsEditor() {
       if (isAxiosError(err) && err.response?.status === 409) {
         setConflicto(true)
         toast.error('Otra persona guardó el borrador. Recarga para continuar.')
-      } else if (!silencioso) {
+      } else {
         toast.error(detalleError(err))
       }
       return null
@@ -413,44 +447,21 @@ export function CmsEditor() {
 
   const guardarRef = useRef(guardar)
   guardarRef.current = guardar
-  const persistirRef = useRef(persistir)
-  persistirRef.current = persistir
 
   async function publicar() {
-    const edicionAntes = edicionRef.current
-    const guardado = await persistir()
-    if (!guardado) return
-    if (edicionRef.current !== edicionAntes) {
-      toast.info('Guardamos la versión anterior. Guarda tus cambios nuevos antes de publicar.')
+    if (!draft) return
+    if (dirty) {
+      toast.info('Guarda los cambios antes de publicar.')
       return
     }
 
     setSaving(true)
     try {
-      const respuesta = await publicarContenido(guardado.version, mensajePublicacion)
+      const respuesta = await publicarContenido(draft.version, mensajePublicacion)
       setPublished(respuesta.published)
-      if (edicionRef.current !== edicionAntes) {
-        // Se publico el snapshot revisado; las ediciones posteriores siguen
-        // locales y deben guardarse sobre el nuevo borrador.
-        setDraft((anterior) =>
-          anterior
-            ? {
-                ...anterior,
-                version: respuesta.draft.version,
-                payload: { ...anterior.payload, version: respuesta.draft.version },
-                updated_at: respuesta.draft.updated_at,
-                updated_by: respuesta.draft.updated_by,
-              }
-            : respuesta.draft,
-        )
-        setHayCambiosPendientes(false)
-        setDirty(true)
-        setDialogoPublicar(false)
-        setMensajePublicacion('')
-        toast.info('Se publicó la versión revisada. Tus cambios nuevos siguen sin publicar.')
-        return
-      }
-      setDraft(respuesta.draft)
+      setPublicadoPayload(draft.payload)
+      // La publicación cierra la sesión de edición: volvemos al modo lectura.
+      setDraft(null)
       setHayCambiosPendientes(false)
       setDirty(false)
       setDialogoPublicar(false)
@@ -473,15 +484,6 @@ export function CmsEditor() {
     window.addEventListener('keydown', alPresionar)
     return () => window.removeEventListener('keydown', alPresionar)
   }, [saving, dirty])
-
-  // Autoguardado: el borrador queda en el servidor aunque se cierre el equipo.
-  useEffect(() => {
-    if (!dirty || saving || conflicto) return
-    const timer = window.setTimeout(() => {
-      void persistirRef.current(true)
-    }, 2000)
-    return () => window.clearTimeout(timer)
-  }, [dirty, saving, conflicto, draft])
 
   async function descartarBorradorActual() {
     setDescartando(true)
@@ -527,58 +529,8 @@ export function CmsEditor() {
     return () => window.removeEventListener('beforeunload', alSalir)
   }, [dirty])
 
-  useEffect(() => {
-    function recibir(evento: MessageEvent) {
-      if (evento.origin !== window.location.origin) return
-      const data = evento.data as { tipo?: string }
-      if (data?.tipo === 'cms:listo') setPreviewListo(true)
-    }
-    window.addEventListener('message', recibir)
-    return () => window.removeEventListener('message', recibir)
-  }, [])
-
-  useEffect(() => {
-    if (!previewVisible) {
-      setPreviewListo(false)
-      return
-    }
-    if (!previewListo || !draft) return
-    const timer = window.setTimeout(() => {
-      const serializado = JSON.stringify(draft.payload)
-      if (serializado === ultimoPayloadEnviado.current) return
-      ultimoPayloadEnviado.current = serializado
-      previewRef.current?.contentWindow?.postMessage(
-        { tipo: 'cms:draft', payload: draft.payload },
-        window.location.origin,
-      )
-    }, 150)
-    return () => window.clearTimeout(timer)
-  }, [draft, previewListo, previewVisible])
-
-  useEffect(() => {
-    if (!previewVisible || !previewListo) return
-    const timer = window.setTimeout(() => {
-      previewRef.current?.contentWindow?.postMessage(
-        { tipo: 'cms:scroll', id: activa },
-        window.location.origin,
-      )
-    }, 260)
-    return () => window.clearTimeout(timer)
-  }, [activa, previewVisible, previewListo])
-
   function alternarPreview() {
-    const siguiente = !previewVisible
-    setPreviewVisible(siguiente)
-    if (!siguiente) {
-      setPreviewListo(false)
-      ultimoPayloadEnviado.current = null
-    }
-  }
-
-  function recargarPreview() {
-    setPreviewListo(false)
-    ultimoPayloadEnviado.current = null
-    previewRef.current?.contentWindow?.location.reload()
+    setPreviewVisible((visible) => !visible)
   }
 
   if (cargando) {
@@ -619,6 +571,7 @@ export function CmsEditor() {
   }
 
   if (!draft) {
+    const seccionesPublicadas = publicadoPayload?.order ?? schema.default_order
     return (
       <div className="min-h-svh">
         <CmsPageHeader
@@ -630,40 +583,121 @@ export function CmsEditor() {
             </span>
           }
           actions={
-            <Button onClick={() => void activarModoEdicion()} disabled={activando}>
-              <PencilSimpleLine data-icon="inline-start" />
-              {activando ? 'Activando…' : 'Activar modo edición'}
-            </Button>
-          }
-        />
-
-        <div className="mx-auto max-w-3xl px-4 py-10 md:px-8 md:py-16">
-          <div className="rounded-2xl border border-black/[0.06] bg-white p-8 text-center shadow-sm">
-            <span className="bg-enel-blue/10 text-enel-blue mx-auto flex size-12 items-center justify-center rounded-xl">
-              <PencilSimpleLine className="size-6" weight="duotone" />
-            </span>
-            <h2 className="text-enel-navy mt-4 text-xl font-semibold tracking-tight">
-              Modo lectura
-            </h2>
-            <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-relaxed">
-              No hay un borrador activo. Para editar el contenido, activa el modo edición. Recién
-              entonces se crea un borrador y podrás guardar cambios.
-            </p>
-
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-              <Button size="lg" onClick={() => void activarModoEdicion()} disabled={activando}>
+            <>
+              <Button asChild variant="outline">
+                <Link to="/cms/revisiones">Ver historial</Link>
+              </Button>
+              <Button onClick={() => void activarModoEdicion()} disabled={activando}>
                 <PencilSimpleLine data-icon="inline-start" />
                 {activando ? 'Activando…' : 'Activar modo edición'}
               </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link to="/cms/revisiones">Ver historial</Link>
-              </Button>
+            </>
+          }
+        />
+
+        <div className="mx-auto max-w-[1440px] px-4 py-6 md:px-8 md:py-8">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,46%)]">
+            <div className="flex min-w-0 flex-col gap-4">
+              <div className="rounded-2xl border border-black/[0.06] bg-white p-6 shadow-sm md:p-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <span className="bg-enel-blue/10 text-enel-blue flex size-12 shrink-0 items-center justify-center rounded-xl">
+                    <PencilSimpleLine className="size-6" weight="duotone" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-enel-navy text-xl font-semibold tracking-tight">
+                      Modo lectura
+                    </h2>
+                    <p className="text-muted-foreground mt-2 max-w-xl text-sm leading-relaxed">
+                      No hay un borrador activo. Para editar el contenido, activa el modo edición.
+                      Recién entonces se crea un borrador y podrás guardar cambios.
+                    </p>
+                    <div className="mt-5 flex flex-wrap items-center gap-2">
+                      <Button onClick={() => void activarModoEdicion()} disabled={activando}>
+                        <PencilSimpleLine data-icon="inline-start" />
+                        {activando ? 'Activando…' : 'Activar modo edición'}
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to="/cms/revisiones">Ver historial</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <dl className="mt-6 grid gap-3 border-t border-black/5 pt-4 text-xs sm:grid-cols-3">
+                  <div>
+                    <dt className="text-muted-foreground">Versión publicada</dt>
+                    <dd className="text-enel-navy mt-0.5 font-medium tabular-nums">
+                      v{published?.version ?? '—'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Fecha</dt>
+                    <dd className="text-foreground/80 mt-0.5 font-medium">
+                      {fechaHora(published?.published_at)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Autor</dt>
+                    <dd className="text-foreground/80 mt-0.5 truncate font-medium">
+                      {published?.published_by?.name ?? '—'}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-5 py-3.5">
+                  <div>
+                    <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.16em] uppercase">
+                      Recorrido publicado
+                    </p>
+                    <p className="text-muted-foreground mt-0.5 text-xs">
+                      {seccionesPublicadas.length} secciones visibles en el portal.
+                    </p>
+                  </div>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to="/cms/orden">
+                      Ver orden
+                      <ArrowRight className="size-3.5" />
+                    </Link>
+                  </Button>
+                </div>
+                <ol className="divide-y divide-black/[0.05]">
+                  {seccionesPublicadas.map((clave, indice) => {
+                    const seccion = seccionesPorClave.get(clave)
+                    const Icono = iconoDe(clave)
+                    const etiqueta =
+                      (publicadoPayload?.sections[clave]?.nav_label as string | undefined) ??
+                      seccion?.label ??
+                      clave
+                    return (
+                      <li key={clave} className="flex items-center gap-3 px-5 py-2.5">
+                        <span className="text-muted-foreground/60 w-4 shrink-0 text-[11px] font-medium tabular-nums">
+                          {indice + 1}
+                        </span>
+                        <span className="bg-enel-mist text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-lg">
+                          <Icono className="size-3.5" />
+                        </span>
+                        <span className="text-enel-navy min-w-0 flex-1 truncate text-[13px] font-medium">
+                          {etiqueta}
+                        </span>
+                        {!seccion?.reorderable && (
+                          <LockKey className="text-muted-foreground/40 size-3 shrink-0" />
+                        )}
+                      </li>
+                    )
+                  })}
+                </ol>
+              </div>
             </div>
 
-            <div className="border-border text-muted-foreground mt-8 border-t pt-4 text-xs">
-              Publicado: v{published?.version ?? '—'}
-              {published?.published_at ? ` · ${fechaHora(published.published_at)}` : ''}
-              {published?.published_by ? ` · ${published.published_by.name}` : ''}
+            <div className="min-w-0">
+              <div className="xl:sticky xl:top-24">
+                <VistaPreviaPortal
+                  payload={publicadoPayload}
+                  className="h-[70svh] xl:h-[calc(100svh-8rem)]"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -674,11 +708,12 @@ export function CmsEditor() {
   const faltantesActiva = faltantes.get(activa) ?? 0
   const IconoActivo = iconoDe(activa)
   const indiceActivo = Math.max(0, order.indexOf(activa))
-  const esMovilPreview = modoPreview === 'movil'
-  const anchoLienzoPreview = esMovilPreview ? PREVIEW_MOVIL.ancho : PREVIEW_ESCRITORIO_ANCHO
-  const altoLienzoPreview = lienzoPreview.alto
-  const anchoMarcoPreview = esMovilPreview ? anchoLienzoPreview + 20 : anchoLienzoPreview
-  const altoMarcoPreview = esMovilPreview ? altoLienzoPreview + 20 : altoLienzoPreview
+  const motivoGuardarDeshabilitado = saving
+    ? 'Guardando los cambios…'
+    : 'No hay cambios pendientes.'
+  const motivoPublicarDeshabilitado = saving
+    ? 'Guardando los cambios…'
+    : 'Guarda los cambios antes de publicar.'
 
   return (
     <div className="min-h-svh">
@@ -727,19 +762,54 @@ export function CmsEditor() {
               )}
               Vista previa
             </Button>
-            <Button
-              variant={dirty ? 'secondary' : 'outline'}
-              onClick={() => void guardar()}
-              disabled={!dirty || saving}
-              title="Guardar borrador (Ctrl+S)"
-            >
-              <FloppyDisk data-icon="inline-start" />
-              Guardar
-            </Button>
-            <Button onClick={() => setDialogoPublicar(true)} disabled={saving}>
-              <CloudArrowUp data-icon="inline-start" />
-              Publicar
-            </Button>
+            <span className="group relative inline-flex">
+              <Button
+                variant={dirty ? 'secondary' : 'outline'}
+                onClick={() => void guardar()}
+                disabled={!dirty || saving}
+                aria-describedby={!dirty || saving ? 'motivo-guardar-cabecera' : undefined}
+                title={dirty && !saving ? 'Guardar borrador (Ctrl+S)' : undefined}
+              >
+                <FloppyDisk data-icon="inline-start" />
+                Guardar
+              </Button>
+              {(!dirty || saving) && (
+                <span
+                  id="motivo-guardar-cabecera"
+                  role="tooltip"
+                  className="bg-enel-navy pointer-events-none absolute top-full right-0 z-50 mt-2.5 w-max max-w-[17rem] rounded-md px-2.5 py-1.5 text-left text-[11px] leading-snug font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100"
+                >
+                  {motivoGuardarDeshabilitado}
+                  <span
+                    aria-hidden="true"
+                    className="bg-enel-navy absolute right-5 bottom-full size-2 translate-y-1/2 rotate-45"
+                  />
+                </span>
+              )}
+            </span>
+            <span className="group relative inline-flex">
+              <Button
+                onClick={() => setDialogoPublicar(true)}
+                disabled={saving || dirty}
+                aria-describedby={saving || dirty ? 'motivo-publicar-cabecera' : undefined}
+              >
+                <CloudArrowUp data-icon="inline-start" />
+                Publicar
+              </Button>
+              {(saving || dirty) && (
+                <span
+                  id="motivo-publicar-cabecera"
+                  role="tooltip"
+                  className="bg-enel-navy pointer-events-none absolute top-full right-0 z-50 mt-2.5 w-max max-w-[17rem] rounded-md px-2.5 py-1.5 text-left text-[11px] leading-snug font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100"
+                >
+                  {motivoPublicarDeshabilitado}
+                  <span
+                    aria-hidden="true"
+                    className="bg-enel-navy absolute right-5 bottom-full size-2 translate-y-1/2 rotate-45"
+                  />
+                </span>
+              )}
+            </span>
           </>
         }
       />
@@ -776,8 +846,9 @@ export function CmsEditor() {
                   <p className="font-medium text-sky-950">Tienes un borrador guardado</p>
                   <p className="text-sky-900/70">
                     Última edición: {fechaHora(draft.updated_at)}
-                    {draft.updated_by ? ` · ${draft.updated_by.name}` : ''}. Puedes continuar donde
-                    quedaste o publicarlo cuando esté listo.
+                    {draft.updated_by ? ` · ${draft.updated_by.name}` : ''}. Este borrador también
+                    se edita desde Orden; puedes continuar donde quedaste o publicarlo cuando esté
+                    listo.
                   </p>
                 </div>
               </div>
@@ -970,40 +1041,65 @@ export function CmsEditor() {
                       <span className="text-muted-foreground hidden shrink-0 pl-1 text-[10px] font-semibold tracking-[0.14em] uppercase sm:inline">
                         Secciones
                       </span>
-                      <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
-                        {order.map((clave) => {
-                          const seccion = seccionesPorClave.get(clave)
-                          if (!seccion) return null
-                          const etiqueta =
-                            (draft.payload.sections[clave]?.nav_label as string | undefined) ??
-                            seccion.label
-                          const estaActiva = activa === clave
-                          const pendientes = faltantes.get(clave) ?? 0
-                          return (
-                            <button
-                              key={clave}
-                              type="button"
-                              aria-current={estaActiva ? 'true' : undefined}
-                              onClick={() => setActiva(clave)}
-                              className={cn(
-                                'flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors',
-                                estaActiva
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                              )}
-                            >
-                              {etiqueta}
-                              {pendientes > 0 && (
-                                <span
-                                  className={cn(
-                                    'size-1.5 rounded-full',
-                                    estaActiva ? 'bg-white/70' : 'bg-amber-400',
-                                  )}
-                                />
-                              )}
-                            </button>
-                          )
-                        })}
+                      <div className="relative min-w-0 flex-1">
+                        <div
+                          ref={barraSecciones.ref}
+                          onPointerMove={barraSecciones.mover}
+                          onPointerLeave={barraSecciones.detener}
+                          onPointerCancel={barraSecciones.detener}
+                          onScroll={barraSecciones.actualizarBordes}
+                          className="flex [scrollbar-width:none] gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+                        >
+                          {order.map((clave) => {
+                            const seccion = seccionesPorClave.get(clave)
+                            if (!seccion) return null
+                            const etiqueta =
+                              (draft.payload.sections[clave]?.nav_label as string | undefined) ??
+                              seccion.label
+                            const estaActiva = activa === clave
+                            const pendientes = faltantes.get(clave) ?? 0
+                            return (
+                              <button
+                                key={clave}
+                                type="button"
+                                aria-current={estaActiva ? 'true' : undefined}
+                                onClick={() => setActiva(clave)}
+                                className={cn(
+                                  'flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors',
+                                  estaActiva
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                                )}
+                              >
+                                {etiqueta}
+                                {pendientes > 0 && (
+                                  <span
+                                    className={cn(
+                                      'size-1.5 rounded-full',
+                                      estaActiva ? 'bg-white/70' : 'bg-amber-400',
+                                    )}
+                                  />
+                                )}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        {barraSecciones.hayIzquierda && (
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-y-0 left-0 flex w-9 items-center bg-gradient-to-r from-white via-white/90 to-transparent pl-1"
+                          >
+                            <CaretLeft className="text-muted-foreground/60 size-3.5" />
+                          </div>
+                        )}
+                        {barraSecciones.hayDerecha && (
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-y-0 right-0 flex w-9 items-center justify-end bg-gradient-to-l from-white via-white/90 to-transparent pr-1"
+                          >
+                            <CaretRight className="text-muted-foreground/60 size-3.5" />
+                          </div>
+                        )}
                       </div>
                       {seccionesColapsadas && (
                         <Button
@@ -1095,19 +1191,38 @@ export function CmsEditor() {
 
                     <div className="flex flex-col gap-2 border-t border-black/5 bg-[#fbfcfd] px-5 py-3 sm:flex-row sm:items-center sm:justify-between md:px-7">
                       <p className="text-muted-foreground max-w-xl text-[11px] leading-relaxed">
-                        Los cambios se guardan en el borrador. El portal público no cambia hasta que
-                        publiques.
+                        {saving
+                          ? 'Guardando los cambios del borrador…'
+                          : dirty
+                            ? 'Hay cambios sin guardar. Usa Guardar cambios para conservarlos en el borrador; el portal público no cambia hasta que publiques.'
+                            : 'Borrador guardado. El portal público no cambia hasta que publiques.'}
                       </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => void guardar()}
-                        disabled={!dirty || saving}
-                        className="shrink-0 bg-white"
-                      >
-                        <FloppyDisk data-icon="inline-start" />
-                        Guardar cambios
-                      </Button>
+                      <span className="group relative inline-flex shrink-0">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void guardar()}
+                          disabled={!dirty || saving}
+                          aria-describedby={!dirty || saving ? 'motivo-guardar-cambios' : undefined}
+                          className="shrink-0 bg-white"
+                        >
+                          <FloppyDisk data-icon="inline-start" />
+                          Guardar cambios
+                        </Button>
+                        {(!dirty || saving) && (
+                          <span
+                            id="motivo-guardar-cambios"
+                            role="tooltip"
+                            className="bg-enel-navy pointer-events-none absolute right-0 bottom-full z-20 mb-2.5 w-max max-w-[17rem] rounded-md px-2.5 py-1.5 text-[11px] leading-snug font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100"
+                          >
+                            {motivoGuardarDeshabilitado}
+                            <span
+                              aria-hidden="true"
+                              className="bg-enel-navy absolute top-full right-5 size-2 -translate-y-1/2 rotate-45"
+                            />
+                          </span>
+                        )}
+                      </span>
                     </div>
                   </div>
                 ) : (
@@ -1121,108 +1236,12 @@ export function CmsEditor() {
             {previewVisible && (
               <div className="min-w-0">
                 <div className="xl:sticky xl:top-24">
-                  <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm xl:flex xl:h-[calc(100svh-8rem)] xl:flex-col">
-                    <div className="flex shrink-0 items-center justify-between gap-2 border-b border-black/5 px-3 py-2">
-                      <div className="text-enel-navy flex min-w-0 items-center gap-2 text-[11px] font-medium">
-                        <span className="relative flex size-1.5 shrink-0">
-                          <span className="bg-primary absolute inline-flex size-full animate-ping rounded-full opacity-50" />
-                          <span className="bg-primary relative inline-flex size-1.5 rounded-full" />
-                        </span>
-                        <span className="truncate">Vista previa en vivo</span>
-                        <span
-                          className="text-muted-foreground shrink-0 text-[10px] font-normal tabular-nums"
-                          title="La vista previa se ajusta automáticamente al espacio disponible"
-                        >
-                          {Math.round(lienzoPreview.escala * 100)}%
-                        </span>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-0.5">
-                        <Button
-                          type="button"
-                          variant={modoPreview === 'escritorio' ? 'secondary' : 'ghost'}
-                          size="icon-xs"
-                          aria-label="Vista de escritorio"
-                          aria-pressed={modoPreview === 'escritorio'}
-                          title="Escritorio"
-                          onClick={() => setModoPreview('escritorio')}
-                        >
-                          <Desktop className="size-3.5" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={modoPreview === 'movil' ? 'secondary' : 'ghost'}
-                          size="icon-xs"
-                          aria-label="Vista móvil"
-                          aria-pressed={modoPreview === 'movil'}
-                          title="Móvil"
-                          onClick={() => setModoPreview('movil')}
-                        >
-                          <DeviceMobile className="size-3.5" />
-                        </Button>
-                        <span className="mx-1 h-4 w-px bg-black/10" />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-xs"
-                          aria-label="Recargar vista previa"
-                          title="Recargar vista previa"
-                          onClick={recargarPreview}
-                        >
-                          <ArrowClockwise className="size-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div
-                      ref={setPreviewMarco}
-                      className={cn(
-                        'bg-muted/40 relative flex h-[68svh] min-h-0 items-center justify-center overflow-hidden xl:h-auto xl:flex-1',
-                        modoPreview === 'movil' && 'p-3',
-                      )}
-                    >
-                      <div
-                        className="relative shrink-0"
-                        style={{
-                          width: anchoMarcoPreview * lienzoPreview.escala,
-                          height: altoMarcoPreview * lienzoPreview.escala,
-                        }}
-                      >
-                        <div
-                          className={cn(
-                            'absolute top-0 left-0 bg-white',
-                            esMovilPreview
-                              ? 'rounded-[2.6rem] border-[10px] border-[#141413] bg-[#141413] shadow-[0_30px_80px_-32px_rgba(0,0,0,0.6)]'
-                              : 'overflow-hidden rounded-lg shadow-[0_18px_50px_-28px_rgba(16,20,24,0.5)] ring-1 ring-black/10',
-                          )}
-                          style={{
-                            width: anchoMarcoPreview,
-                            height: altoMarcoPreview,
-                            transform: `scale(${lienzoPreview.escala})`,
-                            transformOrigin: 'top left',
-                          }}
-                        >
-                          <iframe
-                            ref={previewRef}
-                            src="/cms/preview?embed=1"
-                            title="Vista previa en vivo del portal"
-                            width={anchoLienzoPreview}
-                            height={altoLienzoPreview}
-                            className={cn(
-                              'block border-0 bg-white',
-                              esMovilPreview && 'rounded-[2rem]',
-                            )}
-                            style={{ width: anchoLienzoPreview, height: altoLienzoPreview }}
-                          />
-                        </div>
-                      </div>
-                      {!previewListo && (
-                        <div className="text-muted-foreground absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-white/70 text-xs backdrop-blur-[1px]">
-                          <span className="border-primary size-4 animate-spin rounded-full border-2 border-t-transparent" />
-                          Cargando vista previa…
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <VistaPreviaPortal
+                    payload={draft.payload}
+                    seccion={activa}
+                    enVivo
+                    className="h-[70svh] xl:h-[calc(100svh-8rem)]"
+                  />
                 </div>
               </div>
             )}
@@ -1261,7 +1280,7 @@ export function CmsEditor() {
             <DialogTitle className="text-enel-navy text-lg">Publicar cambios</DialogTitle>
             <DialogDescription>
               Se publican de forma atómica el contenido y el orden de las secciones. El portal los
-              mostrará de inmediato.
+              mostrará de inmediato y volverás al modo lectura.
             </DialogDescription>
           </DialogHeader>
 
@@ -1309,7 +1328,7 @@ export function CmsEditor() {
             <Button variant="outline" onClick={() => setDialogoPublicar(false)}>
               Cancelar
             </Button>
-            <Button onClick={() => void publicar()} disabled={saving}>
+            <Button onClick={() => void publicar()} disabled={saving || dirty}>
               <CloudArrowUp data-icon="inline-start" />
               {saving ? 'Publicando…' : 'Publicar ahora'}
             </Button>
