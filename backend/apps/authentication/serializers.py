@@ -1,5 +1,4 @@
-from django.contrib.auth import authenticate
-from rest_framework import exceptions, serializers
+from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import IdentityAuditLog, User
@@ -60,7 +59,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         raw_credential = (attrs.get(self.username_field) or "").strip()
-        password = attrs.get("password")
 
         # Buscar usuario por username (ID Enel) o por correo corporativo (insensible a mayúsculas)
         matched_user = (
@@ -68,24 +66,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             or User.objects.filter(email__iexact=raw_credential).first()
         )
 
-        resolved_username = matched_user.username if matched_user else raw_credential
-
-        authenticate_kwargs = {
-            self.username_field: resolved_username,
-            "password": password,
-        }
-        try:
-            authenticate_kwargs["request"] = self.context["request"]
-        except KeyError:
-            pass
-
-        self.user = authenticate(**authenticate_kwargs)
-
-        if not self.user or not self.user.is_active:
-            raise exceptions.AuthenticationFailed(
-                self.error_messages["no_active_account"],
-                "no_active_account",
-            )
+        if matched_user:
+            attrs[self.username_field] = matched_user.username
 
         data = super().validate(attrs)
         data["user"] = UserSerializer(self.user).data
