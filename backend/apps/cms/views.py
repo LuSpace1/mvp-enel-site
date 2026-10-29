@@ -184,7 +184,7 @@ class PublishView(APIView):
         serializer = PublishSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            published, draft = publish(
+            published = publish(
                 request.user,
                 expected_version=serializer.validated_data["version"],
                 message=serializer.validated_data.get("message", ""),
@@ -197,7 +197,7 @@ class PublishView(APIView):
         return Response(
             {
                 "published": RevisionSerializer(published).data,
-                "draft": RevisionDetailSerializer(draft).data,
+                "draft": None,
             },
             status=status.HTTP_201_CREATED,
         )

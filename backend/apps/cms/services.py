@@ -139,8 +139,12 @@ def publish(
     *,
     expected_version: int,
     message: str = "",
-) -> tuple[ContentRevision, ContentRevision]:
-    """Publica el borrador de forma atomica y deja un borrador nuevo."""
+) -> ContentRevision:
+    """Publica el borrador de forma atomica y cierra la sesion de edicion.
+
+    El siguiente borrador se crea recien cuando alguien activa el modo edicion,
+    para no acumular borradores identicos a la publicacion en el historial.
+    """
     with transaction.atomic():
         draft = _draft_qs().select_for_update().first()
         if draft is None:
@@ -178,18 +182,8 @@ def publish(
             ]
         )
 
-        new_payload = copy.deepcopy(normalized)
-        new_payload["version"] = 1
-        new_draft = ContentRevision.objects.create(
-            status=RevisionStatus.DRAFT,
-            payload=new_payload,
-            version=1,
-            based_on=draft,
-            created_by=user,
-        )
-
         _sync_hero_video(draft.payload)
-        return draft, new_draft
+        return draft
 
 
 def restore_revision(user, revision: ContentRevision) -> ContentRevision:
