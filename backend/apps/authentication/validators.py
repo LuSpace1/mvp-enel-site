@@ -1,13 +1,11 @@
-"""Validaciones de identidad corporativa compartidas por el conector SCIM."""
-
 import re
 
-# Enel ID: A + seis digitos (A123456), segun el contrato de integracion.
-# Si Enel confirma excepciones (p. ej. siete digitos), ajustar este patron.
-CORPORATE_ID_REGEX = r"^A\d{6}$"
-_CORPORATE_ID_PATTERN = re.compile(CORPORATE_ID_REGEX)
+# Formato de identificador Enel: A seguido de 6 a 8 dígitos (ej: A123456)
+# o identificador regional (ej: CL12345678).
+CORPORATE_ID_REGEX = r"^(A\d{6,8}|CL\d{7,9})$"
+_CORPORATE_ID_PATTERN = re.compile(CORPORATE_ID_REGEX, re.IGNORECASE)
 
 
 def is_valid_corporate_id(value: str | None) -> bool:
-    """Valida que el Enel ID cumpla el formato corporativo acordado."""
+    """Valida si el texto cumple con el formato de ID corporativo de Enel."""
     return bool(_CORPORATE_ID_PATTERN.match((value or "").strip()))

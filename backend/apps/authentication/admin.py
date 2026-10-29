@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group
 from django.db import transaction
@@ -11,13 +10,14 @@ from .models import (
     Role,
     User,
 )
-from .roles import admin_role_name, capability_summary
 from .services.identity_service import IdentityService
 from .signals import suppress_identity_audit
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
+    """Administración de usuarios en el panel de Django."""
+
     list_display = (
         "username",
         "email",
@@ -28,8 +28,6 @@ class UserAdmin(BaseUserAdmin):
         "is_staff",
     )
     search_fields = ("username", "email", "first_name", "last_name", "enel_id")
-    # Se omiten a proposito los permisos directos de Django: el acceso se
-    # otorga por grupo (rol), no al usuario.
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         ("Datos personales", {"fields": ("first_name", "last_name", "email")}),
@@ -37,10 +35,7 @@ class UserAdmin(BaseUserAdmin):
             "Estado y roles",
             {
                 "fields": ("is_active", "is_staff", "is_superuser", "groups"),
-                "description": (
-                    "Los permisos se otorgan por grupo/rol. Los permisos directos de Django no se usan. "
-                    "Los cambios locales quedan registrados como inconsistencias operativas."
-                ),
+                "description": "Los permisos del portal se asignan a través de grupos/roles.",
             },
         ),
         ("Fechas relevantes", {"fields": ("last_login", "date_joined")}),
@@ -49,11 +44,11 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = ("groups",)
 
     def has_delete_permission(self, request, obj=None):
-        """La baja de cuentas es logica (`active=false`); no se borran desde el Admin."""
+        """Impide el borrado físico: las bajas se manejan desactivando el usuario."""
         return False
 
     def save_model(self, request, obj, form, change):
-        """Altas y mutaciones del Admin delegan perfil, estado y roles a la Service Layer."""
+        """Guarda cambios del usuario delegando a IdentityService para registrar auditoría."""
         previous = None
         if change and obj.pk:
             previous = (
@@ -68,9 +63,6 @@ class UserAdmin(BaseUserAdmin):
                 value = getattr(obj, field)
                 if previous[field] != value:
                     profile[field] = value or ""
-            # Se revierten en memoria para que el servicio sea quien persiste y
-            # audita el perfil; `super()` guarda estado/password y el servicio
-            # aplica los campos de perfil.
             for field in profile:
                 setattr(obj, field, previous[field])
 
@@ -101,12 +93,7 @@ class UserAdmin(BaseUserAdmin):
                     )
 
     def save_related(self, request, form, formsets, change):
-        """
-        Las membresías editadas en el Admin pasan por la Service Layer.
-
-        Se silencia el signal de m2m para no duplicar la auditoria: cada alta o
-        baja de rol se registra con origen `LOCAL` desde el servicio.
-        """
+        """Guarda membresías de grupos delegando a IdentityService para auditar los cambios."""
         instance = form.instance
         previous_group_ids = (
             set(instance.groups.values_list("id", flat=True)) if change else set()
@@ -152,40 +139,10 @@ class UserAdmin(BaseUserAdmin):
                 )
 
 
-class GroupAdmin(BaseGroupAdmin):
-    """
-    Grupo tecnico = rol del portal.
-
-    Se oculta el editor de permisos de Django y se muestra, en solo lectura,
-    la capacidad declarada en el codigo.
-    """
-
-    list_display = ("name", "role_summary")
-    search_fields = ("name",)
-    fields = ("name", "role_permissions")
-    readonly_fields = ("role_permissions",)
-    filter_horizontal = ()
-    ordering = ("name",)
-
-    @admin.display(description="Tipo")
-    def role_summary(self, obj):
-        return "Administrador" if obj.name == admin_role_name() else "-"
-
-    @admin.display(description="Capacidades del rol")
-    def role_permissions(self, obj):
-        if obj is None:
-            return "Guarda el grupo para ver sus capacidades."
-        if obj.name != admin_role_name():
-            return "Este grupo no tiene capacidades declaradas en el portal."
-        return " ".join(capability_summary())
-
-
-admin.site.unregister(Group)
-admin.site.register(Group, GroupAdmin)
-
-
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
+    """Administración del catálogo de roles del portal."""
+
     list_display = ("display_name", "kind", "technical_group", "is_active")
     list_filter = ("kind", "is_active")
     search_fields = ("display_name",)
@@ -193,6 +150,8 @@ class RoleAdmin(admin.ModelAdmin):
 
 @admin.register(IdentityAuditLog)
 class IdentityAuditLogAdmin(admin.ModelAdmin):
+    """Visualización en solo lectura de la bitácora de auditoría de identidad."""
+
     list_display = ("created_at", "action", "target_user", "actor", "source")
     list_filter = ("action", "source")
     search_fields = ("target_user__username", "actor__username", "detail")

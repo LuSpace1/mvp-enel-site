@@ -1,10 +1,3 @@
-"""
-Serializadores SCIM 2.0 del conector de identidades.
-
-`meta` es obligatorio en toda respuesta; `User.groups` usa {value, display} y
-`Group.members` usa {value, type, display}.
-"""
-
 import re
 from datetime import UTC
 
@@ -24,13 +17,14 @@ SCIM_GROUPS_PATH = "/api/scim/v2/Groups"
 
 
 def iso8601(value) -> str:
-    """Formatea un datetime como ISO 8601 UTC con sufijo Z (ej. 2026-09-08T10:59:58Z)."""
+    """Formatea fecha y hora en estándar ISO 8601 UTC."""
     if value is None:
         return timezone.now().astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     return value.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def build_meta(resource_type: str, last_modified, location: str) -> dict:
+    """Construye el bloque meta obligatorio en respuestas SCIM."""
     return {
         "resourceType": resource_type,
         "lastModified": iso8601(last_modified),
@@ -41,6 +35,7 @@ def build_meta(resource_type: str, last_modified, location: str) -> dict:
 def build_list_response(
     resources: list, total: int, start_index: int, count: int
 ) -> dict:
+    """Construye la estructura ListResponse estándar de SCIM."""
     return {
         "schemas": [SCIM_LIST_SCHEMA],
         "totalResults": total,
@@ -51,6 +46,7 @@ def build_list_response(
 
 
 def scim_error(detail: str, status_code: int) -> dict:
+    """Construye el formato de error estándar de SCIM."""
     return {
         "schemas": [SCIM_ERROR_SCHEMA],
         "detail": detail,
@@ -62,13 +58,7 @@ _FILTER_PATTERN = re.compile(r'^\s*(\w+)\s+eq\s+(?:"([^"]*)"|([^\s"]+))\s*$')
 
 
 def parse_scim_filter(filter_expr: str) -> tuple[str, str]:
-    """
-    Parser minimo del filtro SCIM `attr eq "value"`.
-
-    Acepta el valor entre comillas (texto) o sin comillas (booleanos/numeros
-    como `active eq true`). Devuelve (atributo, valor). Lanza ValidationError
-    si no puede interpretarlo.
-    """
+    """Interpreta filtros SCIM simples en formato: atributo eq "valor"."""
     match = _FILTER_PATTERN.match(filter_expr or "")
     if not match:
         raise serializers.ValidationError(
@@ -79,7 +69,7 @@ def parse_scim_filter(filter_expr: str) -> tuple[str, str]:
 
 
 class ScimUserSerializer(serializers.ModelSerializer):
-    """Recurso SCIM `User` (Core Schema)."""
+    """Representación de usuario en formato SCIM Core 2.0."""
 
     schemas = serializers.SerializerMethodField()
     userName = serializers.CharField(source="username", read_only=True)
@@ -114,10 +104,6 @@ class ScimUserSerializer(serializers.ModelSerializer):
         return [{"value": obj.email, "primary": True}]
 
     def get_groups(self, obj) -> list[dict]:
-        """
-        Grupos del usuario como recurso SCIM. `value` usa el id del `Role` del
-        catalogo cuando existe; si no, el id del Django Group.
-        """
         result = []
         for group in obj.groups.all():
             role = getattr(group, "sig_role", None)
@@ -140,7 +126,7 @@ class ScimUserSerializer(serializers.ModelSerializer):
 
 
 class ScimGroupSerializer(serializers.ModelSerializer):
-    """Recurso SCIM `Group`. El catalogo `Role` es la fuente."""
+    """Representación de rol/grupo en formato SCIM Core 2.0."""
 
     schemas = serializers.SerializerMethodField()
     displayName = serializers.CharField(source="display_name", read_only=True)
@@ -182,11 +168,7 @@ class ScimPatchOperationSerializer(serializers.Serializer):
 
 
 class ScimPatchOpSerializer(serializers.Serializer):
-    """
-    Payload de PATCH /Groups/{id} para asignar o revocar roles por SCIM.
-
-    Se valida que las operaciones operen sobre la propiedad `members`.
-    """
+    """Payload para operaciones PATCH sobre grupos (agregar/remover usuarios)."""
 
     schemas = serializers.ListField(child=serializers.CharField(), required=False)
     Operations = ScimPatchOperationSerializer(many=True)
@@ -211,12 +193,7 @@ class ScimPatchOpSerializer(serializers.Serializer):
 
 
 class ScimUserPatchOpSerializer(serializers.Serializer):
-    """
-    Payload PatchOp de `PATCH /Users/{id}`.
-
-    Rutas admitidas: `active`, `name.givenName`, `name.familyName`, `emails` y
-    `externalId`. Las rutas no soportadas responden 400.
-    """
+    """Payload para operaciones PATCH sobre usuarios (activar/desactivar o editar)."""
 
     schemas = serializers.ListField(child=serializers.CharField(), required=False)
     Operations = ScimPatchOperationSerializer(many=True)

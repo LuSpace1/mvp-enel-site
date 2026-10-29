@@ -7,12 +7,9 @@ from django.db import models
 
 class User(AbstractUser):
     """
-    Usuario del portal.
-
-    `username` es el identificador de red corporativo (Enel ID, ej. A123456).
-    Los permisos se otorgan exclusivamente mediante `Group`/`Role`; el usuario
-    no tiene permisos directos. Las cuentas y sus roles llegan desde CompAC por
-    SCIM 2.0; el portal no crea ni elimina usuarios fisicamente.
+    Usuario del sistema.
+    Permite asociar el ID corporativo de Enel (username o enel_id)
+    y gestiona permisos mediante grupos (roles).
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -42,7 +39,7 @@ class User(AbstractUser):
 
 
 class RoleKind(models.TextChoices):
-    """Rol Funcional (nombre de negocio) o Rol Tecnico (permiso materializado como Group)."""
+    """Tipo de rol: Funcional (negocio) o Técnico (grupo Django)."""
 
     FUNCTIONAL = "FUNCTIONAL", "Funcional"
     TECHNICAL = "TECHNICAL", "Tecnico"
@@ -50,11 +47,8 @@ class RoleKind(models.TextChoices):
 
 class Role(models.Model):
     """
-    Catalogo de roles, serializable como recurso SCIM `Group`.
-
-    El rol tecnico se vincula a su Django `Group`; el rol funcional agrupa
-    roles tecnicos para el negocio. Un rol con `is_active=False` no otorga
-    permisos aunque existan membresias residuales.
+    Catálogo de roles del portal.
+    Se vincula a un grupo de Django para otorgar los permisos técnicos correspondientes.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -107,7 +101,7 @@ class IdentityAuditSource(models.TextChoices):
 
 
 class IdentityAuditLogQuerySet(models.QuerySet):
-    """La bitacora es append-only: no se actualiza ni se borra por ORM."""
+    """Protege la bitácora para que sea solo de lectura e inserción (inmutable)."""
 
     def update(self, **kwargs):
         raise ValidationError(
@@ -127,11 +121,8 @@ class IdentityAuditLogQuerySet(models.QuerySet):
 
 class IdentityAuditLog(models.Model):
     """
-    Registro inmutable de cambios de identidad y permisos.
-
-    Cada aprovisionamiento, alta/baja o cambio de rol queda con fecha, actor,
-    accion y origen (`LOCAL`/`SCIM`). Los cambios ejecutados localmente se
-    consideran inconsistencias operativas en la conciliacion con CompAC.
+    Bitácora inmutable de eventos de identidad:
+    registra altas, bajas y cambios de roles indicando si vinieron de CompAC (SCIM) o de forma Local.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

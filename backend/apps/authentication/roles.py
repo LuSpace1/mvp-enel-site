@@ -1,33 +1,20 @@
-"""
-Roles tecnicos del portal.
-
-El CMS usa un unico rol de negocio: `CMS_Admin`. Quien lo tiene puede editar,
-previsualizar, publicar, reordenar y restaurar contenido. `Portal_Admin` queda
-reservado para la administracion tecnica del portal (identidad/SCIM y contenido
-global); no otorga acceso al CMS.
-
-Los permisos se otorgan exclusivamente por pertenencia a grupos (`Group`), no
-por flags ni permisos directos en el usuario.
-"""
-
 from django.conf import settings
 
-# Rol tecnico de bootstrap para administrar identidad y configuracion global.
-# No se asigna al equipo de contenido.
+# Rol administrador técnico
 DEFAULT_ADMIN_ROLE = "Portal_Admin"
 
-# Unico rol del CMS. Su nombre es configurable para adaptarlo a CompAC.
+# Rol para edición y publicación del CMS
 PROPOSED_CMS_ADMIN = "CMS_Admin"
 PROPOSED_ROLES = (PROPOSED_CMS_ADMIN,)
 
 
 def admin_role_name() -> str:
-    """Nombre del rol administrador tecnico, configurable por entorno."""
+    """Nombre del rol administrador técnico."""
     return getattr(settings, "PORTAL_ADMIN_ROLE", DEFAULT_ADMIN_ROLE)
 
 
 def cms_admin_role_name() -> str:
-    """Nombre del unico rol que administra el CMS."""
+    """Nombre del rol de administración del CMS."""
     return getattr(settings, "CMS_ADMIN_ROLE", PROPOSED_CMS_ADMIN)
 
 
@@ -36,12 +23,12 @@ def cms_role_names() -> tuple[str, ...]:
 
 
 def core_technical_roles() -> tuple[str, ...]:
-    """Roles tecnicos que la aplicacion reconoce hoy."""
+    """Lista de roles técnicos reconocidos por la aplicación."""
     return (admin_role_name(), cms_admin_role_name())
 
 
 def capability_summary() -> tuple[str, ...]:
-    """Capacidades que otorga el rol administrador tecnico del portal."""
+    """Resumen de acciones permitidas para el administrador."""
     return (
         "Administrar identidad, roles y aprovisionamiento SCIM.",
         "Administrar el contenido global del portal (videos y metadatos).",

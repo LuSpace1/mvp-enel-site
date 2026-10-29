@@ -24,23 +24,14 @@ from .throttling import LoginRateThrottle, TokenEndpointThrottle
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    """
-    Login local del portal (puente del MVP).
-
-    Entrega access/refresh JWT y el perfil con sus roles. No hay registro
-    publico ni recuperacion de contrasena: las cuentas llegan por CompAC.
-    """
+    """Endpoint de inicio de sesión: emite tokens JWT al validar usuario/correo y contraseña."""
 
     serializer_class = CustomTokenObtainPairSerializer
     throttle_classes = [LoginRateThrottle]
 
 
 class ThrottledTokenView(TokenView):
-    """
-    Endpoint OAuth2 de token (`/o/token/` y alias `/token/`) con limite de
-    peticiones por cliente/IP. Es una vista Django, fuera de DRF, por lo que el
-    throttle se aplica manualmente.
-    """
+    """Endpoint OAuth2 de tokens (/o/token/ y /token/) con límite de peticiones."""
 
     def post(self, request, *args, **kwargs):
         throttle = TokenEndpointThrottle()
@@ -59,7 +50,7 @@ class ThrottledTokenView(TokenView):
 
 
 class MeView(APIView):
-    """Datos del usuario autenticado y sus roles efectivos."""
+    """Devuelve los datos del usuario actualmente autenticado y sus roles."""
 
     permission_classes = [permissions.IsAuthenticated]
 
@@ -74,13 +65,7 @@ class UserPagination(PageNumberPagination):
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Consulta de usuarios del portal.
-
-    El listado/detalle global queda reservado al rol de administracion;
-    `current` y `directory` estan disponibles para cualquier autenticado.
-    La gestion de cuentas la hace CompAC por SCIM, no este endpoint.
-    """
+    """Consulta de usuarios registrados en el portal."""
 
     queryset = User.objects.filter(is_active=True).prefetch_related("groups__sig_role")
     serializer_class = UserSerializer
@@ -101,7 +86,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 def _parse_iso_param(value):
-    """Parsea fecha/hora ISO8601 (o fecha simple) y responde 400 si es invalida."""
+    """Convierte un parámetro de texto en formato fecha ISO8601."""
     if not value:
         return None
     parsed = parse_datetime(value)
@@ -119,12 +104,7 @@ def _parse_iso_param(value):
 
 
 class IdentityAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Visor de auditoria de identidad (solo rol de administracion).
-
-    Filtros: `user` (username afectado o ejecutor), `action`, `source`,
-    `since`/`until` (ISO8601 o fecha) y `q` (texto en el detalle o usuarios).
-    """
+    """Consulta de registros de auditoría de identidad (solo administradores)."""
 
     queryset = IdentityAuditLog.objects.all().select_related("target_user", "actor")
     serializer_class = IdentityAuditLogSerializer

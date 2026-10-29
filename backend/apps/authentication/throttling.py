@@ -1,17 +1,9 @@
-"""
-Limites de peticiones (anti fuerza bruta y anti DoS).
-
-Las tasas se configuran por entorno con formato DRF (`N/minuto`). Con el cache
-local por defecto el limite es por proceso; en produccion con varios workers
-conviene un cache compartido (Redis/Memcached).
-"""
-
 from django.conf import settings
 from rest_framework.throttling import SimpleRateThrottle
 
 
 class LoginRateThrottle(SimpleRateThrottle):
-    """Limita intentos de login por IP: frena la fuerza bruta de contrasenas."""
+    """Limita intentos de inicio de sesión por dirección IP para evitar fuerza bruta."""
 
     scope = "login"
 
@@ -26,7 +18,7 @@ class LoginRateThrottle(SimpleRateThrottle):
 
 
 class ScimRateThrottle(SimpleRateThrottle):
-    """Limita peticiones SCIM por aplicacion OAuth2 (o usuario/IP como respaldo)."""
+    """Limita el ritmo de peticiones SCIM por aplicación o usuario."""
 
     scope = "scim"
 
@@ -48,7 +40,7 @@ class ScimRateThrottle(SimpleRateThrottle):
 
 
 class TokenEndpointThrottle(SimpleRateThrottle):
-    """Limita peticiones al endpoint OAuth2 de token por cliente o IP."""
+    """Limita solicitudes al endpoint de emisión de tokens OAuth2."""
 
     scope = "oauth_token"
 
@@ -59,7 +51,7 @@ class TokenEndpointThrottle(SimpleRateThrottle):
         client_id = ""
         try:
             client_id = (request.POST.get("client_id") or "").strip()
-        except AttributeError:  # pragma: no cover - request sin POST
+        except AttributeError:
             client_id = ""
         ident = f"client:{client_id}" if client_id else self.get_ident(request)
         return self.cache_format % {"scope": self.scope, "ident": ident}

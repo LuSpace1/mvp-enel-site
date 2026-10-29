@@ -15,12 +15,11 @@ from apps.authentication.roles import core_technical_roles
 from apps.authentication.signals import suppress_identity_audit
 from apps.authentication.validators import is_valid_corporate_id
 
-# Marca de atributo ausente en payloads parciales (distingue "no enviado" de null).
 _UNSET = object()
 
 
 def coerce_bool(value) -> bool:
-    """Convierte booleanos SCIM sin ambiguedad: el texto "false" es False."""
+    """Convierte un valor de texto o booleano a bool."""
     if isinstance(value, bool):
         return value
     if isinstance(value, str):
@@ -29,12 +28,7 @@ def coerce_bool(value) -> bool:
 
 
 def extract_email(data: dict):
-    """
-    Extrae el correo de un payload de identidad.
-
-    Devuelve `None` si el payload no trae el atributo (para no borrarlo en un
-    PATCH parcial) y `""` si lo trae vacio (para limpiarlo en un PUT/replace).
-    """
+    """Extrae el correo electrónico desde el payload de usuario."""
     if "email" in data:
         value = data.get("email")
         return str(value).strip() if value is not None else ""
@@ -53,32 +47,29 @@ def extract_email(data: dict):
 
 
 class IdentityError(Exception):
-    """Error base de la capa de identidad."""
+    """Error general de la capa de identidad."""
 
 
 class UserAlreadyExistsError(IdentityError):
-    """El userName (Enel ID) ya esta registrado; SCIM responde 409 Conflict."""
+    """El usuario ya existe (responde 409 Conflict en SCIM)."""
 
 
 class UserNotFoundError(IdentityError):
-    """No existe un usuario con el identificador solicitado."""
+    """El usuario no fue encontrado (responde 404 Not Found en SCIM)."""
 
 
 class RoleNotFoundError(IdentityError):
-    """No existe un rol con el identificador solicitado."""
+    """El rol no fue encontrado (responde 404 Not Found en SCIM)."""
 
 
 class IdentityService:
     """
-    Capa de servicios de identidad.
-
-    Es el unico punto de entrada para crear usuarios, cambiar su estado y
-    asignar o quitar roles. Las vistas HTTP (SCIM, login, admin asistido) no
-    escriben modelos de identidad directamente.
+    Capa de servicio para la gestión de identidades y roles.
+    Centraliza altas, bajas lógicas, actualizaciones y auditoría tanto para SCIM como para el panel local.
     """
 
     # ------------------------------------------------------------------
-    # Auditoria
+    # Auditoría
     # ------------------------------------------------------------------
     @staticmethod
     def _log(
@@ -100,7 +91,6 @@ class IdentityService:
 
     @staticmethod
     def _touch_user(user: User) -> None:
-        """Actualiza `updated_at` para que `meta.lastModified` refleje cambios de rol."""
         user.save(update_fields=["updated_at"])
 
     @staticmethod
@@ -149,26 +139,19 @@ class IdentityService:
 
     @staticmethod
     def is_role_allowed(display_name: str) -> bool:
-        """
-        Lista opcional de grupos permitidos (`SCIM_ALLOWED_GROUPS`).
-
-        Lista vacia: catalogo dinamico. Si se configura, solo se pueden crear
-        los grupos listados; el rol de administracion del portal siempre esta
-        permitido para no bloquear la operacion base.
-        """
+        """Verifica si el rol está permitido en la configuración del conector."""
         allowed = list(getattr(settings, "SCIM_ALLOWED_GROUPS", []) or [])
         if not allowed:
             return True
         return display_name in set(core_technical_roles()) | set(allowed)
 
     # ------------------------------------------------------------------
-    # Roles tecnicos
+    # Roles técnicos
     # ------------------------------------------------------------------
     @staticmethod
     def _reactivate_role_if_needed(
         role: Role, actor=None, source: str = IdentityAuditSource.SCIM
     ) -> None:
-        """Reactiva un rol desactivado al reasignarlo (no deja membresias sobre roles inactivos)."""
         if role.is_active:
             return
         role.is_active = True
@@ -189,12 +172,7 @@ class IdentityService:
         actor=None,
         source: str = IdentityAuditSource.SCIM,
     ) -> Role:
-        """
-        Obtiene o crea el Rol Tecnico y su Django Group asociado.
-
-        Soporta creaciones concurrentes: si otra peticion creo el rol (o su
-        grupo) primero, se reutiliza en vez de responder un error interno.
-        """
+        """Obtiene o crea un rol técnico junto a su grupo correspondiente de Django."""
         role = (
             Role.objects.select_related("technical_group")
             .filter(display_name=display_name)
@@ -222,7 +200,6 @@ class IdentityService:
                 )
                 created = True
         except IntegrityError:
-            # Carrera con otra peticion: el rol ya existe, se reutiliza.
             role = Role.objects.select_related("technical_group").get(
                 display_name=display_name
             )
@@ -242,6 +219,7 @@ class IdentityService:
     def assign_technical_role(
         user: User, role: Role, actor=None, source: str = IdentityAuditSource.SCIM
     ) -> None:
+        """Asigna un rol a un usuario agregándolo al grupo de Django correspondiente."""
         if role.technical_group_id is None:
             raise RoleNotFoundError(
                 f"El rol '{role.display_name}' no tiene grupo tecnico asociado."
@@ -267,6 +245,7 @@ class IdentityService:
     def remove_technical_role(
         user: User, role: Role, actor=None, source: str = IdentityAuditSource.SCIM
     ) -> None:
+        """Remueve un rol de un usuario quitándolo del grupo de Django correspondiente."""
         if role.technical_group_id is None:
             raise RoleNotFoundError(
                 f"El rol '{role.display_name}' no tiene grupo tecnico asociado."
@@ -292,13 +271,7 @@ class IdentityService:
     @staticmethod
     @transaction.atomic
     def create_local_user(user: User, actor=None) -> User:
-        """
-        Crea una cuenta local de bootstrap desde el Admin (no desde SCIM).
-
-        CompAC sigue siendo la fuente de altas en produccion; este metodo existe
-        para que el Admin no escriba identidad por fuera de la Service Layer y
-        deje la operacion auditada como `LOCAL`.
-        """
+        """Crea un usuario localmente desde el panel de administración."""
         if User.objects.filter(username=user.username).exists():
             raise UserAlreadyExistsError(
                 f"El userName '{user.username}' ya esta registrado."
@@ -326,19 +299,13 @@ class IdentityService:
     def provision_user(
         data: dict, actor=None, source: str = IdentityAuditSource.SCIM
     ) -> User:
-        """
-        Crea un usuario a partir de un payload de identidad. Lanza
-        `UserAlreadyExistsError` si el userName ya existe.
-
-        La cuenta se crea sin contrasena usable: la autenticacion de personas
-        correspondera al SSO corporativo (pendiente) y CompAC solo aprovisiona.
-        """
+        """Aprovisiona un usuario proveniente de CompAC vía SCIM."""
         username = str(data.get("userName") or "").strip()
         if not username:
             raise IdentityError("El userName (Enel ID) es obligatorio.")
         if not is_valid_corporate_id(username):
             raise IdentityError(
-                "El userName debe cumplir el formato corporativo Axxxxxx (ej: A123456)."
+                "El userName debe cumplir el formato de ID corporativo de Enel (ej: A123456 o CL12345678)."
             )
 
         if User.objects.filter(username=username).exists():
@@ -371,7 +338,6 @@ class IdentityService:
             with transaction.atomic():
                 user.save()
         except IntegrityError as exc:
-            # Carrera con otra peticion: el userName ya existe.
             raise UserAlreadyExistsError(
                 f"El userName '{username}' ya esta registrado."
             ) from exc
@@ -390,10 +356,7 @@ class IdentityService:
     def update_user(
         user: User, data: dict, actor=None, source: str = IdentityAuditSource.SCIM
     ) -> User:
-        """
-        Actualiza atributos de un usuario existente. No modifica el userName
-        (en SCIM el identificador de red es inmutable) ni la contrasena.
-        """
+        """Actualiza atributos de un usuario existente sin alterar su username."""
         changed: list[str] = []
 
         def apply(field: str, value: str) -> None:
@@ -455,10 +418,7 @@ class IdentityService:
     def deactivate_user(
         user: User, actor=None, source: str = IdentityAuditSource.SCIM
     ) -> User:
-        """
-        Baja logica (active=false), nunca borrado fisico. Se conserva el
-        registro y toda la historia para la auditoria.
-        """
+        """Desactiva un usuario (baja lógica)."""
         if user.is_active:
             user.is_active = False
             user.save(update_fields=["is_active", "updated_at"])
@@ -476,6 +436,7 @@ class IdentityService:
     def activate_user(
         user: User, actor=None, source: str = IdentityAuditSource.SCIM
     ) -> User:
+        """Reactiva un usuario desactivado."""
         if not user.is_active:
             user.is_active = True
             user.save(update_fields=["is_active", "updated_at"])

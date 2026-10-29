@@ -1,18 +1,3 @@
-"""
-Conector SCIM 2.0 del portal.
-
-Endpoints:
-- `/api/scim/v2/Users`        GET (lista/filtro), POST (201/409)
-- `/api/scim/v2/Users/{id}`   GET (404), PUT/PATCH, DELETE (204, baja logica)
-- `/api/scim/v2/Groups`       GET, POST (201/409, lista opcional de grupos)
-- `/api/scim/v2/Groups/{id}`  GET (404), PATCH (PatchOp add/remove/replace members)
-- `/api/scim/v2/Schemas`      GET (Core User/Group)
-
-Autenticacion OAuth2 Bearer (client_credentials, scope `scim`) o el rol de
-administracion autenticado para operacion asistida. Toda mutacion pasa por la
-Service Layer de identidad.
-"""
-
 import re
 import uuid
 
@@ -64,10 +49,7 @@ _MEMBER_REMOVE_PATTERN = re.compile(r'members\[value\s+eq\s+"([^"]+)"\]')
 
 
 class ScimAPIView(APIView):
-    """
-    Vista base del conector: autenticacion OAuth2/JWT/sesion, permiso `scim`,
-    limite de peticiones y media types `application/json` y `application/scim+json`.
-    """
+    """Vista base para endpoints SCIM de CompAC con autenticación y throttling."""
 
     authentication_classes = SCIM_AUTHENTICATION_CLASSES
     permission_classes = [HasScimAccess]
@@ -77,7 +59,7 @@ class ScimAPIView(APIView):
 
 
 def _pagination_params(request) -> tuple[int, int]:
-    """Parametros de paginacion SCIM: `startIndex` (1-based) y `count` (maximo 200)."""
+    """Obtiene los parámetros startIndex y count para paginación SCIM."""
     try:
         start_index = max(1, int(request.query_params.get("startIndex", 1)))
     except (TypeError, ValueError):
@@ -107,8 +89,9 @@ def _validation_detail(exc: DRFValidationError) -> str:
 
 
 class ScimUsersView(ScimAPIView):
+    """Endpoint SCIM /Users: consulta con filtros (GET) y creación de usuarios (POST)."""
+
     def get(self, request):
-        """GET /Users — listado con filtro `userName eq "X"` / `active eq true` y paginacion SCIM."""
         qs = IdentityService.list_users(include_inactive=True)
 
         filter_expr = request.query_params.get("filter")
@@ -145,7 +128,6 @@ class ScimUsersView(ScimAPIView):
         return _paginated_response(request, qs, ScimUserSerializer)
 
     def post(self, request):
-        """POST /Users — aprovisionamiento (201) o conflicto por userName duplicado (409)."""
         try:
             user = IdentityService.provision_user(
                 request.data,
@@ -164,6 +146,8 @@ class ScimUsersView(ScimAPIView):
 
 
 class ScimUserDetailView(ScimAPIView):
+    """Endpoint SCIM /Users/{id}: lectura (GET), actualización (PUT/PATCH) y baja lógica (DELETE)."""
+
     def get(self, request, user_id):
         try:
             user = IdentityService.get_user(user_id)
@@ -193,7 +177,6 @@ class ScimUserDetailView(ScimAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         elif not partial:
-            # PUT reemplaza el recurso: los atributos ausentes se vacian.
             data = {
                 "name": request.data.get("name", {"givenName": "", "familyName": ""}),
                 "emails": request.data.get("emails", []),
@@ -210,22 +193,15 @@ class ScimUserDetailView(ScimAPIView):
             return Response(
                 scim_error(str(exc), 400), status=status.HTTP_400_BAD_REQUEST
             )
-        # Releer para que la respuesta refleje grupos y estado ya actualizados.
         user = IdentityService.get_user(user.id)
         return Response(ScimUserSerializer(user, context={"request": request}).data)
 
     @staticmethod
     def _is_patch_op(data) -> bool:
-        """Distingue un PatchOp de una representacion parcial del recurso."""
         return "Operations" in data or SCIM_PATCH_SCHEMA in (data.get("schemas") or [])
 
     @classmethod
     def _patch_op_payload(cls, data) -> dict:
-        """
-        Traduce un PatchOp de usuario a los atributos que consume
-        `IdentityService.update_user`. Lanza ValidationError si la operacion o
-        la ruta no estan soportadas.
-        """
         serializer = ScimUserPatchOpSerializer(data=data)
         serializer.is_valid(raise_exception=True)
 
@@ -267,7 +243,7 @@ class ScimUserDetailView(ScimAPIView):
         return payload
 
     def delete(self, request, user_id):
-        """DELETE /Users/{id} — baja logica (active=false) con 204 No Content."""
+        """Baja lógica de usuario (active=false, responde 204 No Content)."""
         try:
             user = IdentityService.get_user(user_id)
         except UserNotFoundError as exc:
@@ -279,8 +255,9 @@ class ScimUserDetailView(ScimAPIView):
 
 
 class ScimGroupsView(ScimAPIView):
+    """Endpoint SCIM /Groups: consulta (GET) y registro de grupos/roles (POST)."""
+
     def get(self, request):
-        """GET /Groups — listado con filtro `displayName eq "X"`."""
         qs = IdentityService.list_roles(include_inactive=True)
 
         filter_expr = request.query_params.get("filter")
@@ -312,7 +289,6 @@ class ScimGroupsView(ScimAPIView):
         return _paginated_response(request, qs, ScimGroupSerializer)
 
     def post(self, request):
-        """POST /Groups — crea el rol y su grupo tecnico (201) o conflicto (409)."""
         display_name = str(request.data.get("displayName") or "").strip()
         if not display_name:
             return Response(
@@ -357,7 +333,6 @@ class ScimGroupsView(ScimAPIView):
                 )
             member_ids.append(str(member_id))
 
-        # Los usuarios deben existir: un id desconocido responde 400 en vez de ignorarse.
         try:
             members = [IdentityService.get_user(member_id) for member_id in member_ids]
         except UserNotFoundError as exc:
@@ -380,6 +355,8 @@ class ScimGroupsView(ScimAPIView):
 
 
 class ScimGroupDetailView(ScimAPIView):
+    """Endpoint SCIM /Groups/{id}: detalle (GET) y asignación/revocación de miembros (PATCH)."""
+
     def get(self, request, group_id):
         try:
             role = IdentityService.get_role(group_id)
@@ -388,11 +365,6 @@ class ScimGroupDetailView(ScimAPIView):
         return Response(ScimGroupSerializer(role, context={"request": request}).data)
 
     def patch(self, request, group_id):
-        """
-        PATCH /Groups/{id} — asignacion, revocacion y reemplazo de roles via
-        PatchOp sobre `members`. Los usuarios referenciados deben existir
-        (respuesta 400 si no) y la operacion es atomica.
-        """
         try:
             role = IdentityService.get_role(group_id)
         except RoleNotFoundError as exc:
@@ -417,8 +389,6 @@ class ScimGroupDetailView(ScimAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        # Resolver los usuarios antes de aplicar: un id inexistente responde 400
-        # en vez de ignorarse en silencio (evita divergencias de permisos).
         resolved: list[tuple[str, list[User]]] = []
         for operation in operations:
             op = operation["op"]
@@ -466,7 +436,6 @@ class ScimGroupDetailView(ScimAPIView):
                 else:
                     self._replace_members(role, users, actor=request.user)
 
-        # Releer el rol para que la respuesta refleje las membresias actualizadas.
         role = IdentityService.get_role(role.id)
         return Response(
             ScimGroupSerializer(role, context={"request": request}).data,
@@ -475,10 +444,6 @@ class ScimGroupDetailView(ScimAPIView):
 
     @staticmethod
     def _replace_members(role, users: list[User], actor=None) -> None:
-        """
-        `replace` sobre `members`: la lista enviada pasa a ser la membresia
-        completa del rol (agrega faltantes y quita sobrantes).
-        """
         desired_ids = {user.id for user in users}
         current = (
             list(role.technical_group.user_set.all()) if role.technical_group_id else []
@@ -521,8 +486,9 @@ class ScimGroupDetailView(ScimAPIView):
 
 
 class ScimSchemasView(ScimAPIView):
+    """Endpoint SCIM /Schemas: informa los esquemas soportados (User y Group)."""
+
     def get(self, request):
-        """GET /Schemas — Core de User y Group (sin extensiones de negocio)."""
         schemas = [
             {
                 "id": SCIM_USER_SCHEMA,

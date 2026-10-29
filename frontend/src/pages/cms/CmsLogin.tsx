@@ -70,12 +70,12 @@ export function CmsLogin() {
                 </div>
 
                 <Field>
-                  <FieldLabel htmlFor="username">Usuario (ID Enel)</FieldLabel>
+                  <FieldLabel htmlFor="username">Correo o ID Enel</FieldLabel>
                   <Input
                     id="username"
                     type="text"
                     autoComplete="username"
-                    placeholder="A123456"
+                    placeholder="nombre.apellido@enel.com o A123456"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required

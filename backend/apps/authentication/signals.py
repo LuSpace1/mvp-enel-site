@@ -1,5 +1,3 @@
-"""Auditoria de cambios locales de permisos (fuera de la Service Layer/SCIM)."""
-
 import threading
 from contextlib import contextmanager
 
@@ -20,7 +18,7 @@ _local = threading.local()
 
 @contextmanager
 def suppress_identity_audit():
-    """Evita el doble registro cuando la capa de servicios ya audita el cambio."""
+    """Silencia temporalmente el guardado automático de auditoría cuando se invoca desde el servicio."""
     previous = getattr(_local, "suppressed", False)
     _local.suppressed = True
     try:
@@ -45,7 +43,7 @@ def _record(user, detail: str, actor=None) -> IdentityAuditLog:
 
 @receiver(m2m_changed, sender=User.groups.through)
 def log_group_membership_change(sender, instance, action, pk_set, reverse, **kwargs):
-    """Toda membresia agregada/removida fuera de la Service Layer queda auditada como local."""
+    """Audita cambios directos en los grupos de un usuario."""
     if action not in {"post_add", "post_remove", "post_clear"}:
         return
     if _audit_suppressed():
@@ -73,14 +71,14 @@ def log_group_membership_change(sender, instance, action, pk_set, reverse, **kwa
 
 @receiver(post_save, sender=Group)
 def log_group_creation(sender, instance, created, **kwargs):
-    """Un grupo creado fuera de SCIM/Service Layer queda auditado como cambio local."""
+    """Audita la creación de un nuevo grupo en Django."""
     if created and not _audit_suppressed():
         _record(None, f"Grupo creado localmente: {instance.name}")
 
 
 @receiver(post_delete, sender=Group)
 def log_group_deletion(sender, instance, **kwargs):
-    """Un grupo eliminado localmente queda auditado (el historial de identidad se conserva)."""
+    """Audita la eliminación de un grupo en Django."""
     if not _audit_suppressed():
         _record(None, f"Grupo eliminado localmente: {instance.name}")
 
@@ -99,7 +97,7 @@ def capture_previous_role_state(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Role)
 def log_role_catalog_change(sender, instance, created, **kwargs):
-    """Los cambios locales al catalogo de roles se registran como inconsistencia operativa."""
+    """Audita modificaciones en el catálogo de roles."""
     if created or _audit_suppressed():
         return
 

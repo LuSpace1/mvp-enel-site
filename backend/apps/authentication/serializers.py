@@ -1,4 +1,5 @@
-from rest_framework import serializers
+from django.contrib.auth import authenticate
+from rest_framework import exceptions, serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import IdentityAuditLog, User
@@ -7,7 +8,7 @@ from .roles import admin_role_name, cms_admin_role_name
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Perfil de usuario: datos, grupos/roles vigentes y flags de estado."""
+    """Serializador del perfil de usuario y sus permisos en el portal."""
 
     groups = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
     full_name = serializers.SerializerMethodField()
@@ -38,8 +39,6 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.get_full_name() or obj.username
 
     def get_roles(self, obj) -> list[str]:
-        # Solo los roles vigentes en el catalogo otorgan permisos: un Role
-        # desactivado no debe mostrarse como si diera acceso.
         roles: list[str] = []
         if is_portal_admin(obj):
             roles.append(admin_role_name())
@@ -54,16 +53,47 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    """JWT + perfil/roles del usuario para el login local (puente del MVP)."""
+    """
+    Login del portal: permite iniciar sesión con ID Enel o correo corporativo.
+    Devuelve los tokens JWT junto con los datos y permisos del usuario.
+    """
 
     def validate(self, attrs):
+        raw_credential = (attrs.get(self.username_field) or "").strip()
+        password = attrs.get("password")
+
+        # Buscar usuario por username (ID Enel) o por correo corporativo (insensible a mayúsculas)
+        matched_user = (
+            User.objects.filter(username__iexact=raw_credential).first()
+            or User.objects.filter(email__iexact=raw_credential).first()
+        )
+
+        resolved_username = matched_user.username if matched_user else raw_credential
+
+        authenticate_kwargs = {
+            self.username_field: resolved_username,
+            "password": password,
+        }
+        try:
+            authenticate_kwargs["request"] = self.context["request"]
+        except KeyError:
+            pass
+
+        self.user = authenticate(**authenticate_kwargs)
+
+        if not self.user or not self.user.is_active:
+            raise exceptions.AuthenticationFailed(
+                self.error_messages["no_active_account"],
+                "no_active_account",
+            )
+
         data = super().validate(attrs)
         data["user"] = UserSerializer(self.user).data
         return data
 
 
 class IdentityAuditLogSerializer(serializers.ModelSerializer):
-    """Registro de auditoria de identidad con etiquetas legibles."""
+    """Serializador para el registro de auditoría de usuarios y roles."""
 
     action_label = serializers.CharField(source="get_action_display", read_only=True)
     source_label = serializers.CharField(source="get_source_display", read_only=True)

@@ -119,13 +119,13 @@ SIMPLE_JWT = {
 }
 
 
-# OAuth2 maquina a maquina para el conector SCIM (CompAC).
-# CompAC no autentica personas: este flujo es solo para la integracion.
+# OAuth2 para el conector SCIM de CompAC.
 OAUTH2_PROVIDER = {
     "OIDC_ENABLED": False,
     "SCOPES": {
         "scim": "Acceso SCIM para aprovisionamiento de identidades y grupos",
     },
+    "DEFAULT_SCOPES": ["scim"],
     "COMPLIANT_BCP_RFC9700_IMPLICIT_GRANT": True,
     "COMPLIANT_BCP_RFC9700_PASSWORD_GRANT": True,
     "COMPLIANT_BCP_RFC9700_PKCE_METHOD": True,
