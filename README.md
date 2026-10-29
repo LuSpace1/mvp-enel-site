@@ -67,19 +67,9 @@ npm run format   # formatear con prettier
 
 ## CMS
 
-El panel está en `http://localhost:5173/cms` y usa el login local del MVP (el SSO corporativo sigue pendiente de definición).
+El CMS permite que P&O actualice el contenido del portal sin desplegar código. Se accede en `/cms`, donde se editan las secciones y el orden en que se recorre el portal.
 
-Las cuentas se crean desde `/django-admin/`:
-
-1. Crea el usuario con `uv run python manage.py createsuperuser` o desde el Admin.
-2. Crea el grupo `CMS_Admin` y asígnalo a las personas administradoras del CMS.
-3. Asigna el grupo a cada usuario que corresponda. `Portal_Admin` queda reservado para soporte técnico.
-
-El contenido publicado se sirve desde `GET /api/cms/public/`. Si la API no responde, el frontend usa el contenido por defecto del código. El borrador se crea al activar el modo edición y no se publica hasta que una persona administradora lo publica; la publicación es atómica e incluye contenido y orden. Guardar y publicar exigen la versión vigente del borrador para no pisar cambios de otra sesión.
-
-En una base recién migrada, la primera petición al CMS materializa el contenido inicial del portal (incluido el enlace actual del video del hero) como publicación y borrador. No hay comandos de seed ni datos de demostración en el repositorio.
-
-Más detalle en [`docs/CMS_FEATURE.md`](docs/CMS_FEATURE.md) y [`docs/AUTHENTICATION.md`](docs/AUTHENTICATION.md).
+Los cambios se trabajan sobre un borrador único, compartido entre las vistas de Contenido y Orden. El borrador solo se guarda con **Guardar** o **Guardar orden**, y la vista previa permite revisar el resultado antes de publicar. La publicación actualiza contenido y orden en una sola operación y deja el portal público al día; luego vuelve al modo lectura.
 
 ---
 
