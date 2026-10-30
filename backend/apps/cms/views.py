@@ -33,7 +33,7 @@ from .services import (
     ensure_draft,
     get_draft,
     get_published,
-    list_revisions,
+    list_versions,
     publish,
     restore_revision,
     save_draft,
@@ -57,7 +57,7 @@ def _etag(payload) -> str:
 def _has_unpublished_changes(
     draft: ContentRevision, published: ContentRevision
 ) -> bool:
-    """Compara solo contenido y orden; la version del borrador cambia en cada guardado."""
+    """Compara solo contenido y orden; la version de bloqueo cambia en cada guardado."""
     draft_payload = draft.payload
     published_payload = published.payload
     return draft_payload.get("order") != published_payload.get(
@@ -81,7 +81,13 @@ class PublicContentView(APIView):
     def get(self, request):
         published = get_published()
         payload = published.payload
-        etag = _etag({"id": str(published.pk), "payload": payload})
+        etag = _etag(
+            {
+                "id": str(published.pk),
+                "version_number": published.version_number,
+                "payload": payload,
+            }
+        )
         if _not_modified(request, etag):
             response = Response(status=status.HTTP_304_NOT_MODIFIED)
             response["ETag"] = f'"{etag}"'
@@ -92,7 +98,7 @@ class PublicContentView(APIView):
             {
                 "payload": payload,
                 "revision_id": str(published.pk),
-                "revision_version": published.version,
+                "version_number": published.version_number,
                 "published_at": published.published_at,
                 "updated_at": published.updated_at,
             }
@@ -155,7 +161,7 @@ class AdminContentView(APIView):
             draft = save_draft(
                 request.user,
                 data["payload"],
-                expected_version=data.get("version"),
+                expected_lock_version=data.get("lock_version"),
                 message=data.get("message", ""),
             )
         except RevisionConflict as exc:
@@ -164,7 +170,7 @@ class AdminContentView(APIView):
                 {
                     "detail": str(exc),
                     "code": "revision_conflict",
-                    "current_version": current.version if current else None,
+                    "current_lock_version": current.lock_version if current else None,
                 },
                 status=status.HTTP_409_CONFLICT,
             )
@@ -186,7 +192,7 @@ class PublishView(APIView):
         try:
             published = publish(
                 request.user,
-                expected_version=serializer.validated_data["version"],
+                expected_lock_version=serializer.validated_data["lock_version"],
                 message=serializer.validated_data.get("message", ""),
             )
         except RevisionConflict as exc:
@@ -207,7 +213,7 @@ class RevisionListView(APIView):
     permission_classes = [CanManageCms]
 
     def get(self, request):
-        revisions = list_revisions()[:200]
+        revisions = list_versions()[:200]
         return Response({"results": RevisionSerializer(revisions, many=True).data})
 
 

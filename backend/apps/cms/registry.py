@@ -1089,7 +1089,6 @@ SECTION_ORDER: tuple[str, ...] = tuple(section.key for section in SECTIONS)
 def build_default_payload() -> dict[str, Any]:
     """Payload inicial con el contenido actual del portal."""
     return {
-        "version": 1,
         "order": list(SECTION_ORDER),
         "sections": {section.key: section.default_values() for section in SECTIONS},
     }

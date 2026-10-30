@@ -45,6 +45,9 @@ class RevisionSerializer(serializers.ModelSerializer):
     updated_by = serializers.SerializerMethodField()
     published_by = serializers.SerializerMethodField()
     status_label = serializers.CharField(source="get_status_display", read_only=True)
+    number = serializers.IntegerField(
+        source="version_number", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = ContentRevision
@@ -52,7 +55,9 @@ class RevisionSerializer(serializers.ModelSerializer):
             "id",
             "status",
             "status_label",
-            "version",
+            "number",
+            "is_current",
+            "lock_version",
             "message",
             "created_by",
             "updated_by",
@@ -79,12 +84,12 @@ class RevisionDetailSerializer(RevisionSerializer):
 
 class DraftSaveSerializer(serializers.Serializer):
     payload = serializers.JSONField()
-    version = serializers.IntegerField(min_value=1)
+    lock_version = serializers.IntegerField(min_value=1)
     message = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
 
 class PublishSerializer(serializers.Serializer):
-    version = serializers.IntegerField(min_value=1)
+    lock_version = serializers.IntegerField(min_value=1)
     message = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
 

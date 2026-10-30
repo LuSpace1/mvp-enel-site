@@ -1,4 +1,4 @@
-"""Service Layer del CMS: borradores, publicacion atomica y revisiones."""
+"""Service Layer del CMS: borradores, publicacion atomica y versiones."""
 
 from __future__ import annotations
 
@@ -10,7 +10,12 @@ from django.utils import timezone
 
 from content.models import VideoLink
 
-from .models import ContentRevision, MediaAsset, RevisionStatus
+from .models import (
+    ContentRevision,
+    ContentVersionSequence,
+    MediaAsset,
+    RevisionStatus,
+)
 from .registry import build_default_payload
 from .validation import default_payload, normalize_payload
 
@@ -23,46 +28,72 @@ def _published_qs():
     return ContentRevision.objects.filter(status=RevisionStatus.PUBLISHED)
 
 
+def _current_qs():
+    return _published_qs().filter(is_current=True)
+
+
 def _draft_qs():
     return ContentRevision.objects.filter(status=RevisionStatus.DRAFT)
 
 
-def _create_default_published() -> ContentRevision:
-    payload = default_payload()
-    payload["version"] = 1
+def _ensure_sequence() -> ContentVersionSequence:
+    """Devuelve la fila de secuencia bloqueada para asignar el siguiente numero."""
+    sequence = ContentVersionSequence.objects.select_for_update().filter(pk=1).first()
+    if sequence is not None:
+        return sequence
+
+    try:
+        # El savepoint permite recuperarse de una creacion concurrente.
+        with transaction.atomic():
+            ContentVersionSequence.objects.create(pk=1, next_number=1)
+    except IntegrityError:
+        pass
+    return ContentVersionSequence.objects.select_for_update().get(pk=1)
+
+
+def _next_version_number() -> int:
+    """Reserva el siguiente numero de version. Debe llamarse dentro de atomic()."""
+    sequence = _ensure_sequence()
+    number = sequence.next_number
+    sequence.next_number = number + 1
+    sequence.save(update_fields=["next_number"])
+    return number
+
+
+def _create_default_published(number: int) -> ContentRevision:
     return ContentRevision.objects.create(
         status=RevisionStatus.PUBLISHED,
-        payload=payload,
-        version=1,
+        payload=default_payload(),
+        lock_version=1,
+        version_number=number,
+        is_current=True,
         message="Contenido inicial",
         published_at=timezone.now(),
     )
 
 
 def ensure_published() -> ContentRevision:
-    """Garantiza la publicacion inicial sin crear un borrador."""
-    published = _published_qs().first()
+    """Garantiza una version vigente sin crear un borrador."""
+    published = _current_qs().first()
     if published is not None:
         return published
 
     with transaction.atomic():
-        try:
-            # El savepoint permite recuperarse de una creacion concurrente sin
-            # dejar marcada para rollback la transaccion exterior.
-            with transaction.atomic():
-                published = _create_default_published()
-        except IntegrityError:
-            # Otra peticion creo la publicacion en paralelo.
-            published = _published_qs().get()
-        else:
-            # Inyecta el video del hero actual en la base al inicializar el CMS.
-            _sync_hero_video(published.payload)
+        # Bloquea la secuencia antes de comprobar de nuevo: si otra peticion
+        # publico mientras esperabamos, reutilizamos su version.
+        _ensure_sequence()
+        published = _current_qs().first()
+        if published is not None:
+            return published
+
+        published = _create_default_published(_next_version_number())
+        _sync_hero_video(published.payload)
         return published
 
 
 def get_published() -> ContentRevision:
     """Lectura publica: no bloquea la fila cuando ya existe una publicacion."""
-    published = _published_qs().first()
+    published = _current_qs().first()
     if published is not None:
         return published
     return ensure_published()
@@ -82,7 +113,6 @@ def ensure_draft(user=None) -> ContentRevision:
             return draft
 
         payload = copy.deepcopy(published.payload)
-        payload["version"] = 1
         try:
             # El savepoint evita que la violacion de unicidad invalide la
             # transaccion que luego consulta el borrador creado por la otra
@@ -91,7 +121,7 @@ def ensure_draft(user=None) -> ContentRevision:
                 draft = ContentRevision.objects.create(
                     status=RevisionStatus.DRAFT,
                     payload=payload,
-                    version=1,
+                    lock_version=1,
                     based_on=published,
                     created_by=user,
                     updated_by=user,
@@ -105,7 +135,7 @@ def ensure_draft(user=None) -> ContentRevision:
 def save_draft(
     user,
     payload: dict[str, Any],
-    expected_version: int,
+    expected_lock_version: int,
     message: str = "",
 ) -> ContentRevision:
     normalized = normalize_payload(payload)
@@ -117,19 +147,24 @@ def save_draft(
                 "No hay un borrador activo. Activa el modo edición para continuar."
             )
 
-        if expected_version != draft.version:
+        if expected_lock_version != draft.lock_version:
             raise RevisionConflict(
                 "El borrador cambio desde que lo abriste. Recarga para no pisar cambios."
             )
 
-        draft.version += 1
-        normalized["version"] = draft.version
+        draft.lock_version += 1
         draft.payload = normalized
         draft.updated_by = user
         if message:
             draft.message = message[:255]
         draft.save(
-            update_fields=["payload", "version", "updated_by", "message", "updated_at"]
+            update_fields=[
+                "payload",
+                "lock_version",
+                "updated_by",
+                "message",
+                "updated_at",
+            ]
         )
         return draft
 
@@ -137,13 +172,14 @@ def save_draft(
 def publish(
     user,
     *,
-    expected_version: int,
+    expected_lock_version: int,
     message: str = "",
 ) -> ContentRevision:
-    """Publica el borrador de forma atomica y cierra la sesion de edicion.
+    """Publica el borrador como una version nueva e inmutable.
 
-    El siguiente borrador se crea recien cuando alguien activa el modo edicion,
-    para no acumular borradores identicos a la publicacion en el historial.
+    El borrador se elimina al publicar: la siguiente sesion de edicion crea uno
+    nuevo clonando la version vigente. Asi el historial solo contiene versiones
+    publicadas y el borrador nunca consume un numero de version.
     """
     with transaction.atomic():
         draft = _draft_qs().select_for_update().first()
@@ -151,101 +187,128 @@ def publish(
             raise RevisionConflict(
                 "No hay un borrador activo. Activa el modo edición para publicar."
             )
-        if expected_version != draft.version:
+        if expected_lock_version != draft.lock_version:
             raise RevisionConflict(
                 "El borrador cambio desde que lo revisaste. Actualiza la vista previa "
                 "y vuelve a publicar."
             )
+
         normalized = normalize_payload(draft.payload)
-        normalized["version"] = draft.version
+        number = _next_version_number()
 
-        for anterior in _published_qs().select_for_update():
-            anterior.status = RevisionStatus.ARCHIVED
-            anterior.save(update_fields=["status", "updated_at"])
-
-        draft.status = RevisionStatus.PUBLISHED
-        draft.payload = normalized
-        draft.published_by = user
-        draft.published_at = timezone.now()
-        draft.updated_by = user
-        if message:
-            draft.message = message[:255]
-        draft.save(
-            update_fields=[
-                "status",
-                "payload",
-                "published_by",
-                "published_at",
-                "updated_by",
-                "message",
-                "updated_at",
-            ]
+        _published_qs().filter(is_current=True).update(is_current=False)
+        published = ContentRevision.objects.create(
+            status=RevisionStatus.PUBLISHED,
+            payload=normalized,
+            lock_version=1,
+            version_number=number,
+            is_current=True,
+            based_on=draft.based_on,
+            created_by=draft.created_by,
+            updated_by=user,
+            published_by=user,
+            published_at=timezone.now(),
+            message=(message or draft.message)[:255],
         )
 
-        _sync_hero_video(draft.payload)
-        return draft
+        draft.delete()
+        _sync_hero_video(published.payload)
+        return published
 
 
 def restore_revision(user, revision: ContentRevision) -> ContentRevision:
-    """Copia una revision al borrador para revisarla y publicarla de nuevo."""
+    """Copia una version publicada al borrador para revisarla y publicarla de nuevo."""
     with transaction.atomic():
-        published = ensure_published()
+        # Mismo orden de locks que publish() y discard_draft(): primero el
+        # borrador y despues la publicacion, para evitar deadlocks.
         draft = _draft_qs().select_for_update().first()
+        revision = (
+            _published_qs().select_for_update().filter(pk=revision.pk).first()
+        )
+        if revision is None:
+            raise RevisionConflict(
+                "Solo se puede restaurar una version publicada."
+            )
+        if revision.is_current:
+            raise RevisionConflict(
+                "La version vigente ya esta publicada. Edita el borrador para cambiarla."
+            )
+
+        normalized = normalize_payload(revision.payload)
+        fecha = revision.published_at or revision.created_at
+        mensaje = (
+            f"Restaurada version v{revision.version_number} "
+            f"del {fecha:%d-%m-%Y %H:%M}"
+        )
+
         if draft is None:
             draft = ContentRevision.objects.create(
                 status=RevisionStatus.DRAFT,
-                payload=copy.deepcopy(published.payload),
-                version=1,
-                based_on=published,
+                payload=normalized,
+                lock_version=1,
+                based_on=revision,
                 created_by=user,
                 updated_by=user,
+                message=mensaje,
             )
-        normalized = normalize_payload(revision.payload)
-
-        draft.version += 1
-        normalized["version"] = draft.version
-        draft.payload = normalized
-        draft.updated_by = user
-        draft.message = f"Restaurada revision del {revision.created_at:%d-%m-%Y %H:%M}"
-        draft.save(
-            update_fields=["payload", "version", "updated_by", "message", "updated_at"]
-        )
+        else:
+            draft.lock_version += 1
+            draft.payload = normalized
+            draft.based_on = revision
+            draft.updated_by = user
+            draft.message = mensaje
+            draft.save(
+                update_fields=[
+                    "payload",
+                    "lock_version",
+                    "based_on",
+                    "updated_by",
+                    "message",
+                    "updated_at",
+                ]
+            )
         return draft
 
 
 def discard_draft(user) -> ContentRevision:
-    """Devuelve el borrador al contenido de la ultima publicacion."""
+    """Devuelve el borrador al contenido de la version vigente."""
     with transaction.atomic():
         # Mismo orden de locks que publish(): borrador y despues publicacion,
         # para que descartar y publicar no puedan bloquearse mutuamente.
         draft = _draft_qs().select_for_update().first()
-        published = ensure_published()
-        published = _published_qs().select_for_update().filter(pk=published.pk).first()
+        published = _current_qs().select_for_update().first()
         if published is None or draft is None:
             raise RevisionConflict("No hay un borrador activo para descartar.")
 
         normalized = normalize_payload(published.payload)
 
-        draft.version += 1
-        normalized["version"] = draft.version
+        draft.lock_version += 1
         draft.payload = normalized
         draft.updated_by = user
         draft.message = (
-            f"Borrador descartado; se restauro la publicacion del "
-            f"{published.published_at:%d-%m-%Y %H:%M}"
+            f"Borrador descartado; se restauro la version v{published.version_number} "
+            f"del {published.published_at:%d-%m-%Y %H:%M}"
             if published.published_at
             else "Borrador descartado; se restauro la ultima publicacion"
         )
         draft.save(
-            update_fields=["payload", "version", "updated_by", "message", "updated_at"]
+            update_fields=[
+                "payload",
+                "lock_version",
+                "updated_by",
+                "message",
+                "updated_at",
+            ]
         )
         return draft
 
 
-def list_revisions():
-    return ContentRevision.objects.select_related(
-        "created_by", "updated_by", "published_by"
-    ).all()
+def list_versions():
+    return (
+        _published_qs()
+        .select_related("created_by", "updated_by", "published_by")
+        .order_by("-version_number")
+    )
 
 
 def _sync_hero_video(payload: dict[str, Any]) -> None:

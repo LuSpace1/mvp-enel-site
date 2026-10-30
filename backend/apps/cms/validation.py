@@ -315,7 +315,7 @@ def normalize_payload(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise _error("payload", "El contenido debe ser un objeto JSON.")
 
-    known = {"version", "order", "sections"}
+    known = {"order", "sections"}
     unknown = set(payload) - known
     if unknown:
         raise _error("payload", f"Campos no permitidos: {', '.join(sorted(unknown))}.")
@@ -336,11 +336,7 @@ def normalize_payload(payload: Any) -> dict[str, Any]:
         for key in SECTION_ORDER
     }
 
-    version = payload.get("version", 1)
-    if isinstance(version, bool) or not isinstance(version, int) or version < 1:
-        version = 1
-
-    return {"version": version, "order": order, "sections": sections}
+    return {"order": order, "sections": sections}
 
 
 def default_payload() -> dict[str, Any]:

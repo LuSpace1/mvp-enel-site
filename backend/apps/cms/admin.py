@@ -5,14 +5,24 @@ from .models import ContentRevision, MediaAsset
 
 @admin.register(ContentRevision)
 class ContentRevisionAdmin(admin.ModelAdmin):
-    list_display = ("id", "status", "version", "message", "created_at", "published_at")
-    list_filter = ("status",)
+    list_display = (
+        "id",
+        "status",
+        "version_number",
+        "is_current",
+        "message",
+        "created_at",
+        "published_at",
+    )
+    list_filter = ("status", "is_current")
     search_fields = ("message", "id")
     readonly_fields = (
         "id",
         "status",
         "payload",
-        "version",
+        "lock_version",
+        "version_number",
+        "is_current",
         "message",
         "based_on",
         "created_by",
