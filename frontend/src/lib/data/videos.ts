@@ -2,7 +2,7 @@ import type { VideoLink } from '@/types/api'
 
 import { useVideosStore } from '@/store/useVideosStore'
 
-const VIDEO_PORTADA = 'https://www.youtube.com/watch?v=HvcKx1kIvfs'
+const VIDEO_PORTADA = 'https://www.youtube.com/watch?v=5aEIFxjHEf0'
 const VIDEO_MUESTRA = 'https://www.youtube.com/watch?v=EQeBgrPs_-Y'
 
 const videosMock: VideoLink[] = [
