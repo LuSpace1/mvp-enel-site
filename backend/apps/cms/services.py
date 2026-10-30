@@ -8,8 +8,6 @@ from typing import Any
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from content.models import VideoLink
-
 from .models import (
     ContentRevision,
     ContentVersionSequence,
@@ -87,7 +85,6 @@ def ensure_published() -> ContentRevision:
             return published
 
         published = _create_default_published(_next_version_number())
-        _sync_hero_video(published.payload)
         return published
 
 
@@ -212,7 +209,6 @@ def publish(
         )
 
         draft.delete()
-        _sync_hero_video(published.payload)
         return published
 
 
@@ -308,19 +304,6 @@ def list_versions():
         _published_qs()
         .select_related("created_by", "updated_by", "published_by")
         .order_by("-version_number")
-    )
-
-
-def _sync_hero_video(payload: dict[str, Any]) -> None:
-    """Mantiene /api/videos/ coherente con el video del hero editado en el CMS."""
-    portada = (payload.get("sections") or {}).get("portada") or {}
-    url = (portada.get("video_youtube_url") or "").strip()
-    if not url:
-        return
-    title = (portada.get("video_titulo") or "Mensaje del Gerente General").strip()
-    VideoLink.objects.update_or_create(
-        section_identifier="hero_main",
-        defaults={"title": title[:255], "youtube_url": url},
     )
 
 

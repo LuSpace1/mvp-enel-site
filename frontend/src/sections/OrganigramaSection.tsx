@@ -4,11 +4,16 @@ import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import type { Variants } from 'motion/react'
 import { Reveal } from '@/components/ui/Reveal'
 import { RevealTexto } from '@/components/ui/RevealTexto'
-import { useCampo } from '@/lib/cms/contenido'
+import { useCampo, useLista } from '@/lib/cms/contenido'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { VideoEmbed } from '@/components/ui/VideoEmbed'
-import { areasStaff, gerenteGeneral, subgerencias } from '@/lib/data/organizacion'
-import { videoDeSeccion } from '@/lib/data/videos'
+import fotoHombre from '@/assets/images/placeholder_hombre.webp'
+import {
+  areasStaff as areasStaffPorDefecto,
+  gerenteGeneral as gerentePorDefecto,
+  subgerencias as subgerenciasPorDefecto,
+} from '@/lib/data/organizacion'
+import type { AreaStaff, Subgerencia } from '@/types/api'
 
 const cardsPadre: Variants = {
   hidden: {},
@@ -42,6 +47,25 @@ const cardStaff: Variants = {
     filter: 'blur(0px)',
     transition: { type: 'spring', bounce: 0, duration: 0.55 },
   },
+}
+
+/** Conserva las fotos actuales cuando el CMS aún no tiene una imagen subida. */
+function fotoDeSubgerencia(subgerencia: Subgerencia, indice: number): string {
+  return (
+    subgerencia.foto ||
+    subgerenciasPorDefecto.find((item) => item.sigla === subgerencia.sigla)?.foto ||
+    subgerenciasPorDefecto[indice]?.foto ||
+    fotoHombre
+  )
+}
+
+function fotoDeAreaStaff(area: AreaStaff, indice: number): string {
+  return (
+    area.foto ||
+    areasStaffPorDefecto.find((item) => item.nombre === area.nombre)?.foto ||
+    areasStaffPorDefecto[indice]?.foto ||
+    fotoHombre
+  )
 }
 
 interface TarjetaAreaProps {
@@ -91,7 +115,8 @@ interface ModalLiderProps {
   foto: string
   proposito: string
   areas?: string[]
-  videoSection?: string
+  videoUrl?: string
+  videoTitulo?: string
   onVideo: (video: { url: string; titulo: string }) => void
 }
 
@@ -104,11 +129,14 @@ function ModalLider({
   foto,
   proposito,
   areas,
-  videoSection,
+  videoUrl,
+  videoTitulo,
   onVideo,
 }: ModalLiderProps) {
   const reduce = useReducedMotion()
-  const video = videoSection ? videoDeSeccion(videoSection) : undefined
+  const video = videoUrl
+    ? { url: videoUrl, titulo: videoTitulo || 'Video de bienvenida' }
+    : undefined
 
   return (
     <motion.div
@@ -176,7 +204,7 @@ function ModalLider({
         {video && (
           <button
             onClick={() => {
-              onVideo({ url: video.youtube_url, titulo: video.title })
+              onVideo({ url: video.url, titulo: video.titulo })
               onCerrar()
             }}
             className="group/btn bg-enel-blue hover:bg-enel-blue-dark mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-semibold tracking-wide text-white shadow-sm transition-[background-color,box-shadow,transform] duration-300 ease-out hover:shadow-md active:scale-[0.98] active:duration-100"
@@ -195,8 +223,8 @@ function ModalLider({
 }
 
 export function OrganigramaSection() {
-  const [nodoAbierto, setNodoAbierto] = useState<string | null>(null)
-  const [staffActivo, setStaffActivo] = useState<(typeof areasStaff)[number] | null>(null)
+  const [nodoAbierto, setNodoAbierto] = useState<number | null>(null)
+  const [staffActivo, setStaffActivo] = useState<number | null>(null)
   const [ggAbierto, setGgAbierto] = useState(false)
   const [videoActivo, setVideoActivo] = useState<{ url: string; titulo: string } | null>(null)
   const reduce = useReducedMotion()
@@ -206,7 +234,17 @@ export function OrganigramaSection() {
     'intro',
     'Descubre cómo se estructura Enel Distribución, sus principales gerencias, líderes y áreas de apoyo transversal que contribuyen al funcionamiento del negocio.',
   )
-  const subAbierta = subgerencias.find((sub) => sub.id === nodoAbierto) ?? null
+  const staffTitulo = useCampo('organigrama', 'staff_titulo', 'Áreas Staff')
+  const staffIntro = useCampo(
+    'organigrama',
+    'staff_intro',
+    'Conoce las áreas de Enel Chile que brindan apoyo transversal a las distintas líneas de negocio.',
+  )
+  const gerente = useLista('organigrama', 'gerente', [gerentePorDefecto])[0] ?? gerentePorDefecto
+  const subgerencias = useLista('organigrama', 'subgerencias', subgerenciasPorDefecto)
+  const areasStaff = useLista('organigrama', 'areas_staff', areasStaffPorDefecto)
+  const subAbierta = nodoAbierto !== null ? subgerencias[nodoAbierto] : null
+  const areaActiva = staffActivo !== null ? areasStaff[staffActivo] : null
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -259,17 +297,15 @@ export function OrganigramaSection() {
               style={{ animationDelay: '0s' }}
             >
               <img
-                src={gerenteGeneral.foto}
-                alt={`${gerenteGeneral.nombre}, ${gerenteGeneral.cargo}`}
+                src={gerente.foto || gerentePorDefecto.foto}
+                alt={`${gerente.nombre}, ${gerente.cargo}`}
                 className="group-hover:ring-enel-blue/30 mx-auto h-28 w-28 rounded-full object-cover shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.08)] ring-4 ring-black/[0.04] transition-all duration-300"
                 loading="lazy"
               />
               <p className="text-enel-navy mt-5 text-xs font-bold tracking-[0.12em] uppercase">
-                {gerenteGeneral.cargo}
+                {gerente.cargo}
               </p>
-              <h3 className="mt-1 text-[13px] font-medium text-neutral-500">
-                {gerenteGeneral.nombre}
-              </h3>
+              <h3 className="mt-1 text-[13px] font-medium text-neutral-500">{gerente.nombre}</h3>
               <p className="text-enel-blue mt-3 text-[13px] font-semibold">Saber más</p>
             </div>
           </motion.div>
@@ -289,7 +325,7 @@ export function OrganigramaSection() {
 
             {subgerencias.map((sub, idx) => (
               <motion.div
-                key={sub.id}
+                key={`${sub.sigla}-${idx}`}
                 variants={cardHija}
                 className="relative flex w-full flex-col items-center"
               >
@@ -298,10 +334,10 @@ export function OrganigramaSection() {
                   titulo={sub.nombre}
                   sigla={sub.sigla}
                   responsable={sub.subgerente}
-                  foto={sub.foto}
+                  foto={fotoDeSubgerencia(sub, idx)}
                   delay={idx * 0.35}
                   onClick={() => {
-                    setNodoAbierto(sub.id)
+                    setNodoAbierto(idx)
                     setStaffActivo(null)
                   }}
                 />
@@ -339,14 +375,15 @@ export function OrganigramaSection() {
         </div>
 
         <Reveal className="mx-auto mb-12 max-w-2xl px-4 text-center">
-          <p className="text-enel-blue text-sm font-bold tracking-[0.2em] uppercase">Áreas Staff</p>
+          <p className="text-enel-blue text-sm font-bold tracking-[0.2em] uppercase">
+            {staffTitulo}
+          </p>
           <RevealTexto
             as="p"
             variante="parrafo"
             className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed font-medium text-neutral-500"
           >
-            Conoce las áreas de Enel Chile que brindan apoyo transversal a las distintas líneas de
-            negocio.
+            {staffIntro}
           </RevealTexto>
         </Reveal>
 
@@ -358,14 +395,14 @@ export function OrganigramaSection() {
           className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4"
         >
           {areasStaff.map((area, idx) => (
-            <motion.div key={area.id} variants={cardStaff} className="flex">
+            <motion.div key={`${area.nombre}-${idx}`} variants={cardStaff} className="flex">
               <TarjetaArea
                 titulo={area.nombre}
                 responsable={area.lider}
-                foto={area.foto}
+                foto={fotoDeAreaStaff(area, idx)}
                 delay={idx * 0.35}
                 onClick={() => {
-                  setStaffActivo(area)
+                  setStaffActivo(idx)
                   setNodoAbierto(null)
                 }}
               />
@@ -382,10 +419,11 @@ export function OrganigramaSection() {
             cargo={`Subgerencia ${subAbierta.sigla}`}
             nombre={subAbierta.subgerente}
             organizacion={subAbierta.nombre}
-            foto={subAbierta.foto}
+            foto={fotoDeSubgerencia(subAbierta, nodoAbierto ?? 0)}
             proposito={subAbierta.proposito}
-            areas={subAbierta.areas}
-            videoSection={subAbierta.videoSection}
+            areas={(subAbierta.areas ?? []).map((area) => area.nombre)}
+            videoUrl={subAbierta.video_youtube_url}
+            videoTitulo={subAbierta.video_titulo}
             onVideo={setVideoActivo}
           />
         )}
@@ -433,19 +471,20 @@ export function OrganigramaSection() {
           <ModalLider
             onCerrar={() => setGgAbierto(false)}
             badge="Liderazgo"
-            cargo={gerenteGeneral.cargo}
-            nombre={gerenteGeneral.nombre}
-            organizacion={gerenteGeneral.empresa}
-            foto={gerenteGeneral.foto}
-            proposito={gerenteGeneral.proposito}
-            videoSection={gerenteGeneral.videoSection}
+            cargo={gerente.cargo}
+            nombre={gerente.nombre}
+            organizacion={gerente.empresa}
+            foto={gerente.foto || gerentePorDefecto.foto}
+            proposito={gerente.proposito}
+            videoUrl={gerente.video_youtube_url}
+            videoTitulo={gerente.video_titulo}
             onVideo={setVideoActivo}
           />
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {staffActivo && (
+        {areaActiva && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -473,8 +512,8 @@ export function OrganigramaSection() {
               <div className="mt-2 text-left">
                 <div className="flex items-center gap-4 pr-10">
                   <img
-                    src={staffActivo.foto}
-                    alt={`${staffActivo.lider}, ${staffActivo.nombre}`}
+                    src={fotoDeAreaStaff(areaActiva, staffActivo ?? 0)}
+                    alt={`${areaActiva.lider}, ${areaActiva.nombre}`}
                     className="h-16 w-16 shrink-0 rounded-full object-cover shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_1px_4px_rgba(0,0,0,0.06)] ring-4 ring-black/[0.04]"
                     loading="lazy"
                     decoding="async"
@@ -484,20 +523,20 @@ export function OrganigramaSection() {
                       Área Staff
                     </span>
                     <h3 className="text-enel-navy mt-2 text-2xl leading-tight">
-                      {staffActivo.nombre}
+                      {areaActiva.nombre}
                     </h3>
-                    <p className="mt-1 text-sm font-medium text-neutral-500">{staffActivo.lider}</p>
+                    <p className="mt-1 text-sm font-medium text-neutral-500">{areaActiva.lider}</p>
                   </div>
                 </div>
                 <div className="mt-5 rounded-2xl border border-black/[0.04] bg-white/60 p-5 shadow-xs">
                   <ul className="space-y-3">
-                    {staffActivo.detalle.map((parrafo) => (
+                    {(areaActiva.detalle ?? []).map((parrafo, indice) => (
                       <li
-                        key={parrafo}
+                        key={`${indice}-${parrafo.texto}`}
                         className="flex gap-2.5 text-sm leading-relaxed font-medium text-neutral-600"
                       >
                         <span className="bg-enel-blue mt-[0.55rem] size-1.5 shrink-0 rounded-full" />
-                        <span>{parrafo}</span>
+                        <span>{parrafo.texto}</span>
                       </li>
                     ))}
                   </ul>

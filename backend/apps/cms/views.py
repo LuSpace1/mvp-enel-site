@@ -38,6 +38,7 @@ from .services import (
     restore_revision,
     save_draft,
 )
+from .validation import normalize_payload
 
 Image.MAX_IMAGE_PIXELS = 50_000_000
 
@@ -57,9 +58,14 @@ def _etag(payload) -> str:
 def _has_unpublished_changes(
     draft: ContentRevision, published: ContentRevision
 ) -> bool:
-    """Compara solo contenido y orden; la version de bloqueo cambia en cada guardado."""
-    draft_payload = draft.payload
-    published_payload = published.payload
+    """Compara contenido y orden ya normalizados.
+
+    Normalizar ambos lados evita falsos positivos cuando una publicacion antigua
+    no tiene los campos nuevos del registro: el borrador se completa con sus
+    defaults y parecia tener cambios aunque solo se hubiera descartado.
+    """
+    draft_payload = normalize_payload(draft.payload)
+    published_payload = normalize_payload(published.payload)
     return draft_payload.get("order") != published_payload.get(
         "order"
     ) or draft_payload.get("sections") != published_payload.get("sections")

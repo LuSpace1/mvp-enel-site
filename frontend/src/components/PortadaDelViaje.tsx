@@ -22,14 +22,14 @@ const FLOTE_CTA_Y = Array.from({ length: 25 }, (_, i) =>
 const DESCRIPCION_POR_DEFECTO =
   'Descubre quiénes somos, cómo funciona nuestro negocio y qué nos mueve cada día. Un espacio para conocer nuestra operación, los principios que nos guían y nuestro rol en la distribución de energía eléctrica en Chile.'
 
-// Video fijo en código: no se toma del CMS.
 const VIDEO_PORTADA_URL = 'https://www.youtube.com/watch?v=5aEIFxjHEf0'
 
 export function PortadaDelViaje() {
+  const tituloPrefijo = useCampo('portada', 'titulo_prefijo', 'Conoce')
   const tituloDestacado = useCampo('portada', 'titulo_destacado', 'Enel Distribución')
   const descripcion = useCampo('portada', 'descripcion', DESCRIPCION_POR_DEFECTO)
   const ctaTexto = useCampo('portada', 'cta_texto', 'Explorar el sitio')
-  const videoUrl = VIDEO_PORTADA_URL
+  const videoUrl = useCampo('portada', 'video_youtube_url', VIDEO_PORTADA_URL)
   const videoTitulo = useCampo('portada', 'video_titulo', 'Mensaje del Gerente General Paolo Leidi')
   const reduce = useReducedMotion()
 
@@ -58,7 +58,7 @@ export function PortadaDelViaje() {
             activar={entrada}
             className="text-enel-navy w-full text-4xl leading-[1.05] sm:text-5xl md:text-6xl lg:text-[4rem]"
           >
-            Conoce{' '}
+            {tituloPrefijo}{' '}
             <motion.span
               className="inline-block will-change-transform"
               animate={reduce ? undefined : { y: FLOTE_Y }}

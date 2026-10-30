@@ -13,5 +13,4 @@ urlpatterns = [
     # Alias en la ruta que suele documentar la integracion.
     path("token/", ThrottledTokenView.as_view(), name="oauth2_token_alias"),
     path("api/cms/", include("apps.cms.urls")),
-    path("api/", include("content.urls")),
 ]

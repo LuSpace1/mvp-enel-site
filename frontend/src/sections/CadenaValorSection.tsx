@@ -15,7 +15,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
 import { RevealTexto } from '@/components/ui/RevealTexto'
-import { useCampo } from '@/lib/cms/contenido'
+import { useCampo, useLista } from '@/lib/cms/contenido'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { etapasCadena } from '@/lib/data/organizacion'
 
@@ -62,15 +62,17 @@ export function CadenaValorSection() {
   )
   const [indiceActivo, setIndiceActivo] = useState(0)
   const [procesoAbierto, setProcesoAbierto] = useState<number | null>(null)
+  const etapasCms = useLista('cadena', 'etapas', etapasCadena)
+  const etapas = etapasCms.length ? etapasCms : etapasCadena
 
-  const etapaActual = etapasCadena[indiceActivo] ?? etapasCadena[0]!
-  const imagenActual = IMAGENES[etapaActual.id] ?? fotoCliente
-  const total = etapasCadena.length
+  const etapaActual = etapas[indiceActivo] ?? etapas[0]!
+  const imagenActual = etapaActual.imagen || IMAGENES[etapaActual.clave] || fotoCliente
+  const total = etapas.length
 
   // Cada etapa arranca con sus procesos plegados.
   useEffect(() => {
     setProcesoAbierto(null)
-  }, [etapaActual.id])
+  }, [etapaActual.clave])
 
   function irA(indice: number) {
     setIndiceActivo(Math.min(Math.max(indice, 0), total - 1))
@@ -98,13 +100,13 @@ export function CadenaValorSection() {
           role="tablist"
           aria-label="Etapas de la cadena de valor"
         >
-          {etapasCadena.map((etapa, indice) => {
-            const Icono = ICONOS[etapa.id] ?? Headset
+          {etapas.map((etapa, indice) => {
+            const Icono = ICONOS[etapa.clave] ?? Headset
             const activa = indice === indiceActivo
 
             return (
               <button
-                key={etapa.id}
+                key={`${etapa.clave}-${indice}`}
                 type="button"
                 role="tab"
                 aria-selected={activa}
@@ -165,7 +167,7 @@ export function CadenaValorSection() {
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={etapaActual.id}
+            key={`${etapaActual.clave}-${indiceActivo}`}
             initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             exit={reduce ? undefined : { opacity: 0, y: -14 }}
@@ -183,73 +185,77 @@ export function CadenaValorSection() {
                   {etapaActual.detalle}
                 </p>
 
-                <p className="mt-8 text-[11px] font-bold tracking-[0.2em] text-neutral-400 uppercase">
-                  Principales procesos
-                </p>
-                <p className="mt-1 text-xs text-neutral-400">
-                  Haz clic en cada proceso para ver su descripción.
-                </p>
-                <ul className="mt-3 grid gap-2.5">
-                  {etapaActual.procesos.map((proceso, indice) => {
-                    const abierto = procesoAbierto === indice
-                    const panelId = `proceso-${etapaActual.id}-${indice}`
+                {(etapaActual.procesos ?? []).length > 0 && (
+                  <>
+                    <p className="mt-8 text-[11px] font-bold tracking-[0.2em] text-neutral-400 uppercase">
+                      Principales procesos
+                    </p>
+                    <p className="mt-1 text-xs text-neutral-400">
+                      Haz clic en cada proceso para ver su descripción.
+                    </p>
+                    <ul className="mt-3 grid gap-2.5">
+                      {(etapaActual.procesos ?? []).map((proceso, indice) => {
+                        const abierto = procesoAbierto === indice
+                        const panelId = `proceso-${etapaActual.clave}-${indice}`
 
-                    return (
-                      <li
-                        key={proceso.titulo}
-                        className={`overflow-hidden rounded-xl transition-colors duration-300 ${
-                          abierto ? 'bg-enel-mist' : 'bg-enel-mist/70 hover:bg-enel-mist'
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setProcesoAbierto(abierto ? null : indice)}
-                          aria-expanded={abierto}
-                          aria-controls={panelId}
-                          className="flex w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left"
-                        >
-                          <span className="bg-enel-blue/10 text-enel-blue flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
-                            <Check size={15} weight="bold" aria-hidden="true" />
-                          </span>
-                          <span className="text-enel-navy flex-1 text-sm leading-snug font-medium">
-                            {proceso.titulo}
-                          </span>
-                          <CaretDown
-                            size={16}
-                            weight="bold"
-                            aria-hidden="true"
-                            className={`text-enel-blue shrink-0 transition-transform duration-300 ${
-                              abierto ? 'rotate-180' : ''
+                        return (
+                          <li
+                            key={proceso.titulo}
+                            className={`overflow-hidden rounded-xl transition-colors duration-300 ${
+                              abierto ? 'bg-enel-mist' : 'bg-enel-mist/70 hover:bg-enel-mist'
                             }`}
-                          />
-                        </button>
-
-                        <AnimatePresence initial={false}>
-                          {abierto && (
-                            <motion.div
-                              id={panelId}
-                              key="panel"
-                              initial={reduce ? false : { height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={reduce ? undefined : { height: 0, opacity: 0 }}
-                              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                              className="overflow-hidden"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => setProcesoAbierto(abierto ? null : indice)}
+                              aria-expanded={abierto}
+                              aria-controls={panelId}
+                              className="flex w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left"
                             >
-                              <p className="px-3.5 pb-3.5 pl-[3.625rem] text-sm leading-relaxed text-neutral-600">
-                                {proceso.descripcion}
-                              </p>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </li>
-                    )
-                  })}
-                </ul>
+                              <span className="bg-enel-blue/10 text-enel-blue flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+                                <Check size={15} weight="bold" aria-hidden="true" />
+                              </span>
+                              <span className="text-enel-navy flex-1 text-sm leading-snug font-medium">
+                                {proceso.titulo}
+                              </span>
+                              <CaretDown
+                                size={16}
+                                weight="bold"
+                                aria-hidden="true"
+                                className={`text-enel-blue shrink-0 transition-transform duration-300 ${
+                                  abierto ? 'rotate-180' : ''
+                                }`}
+                              />
+                            </button>
+
+                            <AnimatePresence initial={false}>
+                              {abierto && (
+                                <motion.div
+                                  id={panelId}
+                                  key="panel"
+                                  initial={reduce ? false : { height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={reduce ? undefined : { height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                                  className="overflow-hidden"
+                                >
+                                  <p className="px-3.5 pb-3.5 pl-[3.625rem] text-sm leading-relaxed text-neutral-600">
+                                    {proceso.descripcion}
+                                  </p>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </>
+                )}
               </div>
 
               <div className="bg-enel-mist ring-enel-navy/10 relative min-h-[280px] overflow-hidden rounded-[1.5rem] ring-1 sm:min-h-[340px] lg:min-h-full">
                 <img
-                  key={etapaActual.id}
+                  key={`${etapaActual.clave}-${indiceActivo}`}
                   src={imagenActual}
                   alt=""
                   loading="lazy"
@@ -262,9 +268,9 @@ export function CadenaValorSection() {
 
             <div className="border-enel-navy/10 flex items-center justify-between gap-4 border-t px-5 py-4 md:px-8 lg:px-10">
               <div className="flex items-center gap-2" role="tablist" aria-label="Ir a una etapa">
-                {etapasCadena.map((etapa, indice) => (
+                {etapas.map((etapa, indice) => (
                   <button
-                    key={etapa.id}
+                    key={`${etapa.clave}-${indice}`}
                     type="button"
                     role="tab"
                     aria-selected={indice === indiceActivo}

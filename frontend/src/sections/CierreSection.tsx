@@ -7,6 +7,7 @@ import {
   HandPalm,
   Megaphone,
   ShieldCheck,
+  type Icon,
 } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 
@@ -18,6 +19,7 @@ import { desplazarASeccion } from '@/lib/scroll'
 
 const RECURSOS = [
   {
+    clave: 'stop-work',
     icono: HandPalm,
     titulo: 'Política Stop Work',
     descripcion:
@@ -26,6 +28,7 @@ const RECURSOS = [
     color: 'from-amber-500 to-orange-500',
   },
   {
+    clave: 'ciberseguridad',
     icono: ShieldCheck,
     titulo: 'Contacto ICT / Política Incidente ciber',
     descripcion: 'Reporta incidentes de ciberseguridad y contacta al equipo ICT.',
@@ -33,6 +36,7 @@ const RECURSOS = [
     color: 'from-enel-navy to-enel-blue',
   },
   {
+    clave: 'contactos',
     icono: AddressBook,
     titulo: 'Contactos clave',
     descripcion: 'Directorio de contactos de cada área y gerencia.',
@@ -40,6 +44,7 @@ const RECURSOS = [
     color: 'from-sky-500 to-cyan-500',
   },
   {
+    clave: 'denuncia',
     icono: Megaphone,
     titulo: 'Canales de denuncia',
     descripcion: 'Reporta conductas contrarias al Código Ético de forma confidencial.',
@@ -47,6 +52,7 @@ const RECURSOS = [
     color: 'from-enel-pink to-rose-500',
   },
   {
+    clave: 'one-click',
     icono: CursorClick,
     titulo: 'One Click',
     descripcion: 'Accede a la intranet y a las herramientas que usas a diario.',
@@ -56,13 +62,18 @@ const RECURSOS = [
 ]
 
 interface RecursoCms {
+  clave: string
   titulo: string
   descripcion: string
   url: string
 }
 
-const ICONOS_RECURSO = RECURSOS.map((recurso) => recurso.icono)
-const COLORES_RECURSO = RECURSOS.map((recurso) => recurso.color)
+const ICONOS_RECURSO: Record<string, Icon> = Object.fromEntries(
+  RECURSOS.map((recurso) => [recurso.clave, recurso.icono]),
+)
+const COLORES_RECURSO: Record<string, string> = Object.fromEntries(
+  RECURSOS.map((recurso) => [recurso.clave, recurso.color]),
+)
 
 export function CierreSection() {
   const reduce = useReducedMotion()
@@ -81,13 +92,18 @@ export function CierreSection() {
   )
   const recursosCms = useLista<RecursoCms>('cierre', 'recursos', [])
   const recursos = recursosCms.length
-    ? recursosCms.map((recurso, indice) => ({
-        titulo: recurso.titulo,
-        descripcion: recurso.descripcion,
-        url: recurso.url,
-        icono: ICONOS_RECURSO[indice % ICONOS_RECURSO.length]!,
-        color: COLORES_RECURSO[indice % COLORES_RECURSO.length]!,
-      }))
+    ? recursosCms.map((recurso, indice) => {
+        const base = RECURSOS.find((item) => item.titulo === recurso.titulo) ?? RECURSOS[indice]
+        const clave = recurso.clave || base?.clave || ''
+        return {
+          clave,
+          titulo: recurso.titulo,
+          descripcion: recurso.descripcion,
+          url: recurso.url,
+          icono: ICONOS_RECURSO[clave] ?? base?.icono ?? HandPalm,
+          color: COLORES_RECURSO[clave] ?? base?.color ?? 'from-enel-navy to-enel-blue',
+        }
+      })
     : RECURSOS
 
   const volverAlInicio = () => {
@@ -133,7 +149,7 @@ export function CierreSection() {
         <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {recursos.map((recurso, indice) => (
             <motion.a
-              key={recurso.titulo}
+              key={`${recurso.clave}-${indice}`}
               href={recurso.url}
               target="_blank"
               rel="noreferrer"
@@ -218,6 +234,7 @@ export function CierreSection() {
 
 const REDES_SOCIALES = [
   {
+    red: 'x',
     nombre: 'X (Twitter)',
     url: 'https://x.com/EnelChile',
     icono: (
@@ -227,6 +244,7 @@ const REDES_SOCIALES = [
     ),
   },
   {
+    red: 'facebook',
     nombre: 'Facebook',
     url: 'https://www.facebook.com/EnelChile',
     icono: (
@@ -236,6 +254,7 @@ const REDES_SOCIALES = [
     ),
   },
   {
+    red: 'youtube',
     nombre: 'YouTube',
     url: 'https://www.youtube.com/channel/UC61CgI8IXFMqjGtXwlUGGaA',
     icono: (
@@ -245,6 +264,7 @@ const REDES_SOCIALES = [
     ),
   },
   {
+    red: 'linkedin',
     nombre: 'LinkedIn',
     url: 'https://www.linkedin.com/company/enelchile/',
     icono: (
@@ -254,6 +274,7 @@ const REDES_SOCIALES = [
     ),
   },
   {
+    red: 'instagram',
     nombre: 'Instagram',
     url: 'https://www.instagram.com/enelchile/',
     icono: (
@@ -264,16 +285,47 @@ const REDES_SOCIALES = [
   },
 ]
 
+const REDES_POR_CLAVE: Record<string, (typeof REDES_SOCIALES)[number]> = Object.fromEntries(
+  REDES_SOCIALES.map((red) => [red.red, red]),
+)
+
+interface RedCms {
+  red: string
+  nombre: string
+  url: string
+}
+
 export function Footer() {
+  const footerTexto = useCampo('cierre', 'footer_texto', 'Enel Distribución Chile')
+  const redesCms = useLista<RedCms>('cierre', 'redes', [])
+  const redes = redesCms.length
+    ? redesCms.flatMap((red, indice) => {
+        const base =
+          REDES_SOCIALES.find((item) => item.url === red.url || item.nombre === red.nombre) ??
+          REDES_SOCIALES[indice]
+        const clave = red.red || base?.red || 'x'
+        const definicion = REDES_POR_CLAVE[clave]
+        if (!definicion || !red.url) return []
+        return [
+          {
+            red: clave,
+            nombre: red.nombre || definicion.nombre,
+            url: red.url,
+            icono: definicion.icono,
+          },
+        ]
+      })
+    : REDES_SOCIALES
+
   return (
     <footer className="bg-enel-navy border-t border-white/[0.06] py-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-6 px-5 text-center md:flex-row md:px-8 md:text-left">
-        <p className="text-xs font-medium text-white/70">Enel Distribución Chile</p>
+        <p className="text-xs font-medium text-white/70">{footerTexto}</p>
 
         <div className="flex items-center gap-3">
-          {REDES_SOCIALES.map((red) => (
+          {redes.map((red, indice) => (
             <a
-              key={red.nombre}
+              key={`${red.red}-${indice}`}
               href={red.url}
               target="_blank"
               rel="noreferrer"

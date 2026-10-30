@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     # Aplicaciones propias
     "apps.authentication",
     "apps.cms",
-    "content",
 ]
 
 MIDDLEWARE = [

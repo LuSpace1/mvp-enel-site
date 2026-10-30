@@ -1,33 +1,37 @@
-import type { AreaStaff, EtapaCadena, Subgerencia } from '@/types/api'
+import type { AreaStaff, EtapaCadena, GerenteGeneral, Subgerencia } from '@/types/api'
 
 import fotoHombre from '@/assets/images/placeholder_hombre.webp'
 import fotoMujer from '@/assets/images/placeholder_mujer.jpg'
 
-export const gerenteGeneral = {
-  id: 'gerente',
+export const gerenteGeneral: GerenteGeneral = {
   nombre: 'Paolo Leidi',
   cargo: 'Gerente General',
   empresa: 'Enel Distribución Chile',
   foto: fotoHombre,
   proposito:
     'Liderar y gestionar integralmente el negocio de distribución eléctrica, asegurando la operación y el desarrollo de la red, la gestión comercial y la atención de clientes. Administrar eficientemente los recursos e inversiones, impulsando el crecimiento sostenible y el cumplimiento de los objetivos estratégicos y normativos.',
-  videoSection: 'gerencia_general',
+  video_titulo: 'Mensaje de Paolo Leidi · Gerencia General',
+  video_youtube_url: 'https://www.youtube.com/watch?v=EQeBgrPs_-Y',
 }
 
 export const subgerencias: Subgerencia[] = [
   {
-    id: 'hseq',
     sigla: 'HSEQ',
     nombre: 'Health, Safety, Environment and Quality',
     subgerente: 'Ximena León',
     foto: fotoMujer,
     proposito:
       'Definir e implementar estrategias e iniciativas de Salud, Seguridad, Medio Ambiente y Calidad, asegurando el cumplimiento de los lineamientos globales y la normativa local. Promover la mejora continua, la prevención de riesgos y el fortalecimiento del Sistema Integrado de Gestión en las distintas actividades del negocio.',
-    areas: ['Health & Safety', 'Environment', 'Quality', 'CEO'],
-    videoSection: 'subgerencia_hseq',
+    areas: [
+      { nombre: 'Health & Safety' },
+      { nombre: 'Environment' },
+      { nombre: 'Quality' },
+      { nombre: 'CEO' },
+    ],
+    video_titulo: 'Presentación de Ximena León · Subgerencia HSEQ',
+    video_youtube_url: 'https://www.youtube.com/watch?v=EQeBgrPs_-Y',
   },
   {
-    id: 'rco',
     sigla: 'RCO',
     nombre: 'Regulated Customer Operations',
     subgerente: 'Giovanni Zanchetta',
@@ -35,18 +39,18 @@ export const subgerencias: Subgerencia[] = [
     proposito:
       'Gestionar integralmente los procesos comerciales del suministro eléctrico, desde la conexión y medición hasta la facturación, cobranza y gestión de pérdidas de energía. Asegurar una atención eficiente y de calidad a través de los distintos canales, promoviendo la satisfacción de los clientes y optimizando la gestión de energía y los ingresos del negocio.',
     areas: [
-      'Activation',
-      'Readings and Billing',
-      'Losses Management',
-      'Collection & Credit',
-      'Energy Balance & Supply',
-      'Customer Care',
-      'Customer Satisfaction & Quality Management',
+      { nombre: 'Activation' },
+      { nombre: 'Readings and Billing' },
+      { nombre: 'Losses Management' },
+      { nombre: 'Collection & Credit' },
+      { nombre: 'Energy Balance & Supply' },
+      { nombre: 'Customer Care' },
+      { nombre: 'Customer Satisfaction & Quality Management' },
     ],
-    videoSection: 'subgerencia_rco',
+    video_titulo: 'Presentación de Giovanni Zanchetta · Subgerencia RCO',
+    video_youtube_url: 'https://www.youtube.com/watch?v=EQeBgrPs_-Y',
   },
   {
-    id: 'nd',
     sigla: 'ND',
     nombre: 'Network Development',
     subgerente: 'Marco Castro',
@@ -54,14 +58,14 @@ export const subgerencias: Subgerencia[] = [
     proposito:
       'Planificar y promover el desarrollo de la red de distribución eléctrica, identificando necesidades de inversión, riesgos y oportunidades de mejora para optimizar su desempeño y resiliencia. Impulsar nuevas oportunidades de negocio y soluciones técnicas eficientes y sostenibles, asegurando su alineación con los estándares globales y la normativa local.',
     areas: [
-      'Network Analysis and Solutions Optimization',
-      'Network Business Opportunities Development',
-      'Engineering Support and Global Standards Adoption',
+      { nombre: 'Network Analysis and Solutions Optimization' },
+      { nombre: 'Network Business Opportunities Development' },
+      { nombre: 'Engineering Support and Global Standards Adoption' },
     ],
-    videoSection: 'subgerencia_nd',
+    video_titulo: 'Presentación de Marco Castro · Subgerencia Network Development',
+    video_youtube_url: 'https://www.youtube.com/watch?v=EQeBgrPs_-Y',
   },
   {
-    id: 'com',
     sigla: 'COM',
     nombre: 'Construction and Maintenance',
     subgerente: 'Francisco Messen',
@@ -69,58 +73,67 @@ export const subgerencias: Subgerencia[] = [
     proposito:
       'Gestionar la construcción, operación y mantenimiento de la red de distribución eléctrica, asegurando la continuidad, seguridad y calidad del suministro. Coordinar los trabajos en terreno, la atención de fallas y emergencias, así como la ejecución de proyectos y programas de mantenimiento, promoviendo la eficiencia operacional y la mejora continua de la infraestructura.',
     areas: [
-      'Network Operation',
-      'Maintenance and Technical Support',
-      'Supply Chain',
-      'Meter Operation',
-      'Chile Operational Regional Area',
+      { nombre: 'Network Operation' },
+      { nombre: 'Maintenance and Technical Support' },
+      { nombre: 'Supply Chain' },
+      { nombre: 'Meter Operation' },
+      { nombre: 'Chile Operational Regional Area' },
     ],
-    videoSection: 'subgerencia_com',
+    video_titulo: 'Presentación de Francisco Messen · Subgerencia COM',
+    video_youtube_url: 'https://www.youtube.com/watch?v=EQeBgrPs_-Y',
   },
 ]
 
 export const areasStaff: AreaStaff[] = [
   {
-    id: 'industrial-control',
     nombre: 'Industrial Control',
     lider: 'Francisco Evans',
     foto: fotoHombre,
     detalle: [
-      'Gestionar la planificación financiera, los presupuestos, las proyecciones y el control de gestión del negocio, monitoreando los resultados y proponiendo acciones de mejora. Evaluar y apoyar la aprobación de inversiones, el cumplimiento de objetivos y el impacto financiero de los aspectos regulatorios, contribuyendo a una toma de decisiones eficiente y alineada con la estrategia de la compañía.',
+      {
+        texto:
+          'Gestionar la planificación financiera, los presupuestos, las proyecciones y el control de gestión del negocio, monitoreando los resultados y proponiendo acciones de mejora. Evaluar y apoyar la aprobación de inversiones, el cumplimiento de objetivos y el impacto financiero de los aspectos regulatorios, contribuyendo a una toma de decisiones eficiente y alineada con la estrategia de la compañía.',
+      },
     ],
   },
   {
-    id: 'legal-assistance',
     nombre: 'Legal Assistance',
     lider: 'Alfredo Montes',
     foto: fotoHombre,
     detalle: [
-      'Brindar asesoría jurídica a las distintas áreas del negocio, asegurando el cumplimiento de la normativa vigente y anticipando los impactos de cambios legales y regulatorios. Supervisar la gestión de litigios y los asuntos societarios, contribuyendo a la protección de los intereses de la compañía y a una gestión responsable de sus operaciones.',
+      {
+        texto:
+          'Brindar asesoría jurídica a las distintas áreas del negocio, asegurando el cumplimiento de la normativa vigente y anticipando los impactos de cambios legales y regulatorios. Supervisar la gestión de litigios y los asuntos societarios, contribuyendo a la protección de los intereses de la compañía y a una gestión responsable de sus operaciones.',
+      },
     ],
   },
   {
-    id: 'regulatory',
     nombre: 'Regulatory',
     lider: 'Rodrigo Maldonado',
     foto: fotoHombre,
     detalle: [
-      'Definir y resguardar la posición de la compañía frente a los desafíos regulatorios, identificando tendencias y evaluando su impacto económico y financiero en el negocio. Gestionar los asuntos regulatorios y la relación con organismos y grupos de interés relevantes, contribuyendo a la toma de decisiones estratégicas.',
+      {
+        texto:
+          'Definir y resguardar la posición de la compañía frente a los desafíos regulatorios, identificando tendencias y evaluando su impacto económico y financiero en el negocio. Gestionar los asuntos regulatorios y la relación con organismos y grupos de interés relevantes, contribuyendo a la toma de decisiones estratégicas.',
+      },
     ],
   },
   {
-    id: 'people-organization',
     nombre: 'People and Organization',
     lider: 'William Espitia',
     foto: fotoHombre,
     detalle: [
-      'Gestionar los procesos de personas y desarrollo organizacional, impulsando la planificación del talento, la movilidad interna y el diseño de estructuras organizacionales alineadas con las necesidades del negocio. Administrar las políticas de compensaciones y las relaciones laborales con sindicatos y organizaciones de trabajadores, contribuyendo al desarrollo de las personas y la organización.',
+      {
+        texto:
+          'Gestionar los procesos de personas y desarrollo organizacional, impulsando la planificación del talento, la movilidad interna y el diseño de estructuras organizacionales alineadas con las necesidades del negocio. Administrar las políticas de compensaciones y las relaciones laborales con sindicatos y organizaciones de trabajadores, contribuyendo al desarrollo de las personas y la organización.',
+      },
     ],
   },
 ]
 
 export const etapasCadena: EtapaCadena[] = [
   {
-    id: 'customer',
+    clave: 'customer',
     titulo: 'Customer Management',
     descripcion: 'Gestionamos la relación con nuestros clientes y su experiencia',
     detalle:
@@ -144,7 +157,7 @@ export const etapasCadena: EtapaCadena[] = [
     ],
   },
   {
-    id: 'strategy',
+    clave: 'strategy',
     titulo: 'Strategy and Development',
     descripcion: 'Definimos la dirección del negocio y su crecimiento',
     detalle:
@@ -173,7 +186,7 @@ export const etapasCadena: EtapaCadena[] = [
     ],
   },
   {
-    id: 'supply',
+    clave: 'supply',
     titulo: 'Supply Chain',
     descripcion: 'Abastecemos con eficiencia los insumos y servicios',
     detalle:
@@ -197,7 +210,7 @@ export const etapasCadena: EtapaCadena[] = [
     ],
   },
   {
-    id: 'engineering',
+    clave: 'engineering',
     titulo: 'Engineering',
     descripcion: 'Diseñamos las soluciones técnicas de la red',
     detalle:
@@ -216,7 +229,7 @@ export const etapasCadena: EtapaCadena[] = [
     ],
   },
   {
-    id: 'construction',
+    clave: 'construction',
     titulo: 'Construction and Operation',
     descripcion: 'Construimos y operamos la infraestructura eléctrica',
     detalle:
@@ -250,7 +263,7 @@ export const etapasCadena: EtapaCadena[] = [
     ],
   },
   {
-    id: 'cash',
+    clave: 'cash',
     titulo: 'Service to Cash',
     descripcion: 'Convertimos el servicio en valor sostenible',
     detalle:

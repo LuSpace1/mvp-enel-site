@@ -1,35 +1,35 @@
-export interface VideoLink {
-  id: number
-  title: string
-  youtube_url: string
-  section_identifier: string
-  created_at: string
-  updated_at: string
-}
-
 export interface AnonymousAuthResponse {
   user_id: string
   access: string
   refresh: string
 }
 
-export interface Subgerencia {
-  id: string
+export interface GerenteGeneral {
   nombre: string
+  cargo: string
+  empresa: string
+  foto: string
+  proposito: string
+  video_titulo: string
+  video_youtube_url: string
+}
+
+export interface Subgerencia {
   sigla: string
+  nombre: string
   subgerente: string
   foto: string
   proposito: string
-  areas: string[]
-  videoSection: string
+  areas: { nombre: string }[]
+  video_titulo: string
+  video_youtube_url: string
 }
 
 export interface AreaStaff {
-  id: string
   nombre: string
   lider: string
   foto: string
-  detalle: string[]
+  detalle: { texto: string }[]
 }
 
 export interface ProcesoCadena {
@@ -38,10 +38,11 @@ export interface ProcesoCadena {
 }
 
 export interface EtapaCadena {
-  id: string
+  clave: string
   titulo: string
   descripcion: string
   detalle: string
+  imagen?: string
   procesos: ProcesoCadena[]
 }
 

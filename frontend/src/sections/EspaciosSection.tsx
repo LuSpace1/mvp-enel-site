@@ -13,6 +13,12 @@ import { track } from '@/lib/analytics'
 const DESCRIPCION_INSTALACIONES_EXTRA =
   'Espacios pensados para el trabajo seguro y colaborativo de los equipos, con estándares de eficiencia energética y confort para quienes los visitan a diario.'
 
+interface GaleriaCms {
+  imagen: string
+  titulo: string
+  descripcion: string
+}
+
 interface InstalacionCms {
   titulo: string
   subtitulo: string
@@ -21,6 +27,7 @@ interface InstalacionCms {
   accion: string
   imagen: string
   alt: string
+  galeria: GaleriaCms[]
 }
 
 /**
@@ -97,16 +104,40 @@ export function EspaciosSection() {
   const instalacionesCms = useLista<InstalacionCms>('espacios', 'instalaciones', [])
   const instalaciones = instalacionesCms.length
     ? instalacionesCms.map((instalacion, indice) => {
-        const base = instalacionesBase[indice]
+        const base =
+          instalacionesBase.find((item) => item.titulo === instalacion.titulo) ??
+          instalacionesBase[indice]
+        const imagen = instalacion.imagen || base?.imagen || ''
+        const galeriaCms = (instalacion.galeria ?? [])
+          .filter((foto) => foto.imagen)
+          .map((foto) => ({
+            src: foto.imagen,
+            titulo: foto.titulo,
+            descripcion: foto.descripcion,
+          }))
+        const galeriaBase = base?.galeria ?? []
+        const galeria = galeriaCms.length
+          ? galeriaCms
+          : galeriaBase.length
+            ? galeriaBase
+            : imagen
+              ? [
+                  {
+                    src: imagen,
+                    titulo: instalacion.titulo,
+                    descripcion: instalacion.descripcion,
+                  },
+                ]
+              : []
         return {
           titulo: instalacion.titulo,
           subtitulo: instalacion.subtitulo,
           descripcion: instalacion.descripcion,
           url: instalacion.url,
           accion: instalacion.accion,
-          imagen: instalacion.imagen || base?.imagen || '',
+          imagen,
           alt: instalacion.alt || base?.alt || instalacion.titulo,
-          galeria: base?.galeria ?? [],
+          galeria,
         }
       })
     : instalacionesBase
@@ -144,6 +175,7 @@ export function EspaciosSection() {
   }
 
   function abrirGaleriaInstalacion(indice: number) {
+    if (!instalaciones[indice]?.galeria.length) return
     setDirInstalacion(0)
     setFotoInstalacion(0)
     setInstalacionActiva(indice)
@@ -192,33 +224,37 @@ export function EspaciosSection() {
               >
                 <article
                   onClick={() => abrirGaleriaInstalacion(indice)}
-                  className="group carrusel-centrado 3xl:h-[26rem] relative h-[22rem] cursor-pointer overflow-hidden rounded-[2rem] border-4 border-white/70 shadow-[0_20px_45px_-15px_rgba(10,25,47,0.55)] md:h-[24rem]"
+                  className="group carrusel-centrado bg-enel-navy 3xl:h-[26rem] relative h-[22rem] cursor-pointer overflow-hidden rounded-[2rem] border-4 border-white/70 shadow-[0_20px_45px_-15px_rgba(10,25,47,0.55)] md:h-[24rem]"
                 >
-                  <img
-                    src={instalacion.imagen}
-                    alt={instalacion.alt}
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.06]"
-                  />
+                  {instalacion.imagen && (
+                    <img
+                      src={instalacion.imagen}
+                      alt={instalacion.alt}
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.06]"
+                    />
+                  )}
                   <div className="from-enel-navy via-enel-navy/55 absolute inset-0 bg-gradient-to-t to-transparent" />
                   <div
                     aria-hidden="true"
                     className="carrusel-centrado-velo pointer-events-none absolute inset-0"
                   />
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      abrirGaleriaInstalacion(indice)
-                    }}
-                    aria-label={`Ver galería de ${instalacion.titulo}`}
-                    className="absolute top-5 right-5 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3.5 py-2 text-[11px] font-bold tracking-[0.08em] text-white uppercase shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/25"
-                  >
-                    <Images size={15} weight="fill" />
-                    Galería
-                  </button>
+                  {instalacion.galeria.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        abrirGaleriaInstalacion(indice)
+                      }}
+                      aria-label={`Ver galería de ${instalacion.titulo}`}
+                      className="absolute top-5 right-5 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3.5 py-2 text-[11px] font-bold tracking-[0.08em] text-white uppercase shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/25"
+                    >
+                      <Images size={15} weight="fill" />
+                      Galería
+                    </button>
+                  )}
 
                   <div className="3xl:p-10 relative flex h-full flex-col justify-end p-6 md:p-8">
                     <span

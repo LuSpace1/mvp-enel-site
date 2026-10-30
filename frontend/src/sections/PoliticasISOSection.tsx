@@ -62,6 +62,7 @@ export function PoliticasISOSection() {
     'intro',
     '8 normas ISO que guían nuestra forma de trabajar día a día. En Enel Distribución Chile y Enel Colina, contamos con un Sistema Integrado de Gestión (SIG) que nos permite fortalecer nuestros procesos, impulsar la mejora continua y trabajar de manera más segura, eficiente y responsable.',
   )
+  const portalKicker = useCampo('politicas', 'portal_kicker', 'Profundiza en nuestro SIG')
   const portalTitulo = useCampo('politicas', 'portal_titulo', 'Conoce nuestro Portal SIG')
   const portalDescripcion = useCampo(
     'politicas',
@@ -162,7 +163,7 @@ export function PoliticasISOSection() {
             <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-enel-blue/80 text-[11px] font-bold tracking-[0.2em] uppercase">
-                  Profundiza en nuestro SIG
+                  {portalKicker}
                 </p>
                 <h3 className="text-enel-navy mt-2 text-2xl md:text-3xl">{portalTitulo}</h3>
                 <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-neutral-600 md:text-base">

@@ -6,7 +6,6 @@ import { Indice } from '@/components/Indice'
 import { StormIntro } from '@/components/StormIntro'
 import { useContenidoStore, useNavegacion } from '@/lib/cms/contenido'
 import { componenteDeSeccion } from '@/lib/cms/secciones'
-import { useVideosStore } from '@/store/useVideosStore'
 import { useViajeStore } from '@/store/useViajeStore'
 
 const Footer = lazy(() =>
@@ -57,15 +56,13 @@ const Secciones = memo(function Secciones() {
 
 export function Viaje({ preview = false }: { preview?: boolean }) {
   const cargarContenido = useContenidoStore((estado) => estado.cargar)
-  const cargarVideos = useVideosStore((estado) => estado.cargar)
   const marcarIntroTerminada = useViajeStore((estado) => estado.marcarIntroTerminada)
 
   useEffect(() => {
     history.scrollRestoration = 'manual'
     window.scrollTo(0, 0)
     void cargarContenido()
-    void cargarVideos()
-  }, [cargarContenido, cargarVideos])
+  }, [cargarContenido])
 
   // En la vista previa no existe la intro animada, así que la portada debe
   // revelarse de inmediato en lugar de esperar al final del intro.

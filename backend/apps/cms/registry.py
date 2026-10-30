@@ -35,6 +35,7 @@ class FieldDef:
     options: tuple[tuple[str, str], ...] = ()
     item_fields: tuple["FieldDef", ...] = ()
     max_items: int = 40
+    add_label: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         data: dict[str, Any] = {
@@ -54,6 +55,8 @@ class FieldDef:
         if self.item_fields:
             data["item_fields"] = [item.to_dict() for item in self.item_fields]
             data["max_items"] = self.max_items
+        if self.add_label:
+            data["add_label"] = self.add_label
         return data
 
 
@@ -108,13 +111,22 @@ PORTADA = SectionDef(
     fixed_position=0,
     fields=(
         FieldDef(
+            key="titulo_prefijo",
+            label="Palabra inicial",
+            type="text",
+            default="Conoce",
+            required=True,
+            max_length=40,
+            help_text="Palabra que antecede al título destacado.",
+        ),
+        FieldDef(
             key="titulo_destacado",
             label="Título destacado",
             type="text",
             default="Enel Distribución",
             required=True,
             max_length=120,
-            help_text="Se muestra junto a la palabra fija 'Conoce'.",
+            help_text="Se muestra a continuación de la palabra inicial.",
         ),
         FieldDef(
             key="descripcion",
@@ -243,6 +255,7 @@ HISTORIA = SectionDef(
             key="cifras",
             label="Cifras",
             type="list",
+            add_label="Agregar cifra",
             default=[
                 {
                     "valor": "14,5",
@@ -307,6 +320,7 @@ CULTURA = SectionDef(
             key="valores",
             label="Valores",
             type="list",
+            add_label="Agregar valor",
             default=[
                 {
                     "icono": "confianza",
@@ -390,7 +404,7 @@ ORGANIGRAMA = SectionDef(
     key="organigrama",
     label="Equipos",
     nav_label="Equipos",
-    description="Título e introducción de la estructura organizacional.",
+    description="Título, introducción y estructura organizacional completa.",
     fields=(
         FieldDef(
             key="titulo",
@@ -410,6 +424,327 @@ ORGANIGRAMA = SectionDef(
             ),
             required=True,
             max_length=800,
+        ),
+        FieldDef(
+            key="staff_titulo",
+            label="Título de áreas staff",
+            type="text",
+            default="Áreas Staff",
+            max_length=80,
+        ),
+        FieldDef(
+            key="staff_intro",
+            label="Introducción de áreas staff",
+            type="textarea",
+            default=(
+                "Conoce las áreas de Enel Chile que brindan apoyo transversal a las distintas líneas de "
+                "negocio."
+            ),
+            max_length=600,
+        ),
+        FieldDef(
+            key="gerente",
+            label="Gerente General",
+            type="list",
+            add_label="Agregar gerente",
+            default=[
+                {
+                    "nombre": "Paolo Leidi",
+                    "cargo": "Gerente General",
+                    "empresa": "Enel Distribución Chile",
+                    "foto": "",
+                    "proposito": (
+                        "Liderar y gestionar integralmente el negocio de distribución eléctrica, asegurando "
+                        "la operación y el desarrollo de la red, la gestión comercial y la atención de "
+                        "clientes. Administrar eficientemente los recursos e inversiones, impulsando el "
+                        "crecimiento sostenible y el cumplimiento de los objetivos estratégicos y normativos."
+                    ),
+                    "video_titulo": "Mensaje de Paolo Leidi · Gerencia General",
+                    "video_youtube_url": "https://www.youtube.com/watch?v=EQeBgrPs_-Y",
+                }
+            ],
+            max_items=1,
+            help_text="Ficha del Gerente General. Se muestra como la primera tarjeta del organigrama.",
+            item_fields=(
+                FieldDef("nombre", "Nombre", "text", required=True, max_length=120),
+                FieldDef("cargo", "Cargo", "text", required=True, max_length=120),
+                FieldDef("empresa", "Empresa", "text", max_length=160),
+                FieldDef(
+                    "foto",
+                    "Foto",
+                    "image",
+                    help_text="Si queda vacía se usa la foto actual del portal.",
+                ),
+                FieldDef(
+                    "proposito",
+                    "Propósito",
+                    "textarea",
+                    required=True,
+                    max_length=1500,
+                ),
+                FieldDef(
+                    "video_titulo",
+                    "Título del video",
+                    "text",
+                    max_length=160,
+                ),
+                FieldDef(
+                    "video_youtube_url",
+                    "Video de YouTube",
+                    "youtube",
+                    help_text="Video de bienvenida que se abre desde la ficha.",
+                ),
+            ),
+        ),
+        FieldDef(
+            key="subgerencias",
+            label="Subgerencias",
+            type="list",
+            add_label="Agregar subgerencia",
+            default=[
+                {
+                    "sigla": "HSEQ",
+                    "nombre": "Health, Safety, Environment and Quality",
+                    "subgerente": "Ximena León",
+                    "foto": "",
+                    "proposito": (
+                        "Definir e implementar estrategias e iniciativas de Salud, Seguridad, Medio Ambiente "
+                        "y Calidad, asegurando el cumplimiento de los lineamientos globales y la normativa "
+                        "local. Promover la mejora continua, la prevención de riesgos y el fortalecimiento "
+                        "del Sistema Integrado de Gestión en las distintas actividades del negocio."
+                    ),
+                    "areas": [
+                        {"nombre": "Health & Safety"},
+                        {"nombre": "Environment"},
+                        {"nombre": "Quality"},
+                        {"nombre": "CEO"},
+                    ],
+                    "video_titulo": "Presentación de Ximena León · Subgerencia HSEQ",
+                    "video_youtube_url": "https://www.youtube.com/watch?v=EQeBgrPs_-Y",
+                },
+                {
+                    "sigla": "RCO",
+                    "nombre": "Regulated Customer Operations",
+                    "subgerente": "Giovanni Zanchetta",
+                    "foto": "",
+                    "proposito": (
+                        "Gestionar integralmente los procesos comerciales del suministro eléctrico, desde la "
+                        "conexión y medición hasta la facturación, cobranza y gestión de pérdidas de energía. "
+                        "Asegurar una atención eficiente y de calidad a través de los distintos canales, "
+                        "promoviendo la satisfacción de los clientes y optimizando la gestión de energía y "
+                        "los ingresos del negocio."
+                    ),
+                    "areas": [
+                        {"nombre": "Activation"},
+                        {"nombre": "Readings and Billing"},
+                        {"nombre": "Losses Management"},
+                        {"nombre": "Collection & Credit"},
+                        {"nombre": "Energy Balance & Supply"},
+                        {"nombre": "Customer Care"},
+                        {"nombre": "Customer Satisfaction & Quality Management"},
+                    ],
+                    "video_titulo": "Presentación de Giovanni Zanchetta · Subgerencia RCO",
+                    "video_youtube_url": "https://www.youtube.com/watch?v=EQeBgrPs_-Y",
+                },
+                {
+                    "sigla": "ND",
+                    "nombre": "Network Development",
+                    "subgerente": "Marco Castro",
+                    "foto": "",
+                    "proposito": (
+                        "Planificar y promover el desarrollo de la red de distribución eléctrica, "
+                        "identificando necesidades de inversión, riesgos y oportunidades de mejora para "
+                        "optimizar su desempeño y resiliencia. Impulsar nuevas oportunidades de negocio y "
+                        "soluciones técnicas eficientes y sostenibles, asegurando su alineación con los "
+                        "estándares globales y la normativa local."
+                    ),
+                    "areas": [
+                        {"nombre": "Network Analysis and Solutions Optimization"},
+                        {"nombre": "Network Business Opportunities Development"},
+                        {"nombre": "Engineering Support and Global Standards Adoption"},
+                    ],
+                    "video_titulo": "Presentación de Marco Castro · Subgerencia Network Development",
+                    "video_youtube_url": "https://www.youtube.com/watch?v=EQeBgrPs_-Y",
+                },
+                {
+                    "sigla": "COM",
+                    "nombre": "Construction and Maintenance",
+                    "subgerente": "Francisco Messen",
+                    "foto": "",
+                    "proposito": (
+                        "Gestionar la construcción, operación y mantenimiento de la red de distribución "
+                        "eléctrica, asegurando la continuidad, seguridad y calidad del suministro. Coordinar "
+                        "los trabajos en terreno, la atención de fallas y emergencias, así como la ejecución "
+                        "de proyectos y programas de mantenimiento, promoviendo la eficiencia operacional y "
+                        "la mejora continua de la infraestructura."
+                    ),
+                    "areas": [
+                        {"nombre": "Network Operation"},
+                        {"nombre": "Maintenance and Technical Support"},
+                        {"nombre": "Supply Chain"},
+                        {"nombre": "Meter Operation"},
+                        {"nombre": "Chile Operational Regional Area"},
+                    ],
+                    "video_titulo": "Presentación de Francisco Messen · Subgerencia COM",
+                    "video_youtube_url": "https://www.youtube.com/watch?v=EQeBgrPs_-Y",
+                },
+            ],
+            max_items=10,
+            item_fields=(
+                FieldDef("sigla", "Sigla", "text", required=True, max_length=20),
+                FieldDef("nombre", "Nombre", "text", required=True, max_length=160),
+                FieldDef(
+                    "subgerente",
+                    "Subgerente",
+                    "text",
+                    required=True,
+                    max_length=120,
+                ),
+                FieldDef(
+                    "foto",
+                    "Foto",
+                    "image",
+                    help_text="Si queda vacía se usa la foto actual del portal.",
+                ),
+                FieldDef(
+                    "proposito",
+                    "Propósito",
+                    "textarea",
+                    required=True,
+                    max_length=1500,
+                ),
+                FieldDef(
+                    "areas",
+                    "Áreas",
+                    "list",
+                    default=[],
+                    max_items=30,
+                    add_label="Agregar área",
+                    item_fields=(
+                        FieldDef(
+                            "nombre",
+                            "Nombre del área",
+                            "text",
+                            required=True,
+                            max_length=120,
+                        ),
+                    ),
+                ),
+                FieldDef(
+                    "video_titulo",
+                    "Título del video",
+                    "text",
+                    max_length=160,
+                ),
+                FieldDef(
+                    "video_youtube_url",
+                    "Video de YouTube",
+                    "youtube",
+                    help_text="Video de bienvenida que se abre desde la ficha.",
+                ),
+            ),
+        ),
+        FieldDef(
+            key="areas_staff",
+            label="Áreas staff",
+            type="list",
+            add_label="Agregar área staff",
+            default=[
+                {
+                    "nombre": "Industrial Control",
+                    "lider": "Francisco Evans",
+                    "foto": "",
+                    "detalle": [
+                        {
+                            "texto": (
+                                "Gestionar la planificación financiera, los presupuestos, las proyecciones y "
+                                "el control de gestión del negocio, monitoreando los resultados y proponiendo "
+                                "acciones de mejora. Evaluar y apoyar la aprobación de inversiones, el "
+                                "cumplimiento de objetivos y el impacto financiero de los aspectos "
+                                "regulatorios, contribuyendo a una toma de decisiones eficiente y alineada con "
+                                "la estrategia de la compañía."
+                            )
+                        }
+                    ],
+                },
+                {
+                    "nombre": "Legal Assistance",
+                    "lider": "Alfredo Montes",
+                    "foto": "",
+                    "detalle": [
+                        {
+                            "texto": (
+                                "Brindar asesoría jurídica a las distintas áreas del negocio, asegurando el "
+                                "cumplimiento de la normativa vigente y anticipando los impactos de cambios "
+                                "legales y regulatorios. Supervisar la gestión de litigios y los asuntos "
+                                "societarios, contribuyendo a la protección de los intereses de la compañía y "
+                                "a una gestión responsable de sus operaciones."
+                            )
+                        }
+                    ],
+                },
+                {
+                    "nombre": "Regulatory",
+                    "lider": "Rodrigo Maldonado",
+                    "foto": "",
+                    "detalle": [
+                        {
+                            "texto": (
+                                "Definir y resguardar la posición de la compañía frente a los desafíos "
+                                "regulatorios, identificando tendencias y evaluando su impacto económico y "
+                                "financiero en el negocio. Gestionar los asuntos regulatorios y la relación "
+                                "con organismos y grupos de interés relevantes, contribuyendo a la toma de "
+                                "decisiones estratégicas."
+                            )
+                        }
+                    ],
+                },
+                {
+                    "nombre": "People and Organization",
+                    "lider": "William Espitia",
+                    "foto": "",
+                    "detalle": [
+                        {
+                            "texto": (
+                                "Gestionar los procesos de personas y desarrollo organizacional, impulsando la "
+                                "planificación del talento, la movilidad interna y el diseño de estructuras "
+                                "organizacionales alineadas con las necesidades del negocio. Administrar las "
+                                "políticas de compensaciones y las relaciones laborales con sindicatos y "
+                                "organizaciones de trabajadores, contribuyendo al desarrollo de las personas y "
+                                "la organización."
+                            )
+                        }
+                    ],
+                },
+            ],
+            max_items=12,
+            item_fields=(
+                FieldDef("nombre", "Nombre", "text", required=True, max_length=160),
+                FieldDef("lider", "Líder", "text", required=True, max_length=120),
+                FieldDef(
+                    "foto",
+                    "Foto",
+                    "image",
+                    help_text="Si queda vacía se usa la foto actual del portal.",
+                ),
+                FieldDef(
+                    "detalle",
+                    "Descripción",
+                    "list",
+                    default=[],
+                    max_items=10,
+                    add_label="Agregar párrafo",
+                    item_fields=(
+                        FieldDef(
+                            "texto",
+                            "Párrafo",
+                            "textarea",
+                            required=True,
+                            max_length=1500,
+                        ),
+                    ),
+                ),
+            ),
         ),
     ),
 )
@@ -462,7 +797,7 @@ CADENA = SectionDef(
     key="cadena",
     label="Cadena",
     nav_label="Cadena",
-    description="Título e introducción de la cadena de valor.",
+    description="Título, introducción y etapas de la cadena de valor.",
     fields=(
         FieldDef(
             key="titulo",
@@ -490,6 +825,294 @@ CADENA = SectionDef(
             ),
             required=True,
             max_length=1000,
+        ),
+        FieldDef(
+            key="etapas",
+            label="Etapas",
+            type="list",
+            add_label="Agregar etapa",
+            default=[
+                {
+                    "clave": "customer",
+                    "titulo": "Customer Management",
+                    "descripcion": "Gestionamos la relación con nuestros clientes y su experiencia",
+                    "detalle": (
+                        "Acompañamos a nuestros clientes desde su primer contacto, gestionando sus "
+                        "solicitudes, trámites y necesidades a través de distintos canales de atención, "
+                        "para entregar una experiencia de servicio cercana, simple y confiable."
+                    ),
+                    "imagen": "",
+                    "procesos": [
+                        {
+                            "titulo": "Interacción con clientes",
+                            "descripcion": (
+                                "Gestionamos los distintos canales de atención y puntos de contacto, "
+                                "facilitando la comunicación y respuesta a las necesidades de nuestros "
+                                "clientes."
+                            ),
+                        },
+                        {
+                            "titulo": "Oferta comercial y calidad",
+                            "descripcion": (
+                                "Gestionamos las conexiones, operaciones comerciales y la calidad del "
+                                "servicio que ofrecemos a nuestros clientes."
+                            ),
+                        },
+                        {
+                            "titulo": "Experiencia del cliente",
+                            "descripcion": (
+                                "Atendemos reclamos y evaluamos la satisfacción de nuestros clientes para "
+                                "identificar oportunidades de mejora en su experiencia."
+                            ),
+                        },
+                    ],
+                },
+                {
+                    "clave": "strategy",
+                    "titulo": "Strategy and Development",
+                    "descripcion": "Definimos la dirección del negocio y su crecimiento",
+                    "detalle": (
+                        "Definimos el rumbo de la compañía, anticipándonos a las necesidades del negocio "
+                        "y del mercado. Planificamos el desarrollo de nuestra red, priorizamos inversiones "
+                        "e identificamos nuevas oportunidades para impulsar un crecimiento sostenible."
+                    ),
+                    "imagen": "",
+                    "procesos": [
+                        {
+                            "titulo": "Estrategia de mercado y oportunidades",
+                            "descripcion": (
+                                "Analizamos el mercado, el entorno regulatorio y las nuevas oportunidades "
+                                "que contribuyen al desarrollo del negocio."
+                            ),
+                        },
+                        {
+                            "titulo": "Análisis de la red",
+                            "descripcion": (
+                                "Evaluamos el estado y desempeño de nuestra red, identificando necesidades "
+                                "futuras de mantenimiento, mejora y expansión."
+                            ),
+                        },
+                        {
+                            "titulo": "Desarrollo y planificación de inversiones",
+                            "descripcion": (
+                                "Planificamos, evaluamos y gestionamos proyectos e inversiones, asegurando "
+                                "su alineación con las necesidades y objetivos del negocio."
+                            ),
+                        },
+                        {
+                            "titulo": "Gestión comercial",
+                            "descripcion": (
+                                "Planificamos y gestionamos ofertas, licitaciones y actividades comerciales "
+                                "que apoyan el desarrollo de nuevas oportunidades."
+                            ),
+                        },
+                    ],
+                },
+                {
+                    "clave": "supply",
+                    "titulo": "Supply Chain",
+                    "descripcion": "Abastecemos con eficiencia los insumos y servicios",
+                    "detalle": (
+                        "Aseguramos la disponibilidad de materiales, equipos y servicios necesarios para "
+                        "nuestra operación, gestionando las compras, los proveedores y el abastecimiento "
+                        "de manera eficiente, oportuna y con altos estándares de calidad."
+                    ),
+                    "imagen": "",
+                    "procesos": [
+                        {
+                            "titulo": "Planificación de la demanda",
+                            "descripcion": (
+                                "Anticipamos las necesidades de materiales y servicios, definiendo qué "
+                                "recursos requerimos y cuándo deben estar disponibles."
+                            ),
+                        },
+                        {
+                            "titulo": "Gestión de contratos y proveedores",
+                            "descripcion": (
+                                "Gestionamos las compras, contratos y relaciones con proveedores, "
+                                "evaluando la calidad y el cumplimiento de los servicios contratados."
+                            ),
+                        },
+                        {
+                            "titulo": "Logística y abastecimiento",
+                            "descripcion": (
+                                "Coordinamos el almacenamiento, distribución y control de materiales, "
+                                "asegurando su disponibilidad para las distintas actividades de la "
+                                "operación."
+                            ),
+                        },
+                    ],
+                },
+                {
+                    "clave": "engineering",
+                    "titulo": "Engineering",
+                    "descripcion": "Diseñamos las soluciones técnicas de la red",
+                    "detalle": (
+                        "Transformamos las necesidades de nuestra red en soluciones de ingeniería "
+                        "seguras, eficientes y sostenibles. Desarrollamos diseños técnicos que permiten "
+                        "construir, operar y mantener nuestra infraestructura eléctrica."
+                    ),
+                    "imagen": "",
+                    "procesos": [
+                        {
+                            "titulo": "Desarrollo de equipos y componentes",
+                            "descripcion": (
+                                "Diseñamos y estandarizamos los equipos y componentes que utilizamos en "
+                                "nuestra red, asegurando criterios técnicos y de calidad."
+                            ),
+                        },
+                        {
+                            "titulo": "Ingeniería de red",
+                            "descripcion": (
+                                "Desarrollamos los diseños y especificaciones técnicas que definen cómo "
+                                "debe construirse y funcionar nuestra infraestructura eléctrica."
+                            ),
+                        },
+                    ],
+                },
+                {
+                    "clave": "construction",
+                    "titulo": "Construction and Operation",
+                    "descripcion": "Construimos y operamos la infraestructura eléctrica",
+                    "detalle": (
+                        "Construimos, operamos y mantenemos nuestra red de distribución eléctrica para "
+                        "asegurar un suministro continuo, seguro y de calidad. Supervisamos su "
+                        "funcionamiento y respondemos oportunamente ante fallas y emergencias."
+                    ),
+                    "imagen": "",
+                    "procesos": [
+                        {
+                            "titulo": "Operación de la red y del sistema",
+                            "descripcion": (
+                                "Supervisamos y controlamos el funcionamiento de nuestra red, coordinando "
+                                "la respuesta ante fallas y emergencias para restablecer el suministro."
+                            ),
+                        },
+                        {
+                            "titulo": "Planificación y despacho",
+                            "descripcion": (
+                                "Planificamos y coordinamos los trabajos, recursos y maniobras necesarios "
+                                "para operar nuestra red de manera segura y eficiente."
+                            ),
+                        },
+                        {
+                            "titulo": "Mantenimiento",
+                            "descripcion": (
+                                "Realizamos actividades preventivas y correctivas para conservar nuestras "
+                                "instalaciones en buenas condiciones y reducir el riesgo de fallas."
+                            ),
+                        },
+                        {
+                            "titulo": "Excelencia operacional",
+                            "descripcion": (
+                                "Evaluamos el desempeño de nuestros procesos e impulsamos mejoras que "
+                                "fortalecen la eficiencia, calidad y seguridad de la operación."
+                            ),
+                        },
+                        {
+                            "titulo": "Construcción",
+                            "descripcion": (
+                                "Gestionamos los presupuestos, permisos y ejecución de obras de alta, media "
+                                "y baja tensión, manteniendo actualizada la información de nuestra red."
+                            ),
+                        },
+                    ],
+                },
+                {
+                    "clave": "cash",
+                    "titulo": "Service to Cash",
+                    "descripcion": "Convertimos el servicio en valor sostenible",
+                    "detalle": (
+                        "Completamos el ciclo de nuestro servicio mediante la medición de la energía, la "
+                        "facturación y la recuperación de ingresos. Así, transformamos la energía "
+                        "distribuida en valor para el negocio, contribuyendo a su sostenibilidad."
+                    ),
+                    "imagen": "",
+                    "procesos": [
+                        {
+                            "titulo": "Medición y balance de energía",
+                            "descripcion": (
+                                "Medimos y analizamos la energía distribuida, verificando la coherencia "
+                                "entre los registros de consumo y la energía entregada a través de nuestra "
+                                "red."
+                            ),
+                        },
+                        {
+                            "titulo": "Recuperación de energía y facturación",
+                            "descripcion": (
+                                "Gestionamos la facturación, el crédito y la recuperación de energía e "
+                                "ingresos no registrados correctamente, contribuyendo a la sostenibilidad "
+                                "del negocio."
+                            ),
+                        },
+                    ],
+                },
+            ],
+            max_items=10,
+            help_text="Cada etapa aparece en el riel superior. La clave define el icono y la imagen de respaldo.",
+            item_fields=(
+                FieldDef(
+                    "clave",
+                    "Icono de la etapa",
+                    "select",
+                    default="customer",
+                    options=(
+                        ("customer", "Customer Management"),
+                        ("strategy", "Strategy and Development"),
+                        ("supply", "Supply Chain"),
+                        ("engineering", "Engineering"),
+                        ("construction", "Construction and Operation"),
+                        ("cash", "Service to Cash"),
+                    ),
+                ),
+                FieldDef("titulo", "Título", "text", required=True, max_length=120),
+                FieldDef(
+                    "descripcion",
+                    "Descripción breve",
+                    "text",
+                    required=True,
+                    max_length=200,
+                    help_text="Texto pequeño que aparece sobre el título de la etapa.",
+                ),
+                FieldDef(
+                    "detalle",
+                    "Descripción",
+                    "textarea",
+                    required=True,
+                    max_length=1200,
+                ),
+                FieldDef(
+                    "imagen",
+                    "Imagen",
+                    "image",
+                    help_text="Si queda vacía se usa la imagen actual de la etapa.",
+                ),
+                FieldDef(
+                    "procesos",
+                    "Procesos",
+                    "list",
+                    default=[],
+                    max_items=20,
+                    add_label="Agregar proceso",
+                    help_text="Se muestran como acordeones dentro de la etapa.",
+                    item_fields=(
+                        FieldDef(
+                            "titulo",
+                            "Título del proceso",
+                            "text",
+                            required=True,
+                            max_length=160,
+                        ),
+                        FieldDef(
+                            "descripcion",
+                            "Descripción del proceso",
+                            "textarea",
+                            required=True,
+                            max_length=1200,
+                        ),
+                    ),
+                ),
+            ),
         ),
     ),
 )
@@ -525,6 +1148,7 @@ POLITICAS = SectionDef(
             key="politicas",
             label="Políticas ISO",
             type="list",
+            add_label="Agregar política",
             default=[
                 {
                     "clave": "calidad",
@@ -635,6 +1259,13 @@ POLITICAS = SectionDef(
             ),
         ),
         FieldDef(
+            key="portal_kicker",
+            label="Antetítulo del Portal SIG",
+            type="text",
+            default="Profundiza en nuestro SIG",
+            max_length=80,
+        ),
+        FieldDef(
             key="portal_titulo",
             label="Título del Portal SIG",
             type="text",
@@ -696,6 +1327,7 @@ GALERIAS = SectionDef(
             key="herramientas",
             label="Herramientas",
             type="list",
+            add_label="Agregar herramienta",
             default=[
                 {
                     "clave": "portal-me",
@@ -846,7 +1478,7 @@ ESPACIOS = SectionDef(
     key="espacios",
     label="Espacios",
     nav_label="Espacios",
-    description="Instalaciones y sus fichas.",
+    description="Título, introducción, instalaciones y sus galerías.",
     fields=(
         FieldDef(
             key="titulo",
@@ -871,6 +1503,7 @@ ESPACIOS = SectionDef(
             key="instalaciones",
             label="Instalaciones",
             type="list",
+            add_label="Agregar instalación",
             default=[
                 {
                     "titulo": "Centro de Excelencia Operacional",
@@ -954,6 +1587,34 @@ ESPACIOS = SectionDef(
                 FieldDef("accion", "Texto del botón", "text", max_length=60),
                 FieldDef("imagen", "Imagen", "image", default=""),
                 FieldDef("alt", "Texto alternativo", "text", max_length=200),
+                FieldDef(
+                    "galeria",
+                    "Galería de fotos",
+                    "list",
+                    default=[],
+                    max_items=20,
+                    add_label="Agregar foto",
+                    help_text=(
+                        "Fotos que se abren al hacer clic en la instalación. Si queda vacía se usa la "
+                        "galería actual."
+                    ),
+                    item_fields=(
+                        FieldDef("imagen", "Imagen", "image", required=True),
+                        FieldDef(
+                            "titulo",
+                            "Título",
+                            "text",
+                            required=True,
+                            max_length=120,
+                        ),
+                        FieldDef(
+                            "descripcion",
+                            "Descripción",
+                            "textarea",
+                            max_length=400,
+                        ),
+                    ),
+                ),
             ),
         ),
         FieldDef(
@@ -973,7 +1634,7 @@ CIERRE = SectionDef(
     key="cierre",
     label="Cierre",
     nav_label="Cierre",
-    description="Accesos rápidos y cierre del recorrido.",
+    description="Accesos rápidos, cita de cierre y pie de página.",
     reorderable=False,
     fixed_position=-1,
     fields=(
@@ -1007,8 +1668,10 @@ CIERRE = SectionDef(
             key="recursos",
             label="Accesos rápidos",
             type="list",
+            add_label="Agregar acceso",
             default=[
                 {
+                    "clave": "stop-work",
                     "titulo": "Política Stop Work",
                     "descripcion": (
                         "Detén la tarea ante cualquier condición de riesgo para la seguridad de las "
@@ -1017,6 +1680,7 @@ CIERRE = SectionDef(
                     "url": "https://enelchile.sharepoint.com/sites/politica-stop-work",
                 },
                 {
+                    "clave": "ciberseguridad",
                     "titulo": "Contacto ICT / Política Incidente ciber",
                     "descripcion": (
                         "Reporta incidentes de ciberseguridad y contacta al equipo ICT."
@@ -1024,11 +1688,13 @@ CIERRE = SectionDef(
                     "url": "https://enelchile.sharepoint.com/sites/seguridad-informacion",
                 },
                 {
+                    "clave": "contactos",
                     "titulo": "Contactos clave",
                     "descripcion": "Directorio de contactos de cada área y gerencia.",
                     "url": "https://enelchile.sharepoint.com/sites/directorio",
                 },
                 {
+                    "clave": "denuncia",
                     "titulo": "Canales de denuncia",
                     "descripcion": (
                         "Reporta conductas contrarias al Código Etico de forma confidencial."
@@ -1036,6 +1702,7 @@ CIERRE = SectionDef(
                     "url": "https://enelchile.sharepoint.com/sites/canales-denuncia",
                 },
                 {
+                    "clave": "one-click",
                     "titulo": "One Click",
                     "descripcion": (
                         "Accede a la intranet y a las herramientas que usas a diario."
@@ -1045,6 +1712,19 @@ CIERRE = SectionDef(
             ],
             max_items=9,
             item_fields=(
+                FieldDef(
+                    "clave",
+                    "Icono y color",
+                    "select",
+                    default="stop-work",
+                    options=(
+                        ("stop-work", "Stop Work"),
+                        ("ciberseguridad", "Ciberseguridad"),
+                        ("contactos", "Contactos"),
+                        ("denuncia", "Denuncia"),
+                        ("one-click", "One Click"),
+                    ),
+                ),
                 FieldDef("titulo", "Título", "text", required=True, max_length=120),
                 FieldDef(
                     "descripcion",
@@ -1064,6 +1744,67 @@ CIERRE = SectionDef(
                 '"La energía de un equipo se multiplica cuando todos trabajan con el mismo propósito."'
             ),
             max_length=400,
+        ),
+        FieldDef(
+            key="footer_texto",
+            label="Texto del pie de página",
+            type="text",
+            default="Enel Distribución Chile",
+            max_length=120,
+        ),
+        FieldDef(
+            key="redes",
+            label="Redes sociales",
+            type="list",
+            add_label="Agregar red",
+            default=[
+                {"red": "x", "nombre": "X (Twitter)", "url": "https://x.com/EnelChile"},
+                {
+                    "red": "facebook",
+                    "nombre": "Facebook",
+                    "url": "https://www.facebook.com/EnelChile",
+                },
+                {
+                    "red": "youtube",
+                    "nombre": "YouTube",
+                    "url": "https://www.youtube.com/channel/UC61CgI8IXFMqjGtXwlUGGaA",
+                },
+                {
+                    "red": "linkedin",
+                    "nombre": "LinkedIn",
+                    "url": "https://www.linkedin.com/company/enelchile/",
+                },
+                {
+                    "red": "instagram",
+                    "nombre": "Instagram",
+                    "url": "https://www.instagram.com/enelchile/",
+                },
+            ],
+            max_items=8,
+            help_text="Se muestran en el pie del portal.",
+            item_fields=(
+                FieldDef(
+                    "red",
+                    "Red",
+                    "select",
+                    default="x",
+                    options=(
+                        ("x", "X (Twitter)"),
+                        ("facebook", "Facebook"),
+                        ("youtube", "YouTube"),
+                        ("linkedin", "LinkedIn"),
+                        ("instagram", "Instagram"),
+                    ),
+                ),
+                FieldDef(
+                    "nombre",
+                    "Nombre accesible",
+                    "text",
+                    max_length=80,
+                    help_text="Si queda vacío se usa el nombre de la red.",
+                ),
+                FieldDef("url", "Enlace", "url", required=True),
+            ),
         ),
     ),
 )
