@@ -67,9 +67,13 @@ npm run format   # formatear con prettier
 
 ## CMS
 
-El CMS permite que P&O actualice el contenido del portal sin desplegar código. Se accede en `/cms`, donde se editan las secciones y el orden en que se recorre el portal.
+El CMS permite que se actualice el contenido del portal sin desplegar código. Se accede en `/cms`, donde se editan las secciones y el orden en que se recorre el portal.
 
-Los cambios se trabajan sobre un borrador único, compartido entre las vistas de Contenido y Orden. El borrador solo se guarda con **Guardar** o **Guardar orden**, y la vista previa permite revisar el resultado antes de publicar. La publicación actualiza contenido y orden en una sola operación y deja el portal público al día; luego vuelve al modo lectura.
+Los cambios se trabajan sobre un borrador único, compartido entre las vistas de Contenido y Orden. El borrador solo se guarda con **Guardar** o **Guardar orden**, y la vista previa permite revisar el resultado antes de publicar. Guardar no crea una versión: solo actualiza el borrador.
+
+Cada publicación crea una **versión numerada** (v1, v2, v3…) que queda en el historial. El borrador se cierra al publicar; la siguiente edición parte de la última publicación. En **Versiones** se consulta el historial, se identifica la versión actual y se puede restaurar una anterior como borrador para publicarla de nuevo. La publicación actualiza contenido y orden en una sola operación.
+
+La interfaz incluye una guía **¿Cómo funciona?**, un estado permanente del borrador en la barra lateral, aviso al salir con cambios sin guardar y confirmación de publicación que distingue contenido y orden. Restaurar advierte si va a reemplazar un borrador con cambios.
 
 ---
 
