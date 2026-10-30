@@ -1,25 +1,6 @@
 import fotoCEO from '@/assets/images/centro_de_exelencia_enel.jpg'
 import fotoMUT from '@/assets/images/torre_enel_mut.jpeg'
 
-const DESCRIPCIONES_EQUIPOS = [
-  'El equipo que mantiene la red eléctrica en marcha, día y noche.',
-  'Especialistas en la operación segura de la infraestructura crítica.',
-  'Ingeniería y proyectos que anticipan las necesidades del futuro.',
-  'La voz de nuestros clientes, convertida en mejoras concretas.',
-  'Seguridad, salud y calidad como prioridad absoluta.',
-  'Tecnología y datos para una operación más inteligente.',
-  'Personas que hacen crecer la cultura Enel cada día.',
-  'Logística y suministros que sostienen todas las áreas.',
-  'El equipo comercial que acerca la energía a cada hogar.',
-  'Nuevas ideas para un futuro eléctrico más limpio.',
-]
-
-export const fotosEquipos = Array.from({ length: 50 }, (_, i) => ({
-  src: `https://picsum.photos/seed/equipo-${i + 1}/1600/1000`,
-  titulo: `Equipo ${i + 1}`,
-  descripcion: DESCRIPCIONES_EQUIPOS[i % DESCRIPCIONES_EQUIPOS.length]!,
-}))
-
 const DESCRIPCIONES_GALERIA_INSTALACION = [
   'Acceso principal y fachada del recinto, pensados para recibir a clientes, visitas y equipos de trabajo.',
   'Zonas comunes y espacios de encuentro donde se coordina la operación diaria.',
