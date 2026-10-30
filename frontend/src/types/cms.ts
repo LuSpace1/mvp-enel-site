@@ -51,7 +51,6 @@ export type CmsListItem = Record<string, CmsFieldValue>
 export type CmsSectionValues = Record<string, CmsFieldValue>
 
 export interface CmsPayload {
-  version: number
   order: string[]
   sections: Record<string, CmsSectionValues>
 }
@@ -59,7 +58,7 @@ export interface CmsPayload {
 export interface CmsPublicResponse {
   payload: CmsPayload
   revision_id: string
-  revision_version: number
+  version_number: number
   published_at: string | null
   updated_at: string
 }
@@ -72,9 +71,14 @@ export interface CmsUserRef {
 
 export interface CmsRevision {
   id: string
-  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+  status: 'DRAFT' | 'PUBLISHED'
   status_label: string
-  version: number
+  /** Numero de version; solo las publicaciones lo tienen. */
+  number: number | null
+  /** Marca la publicacion vigente. */
+  is_current: boolean
+  /** Contador optimista del borrador; no es una version publicada. */
+  lock_version: number
   message: string
   created_by: CmsUserRef | null
   updated_by: CmsUserRef | null

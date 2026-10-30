@@ -32,6 +32,7 @@ import {
 import { isAxiosError } from 'axios'
 import { toast } from 'sonner'
 
+import { CmsConflictoBanner } from '@/components/cms/CmsConflictoBanner'
 import { CmsPageHeader } from '@/components/cms/CmsPageHeader'
 import { CampoEditor } from '@/components/cms/CampoEditor'
 import { VistaPreviaPortal } from '@/components/cms/VistaPreviaPortal'
@@ -59,6 +60,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { useEstadoEditor } from '@/lib/cms/estadoEditor'
+import { fechaCorta, fechaHora } from '@/lib/cms/fechas'
 import { cn } from '@/lib/utils'
 import {
   activarEdicion,
@@ -113,23 +115,6 @@ function estaVacio(valor: CmsFieldValue): boolean {
   if (Array.isArray(valor)) return valor.length === 0
   const documento = valor as RichTextDoc
   return !(documento.content ?? []).some((nodo) => textoNodo(nodo).trim().length > 0)
-}
-
-function fechaHora(valor: string | null | undefined): string {
-  if (!valor) return '—'
-  return new Date(valor).toLocaleString('es-CL', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-}
-
-function fechaCorta(valor: string | null | undefined): string {
-  if (!valor) return '—'
-  return new Date(valor).toLocaleDateString('es-CL', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
 }
 
 const CLAVE_SECCIONES = 'cms:secciones-colapsadas'
@@ -239,6 +224,8 @@ export function CmsEditor() {
   const [filtro, setFiltro] = useState('')
   const [dirty, setDirty] = useState(false)
   const setDirtyGlobal = useEstadoEditor((estado) => estado.setDirty)
+  const setResumen = useEstadoEditor((estado) => estado.setResumen)
+  const actualizarDraft = useEstadoEditor((estado) => estado.actualizarDraft)
   const [saving, setSaving] = useState(false)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -285,6 +272,11 @@ export function CmsEditor() {
       setPublished(contenido.published)
       setPublicadoPayload(publico?.payload ?? null)
       setHayCambiosPendientes(contenido.has_unpublished_changes)
+      setResumen({
+        draft: contenido.draft,
+        published: contenido.published,
+        hasUnpublishedChanges: contenido.has_unpublished_changes,
+      })
       if (contenido.draft) {
         setActiva((actual) =>
           contenido.draft!.payload.order.includes(actual)
@@ -378,20 +370,19 @@ export function CmsEditor() {
     guardandoRef.current = true
     setSaving(true)
     try {
-      const respuesta = await guardarBorrador(draft.payload, draft.version)
+      const respuesta = await guardarBorrador(draft.payload, draft.lock_version)
       const huboEdicionesNuevas = edicionRef.current !== edicionEnviada
       setHayCambiosPendientes(Boolean(respuesta.has_unpublished_changes) || huboEdicionesNuevas)
       setConflicto(false)
 
       if (huboEdicionesNuevas) {
         // La respuesta corresponde a un snapshot anterior: conserva lo editado
-        // mientras la peticion estaba en vuelo y adopta la nueva version.
+        // mientras la peticion estaba en vuelo y adopta la nueva version de bloqueo.
         setDraft((anterior) =>
           anterior
             ? {
                 ...anterior,
-                version: respuesta.draft.version,
-                payload: { ...anterior.payload, version: respuesta.draft.version },
+                lock_version: respuesta.draft.lock_version,
                 updated_at: respuesta.draft.updated_at,
                 updated_by: respuesta.draft.updated_by,
               }
@@ -402,13 +393,12 @@ export function CmsEditor() {
           JSON.stringify(draft.payload) === JSON.stringify(respuesta.draft.payload)
         if (mismoContenido) {
           // Conserva las referencias locales (listas, editores) cuando el
-          // servidor solo incrementó la versión; evita remontar componentes.
+          // servidor solo incrementó el contador de bloqueo.
           setDraft((anterior) =>
             anterior
               ? {
                   ...anterior,
-                  version: respuesta.draft.version,
-                  payload: { ...anterior.payload, version: respuesta.draft.version },
+                  lock_version: respuesta.draft.lock_version,
                   updated_at: respuesta.draft.updated_at,
                   updated_by: respuesta.draft.updated_by,
                 }
@@ -419,6 +409,7 @@ export function CmsEditor() {
         }
         setDirty(false)
       }
+      actualizarDraft(respuesta.draft, respuesta.has_unpublished_changes)
       return respuesta.draft
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
@@ -439,7 +430,7 @@ export function CmsEditor() {
     const guardado = await persistir()
     if (!guardado) return
     if (edicionRef.current !== edicionAntes) {
-      toast.info('Se guardó la versión anterior. Tus cambios nuevos siguen pendientes.')
+      toast.info('Se guardaron los cambios anteriores. Los nuevos siguen pendientes.')
     } else {
       toast.success('Borrador guardado.')
     }
@@ -454,20 +445,35 @@ export function CmsEditor() {
       toast.info('Guarda los cambios antes de publicar.')
       return
     }
+    if (!hayCambiosPendientes) {
+      toast.info('No hay cambios para publicar.')
+      return
+    }
 
     setSaving(true)
     try {
-      const respuesta = await publicarContenido(draft.version, mensajePublicacion)
+      const respuesta = await publicarContenido(draft.lock_version, mensajePublicacion)
       setPublished(respuesta.published)
       setPublicadoPayload(draft.payload)
+      setResumen({
+        draft: null,
+        published: respuesta.published,
+        hasUnpublishedChanges: false,
+      })
       // La publicación cierra la sesión de edición: volvemos al modo lectura.
       setDraft(null)
       setHayCambiosPendientes(false)
       setDirty(false)
       setDialogoPublicar(false)
       setMensajePublicacion('')
-      toast.success('Contenido publicado. Ya está visible en el portal.')
+      toast.success(
+        `Contenido publicado como v${respuesta.published.number}. Ya está visible en el portal.`,
+      )
     } catch (err) {
+      if (isAxiosError(err) && err.response?.status === 409) {
+        setConflicto(true)
+        setDialogoPublicar(false)
+      }
       toast.error(detalleError(err))
     } finally {
       setSaving(false)
@@ -490,6 +496,11 @@ export function CmsEditor() {
     try {
       const respuesta = await descartarBorrador()
       setDraft(respuesta.draft)
+      setResumen({
+        draft: respuesta.draft,
+        published,
+        hasUnpublishedChanges: false,
+      })
       setHayCambiosPendientes(false)
       setDirty(false)
       setConflicto(false)
@@ -507,6 +518,11 @@ export function CmsEditor() {
     try {
       const respuesta = await activarEdicion()
       setDraft(respuesta.draft)
+      setResumen({
+        draft: respuesta.draft,
+        published,
+        hasUnpublishedChanges: respuesta.has_unpublished_changes,
+      })
       setHayCambiosPendientes(respuesta.has_unpublished_changes)
       setActiva(respuesta.draft.payload.order[0] ?? 'portada')
       setDirty(false)
@@ -518,16 +534,6 @@ export function CmsEditor() {
       setActivando(false)
     }
   }
-
-  useEffect(() => {
-    if (!dirty) return
-    function alSalir(evento: BeforeUnloadEvent) {
-      evento.preventDefault()
-      evento.returnValue = ''
-    }
-    window.addEventListener('beforeunload', alSalir)
-    return () => window.removeEventListener('beforeunload', alSalir)
-  }, [dirty])
 
   function alternarPreview() {
     setPreviewVisible((visible) => !visible)
@@ -585,7 +591,7 @@ export function CmsEditor() {
           actions={
             <>
               <Button asChild variant="outline">
-                <Link to="/cms/revisiones">Ver historial</Link>
+                <Link to="/cms/revisiones">Ver versiones</Link>
               </Button>
               <Button onClick={() => void activarModoEdicion()} disabled={activando}>
                 <PencilSimpleLine data-icon="inline-start" />
@@ -608,8 +614,8 @@ export function CmsEditor() {
                       Modo lectura
                     </h2>
                     <p className="text-muted-foreground mt-2 max-w-xl text-sm leading-relaxed">
-                      No hay un borrador activo. Para editar el contenido, activa el modo edición.
-                      Recién entonces se crea un borrador y podrás guardar cambios.
+                      El portal está mostrando la última publicación. Activa el modo edición para
+                      crear un borrador y empezar a editar.
                     </p>
                     <div className="mt-5 flex flex-wrap items-center gap-2">
                       <Button onClick={() => void activarModoEdicion()} disabled={activando}>
@@ -617,7 +623,7 @@ export function CmsEditor() {
                         {activando ? 'Activando…' : 'Activar modo edición'}
                       </Button>
                       <Button asChild variant="outline">
-                        <Link to="/cms/revisiones">Ver historial</Link>
+                        <Link to="/cms/revisiones">Ver versiones</Link>
                       </Button>
                     </div>
                   </div>
@@ -627,7 +633,7 @@ export function CmsEditor() {
                   <div>
                     <dt className="text-muted-foreground">Versión publicada</dt>
                     <dd className="text-enel-navy mt-0.5 font-medium tabular-nums">
-                      v{published?.version ?? '—'}
+                      v{published?.number ?? '—'}
                     </dd>
                   </div>
                   <div>
@@ -711,9 +717,12 @@ export function CmsEditor() {
   const motivoGuardarDeshabilitado = saving
     ? 'Guardando los cambios…'
     : 'No hay cambios pendientes.'
+  const publicarDeshabilitado = saving || dirty || !hayCambiosPendientes
   const motivoPublicarDeshabilitado = saving
     ? 'Guardando los cambios…'
-    : 'Guarda los cambios antes de publicar.'
+    : dirty
+      ? 'Guarda los cambios antes de publicar.'
+      : 'No hay cambios para publicar.'
 
   return (
     <div className="min-h-svh">
@@ -726,15 +735,13 @@ export function CmsEditor() {
               <span
                 className={cn(
                   'size-1.5 rounded-full',
-                  saving ? 'bg-primary animate-pulse' : dirty ? 'bg-amber-500' : 'bg-emerald-500',
+                  saving ? 'bg-primary animate-pulse' : dirty ? 'bg-amber-500' : 'bg-sky-500',
                 )}
               />
               <span className="text-foreground/70 font-medium">
-                {saving ? 'Guardando…' : dirty ? 'Cambios sin guardar' : 'Borrador guardado'}
+                {saving ? 'Guardando…' : dirty ? 'Cambios sin guardar' : 'Borrador sin publicar'}
               </span>
             </span>
-            <span className="text-black/15">·</span>
-            <span className="tabular-nums">Versión v{draft.version}</span>
             <span className="text-black/15">·</span>
             <span>
               {published?.published_at
@@ -790,13 +797,13 @@ export function CmsEditor() {
             <span className="group relative inline-flex">
               <Button
                 onClick={() => setDialogoPublicar(true)}
-                disabled={saving || dirty}
-                aria-describedby={saving || dirty ? 'motivo-publicar-cabecera' : undefined}
+                disabled={publicarDeshabilitado}
+                aria-describedby={publicarDeshabilitado ? 'motivo-publicar-cabecera' : undefined}
               >
                 <CloudArrowUp data-icon="inline-start" />
                 Publicar
               </Button>
-              {(saving || dirty) && (
+              {publicarDeshabilitado && (
                 <span
                   id="motivo-publicar-cabecera"
                   role="tooltip"
@@ -816,40 +823,20 @@ export function CmsEditor() {
 
       <div className="mx-auto max-w-[1440px] px-4 py-6 md:px-8 md:py-8">
         <div className="flex flex-col gap-4">
-          {conflicto && (
-            <div className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50/80 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-2.5">
-                <WarningCircle className="mt-0.5 size-5 shrink-0 text-red-600" />
-                <div>
-                  <p className="font-medium text-red-900">Hay una versión más nueva del borrador</p>
-                  <p className="text-red-700/80">
-                    Otra persona guardó cambios mientras editabas. Recarga para no sobrescribirlos.
-                  </p>
-                </div>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="shrink-0 border-red-200 bg-white text-red-700 hover:bg-red-100 hover:text-red-800"
-                onClick={() => void cargar()}
-              >
-                Recargar borrador
-              </Button>
-            </div>
-          )}
+          {conflicto && <CmsConflictoBanner onRecargar={() => void cargar()} />}
 
           {!dirty && hayCambiosPendientes && (
             <div className="flex flex-col gap-3 rounded-xl border border-sky-200/80 bg-sky-50/70 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-2.5">
                 <ClockCounterClockwise className="mt-0.5 size-5 shrink-0 text-sky-600" />
                 <div>
-                  <p className="font-medium text-sky-950">Tienes un borrador guardado</p>
+                  <p className="font-medium text-sky-950">Tienes cambios guardados sin publicar</p>
                   <p className="text-sky-900/70">
                     Última edición: {fechaHora(draft.updated_at)}
-                    {draft.updated_by ? ` · ${draft.updated_by.name}` : ''}. Este borrador también
-                    se edita desde Orden; puedes continuar donde quedaste o publicarlo cuando esté
-                    listo.
+                    {draft.updated_by ? ` · ${draft.updated_by.name}` : ''}. Puedes continuar cuando
+                    quieras.
                   </p>
+                  {draft.message && <p className="mt-1 text-sky-900/80">{draft.message}</p>}
                 </div>
               </div>
               <Button
@@ -1004,25 +991,46 @@ export function CmsEditor() {
                     </Badge>
                   </div>
                   <p className="text-enel-navy mt-2 text-2xl font-semibold tabular-nums">
-                    v{draft.version}
+                    Sin publicar
                   </p>
                   <dl className="mt-3 space-y-2 text-[11px]">
                     <div className="flex items-baseline justify-between gap-3">
-                      <dt className="text-muted-foreground">Publicado</dt>
+                      <dt className="text-muted-foreground">Última edición</dt>
                       <dd className="text-foreground/80 text-right">
-                        {fechaCorta(published?.published_at)}
+                        {fechaCorta(draft.updated_at)}
                       </dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-3">
-                      <dt className="text-muted-foreground">Autor</dt>
+                      <dt className="text-muted-foreground">Por</dt>
                       <dd className="text-foreground/80 max-w-[9rem] truncate text-right">
-                        {published?.published_by?.name ?? '—'}
+                        {draft.updated_by?.name ?? '—'}
+                      </dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <dt className="text-muted-foreground">Publicado</dt>
+                      <dd className="text-foreground/80 text-right">
+                        {published
+                          ? `v${published.number} · ${fechaCorta(published.published_at)}`
+                          : '—'}
                       </dd>
                     </div>
                   </dl>
+                  {draft.message && (
+                    <div className="mt-3 rounded-lg border border-black/[0.05] bg-[#fbfcfd] px-2.5 py-2">
+                      <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase">
+                        Nota
+                      </p>
+                      <p
+                        className="text-foreground/70 mt-1 line-clamp-3 text-[11px] leading-relaxed"
+                        title={draft.message}
+                      >
+                        {draft.message}
+                      </p>
+                    </div>
+                  )}
                   <Button asChild variant="ghost" size="sm" className="mt-2 w-full justify-between">
                     <Link to="/cms/revisiones">
-                      Ver historial
+                      Ver versiones
                       <ArrowRight className="size-3.5" />
                     </Link>
                   </Button>
@@ -1192,10 +1200,10 @@ export function CmsEditor() {
                     <div className="flex flex-col gap-2 border-t border-black/5 bg-[#fbfcfd] px-5 py-3 sm:flex-row sm:items-center sm:justify-between md:px-7">
                       <p className="text-muted-foreground max-w-xl text-[11px] leading-relaxed">
                         {saving
-                          ? 'Guardando los cambios del borrador…'
+                          ? 'Guardando los cambios…'
                           : dirty
-                            ? 'Hay cambios sin guardar. Usa Guardar cambios para conservarlos en el borrador; el portal público no cambia hasta que publiques.'
-                            : 'Borrador guardado. El portal público no cambia hasta que publiques.'}
+                            ? 'Hay cambios sin guardar. Guárdalos antes de publicar.'
+                            : 'Cambios guardados. El portal no cambia hasta que publiques.'}
                       </p>
                       <span className="group relative inline-flex shrink-0">
                         <Button
@@ -1275,12 +1283,12 @@ export function CmsEditor() {
       </AlertDialog>
 
       <Dialog open={dialogoPublicar} onOpenChange={setDialogoPublicar}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-enel-navy text-lg">Publicar cambios</DialogTitle>
             <DialogDescription>
-              Se publican de forma atómica el contenido y el orden de las secciones. El portal los
-              mostrará de inmediato y volverás al modo lectura.
+              Se publicará el contenido y el orden actuales. El portal se actualizará de inmediato y
+              volverás al modo lectura.
             </DialogDescription>
           </DialogHeader>
 
@@ -1291,16 +1299,16 @@ export function CmsEditor() {
             <ul className="mt-2.5 flex flex-col gap-2 text-[13px]">
               <li className="flex items-center gap-2">
                 <CheckCircle className="size-4 shrink-0 text-emerald-500" weight="fill" />
-                {order.length} secciones en el recorrido del portal
+                {order.length} secciones en el portal
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle className="size-4 shrink-0 text-emerald-500" weight="fill" />
-                Versión del borrador: v{draft.version}
+                Se creará una versión nueva
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle className="size-4 shrink-0 text-emerald-500" weight="fill" />
                 {published?.published_at
-                  ? `Reemplaza la publicación del ${fechaCorta(published.published_at)}`
+                  ? `La publicación actual es la v${published.number}`
                   : 'Será la primera publicación del portal'}
               </li>
             </ul>
@@ -1320,7 +1328,7 @@ export function CmsEditor() {
               rows={3}
             />
             <p className="text-muted-foreground text-[11px]">
-              Quedará registrado en el historial de revisiones.
+              Quedará en el historial de versiones.
             </p>
           </div>
 
@@ -1328,7 +1336,7 @@ export function CmsEditor() {
             <Button variant="outline" onClick={() => setDialogoPublicar(false)}>
               Cancelar
             </Button>
-            <Button onClick={() => void publicar()} disabled={saving || dirty}>
+            <Button onClick={() => void publicar()} disabled={publicarDeshabilitado}>
               <CloudArrowUp data-icon="inline-start" />
               {saving ? 'Publicando…' : 'Publicar ahora'}
             </Button>

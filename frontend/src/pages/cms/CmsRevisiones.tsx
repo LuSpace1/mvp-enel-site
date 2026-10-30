@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
-  Archive,
   ArrowCounterClockwise,
   ArrowClockwise,
   CheckCircle,
   ClockCounterClockwise,
   Eye,
-  PencilSimpleLine,
   User,
+  WarningCircle,
 } from '@phosphor-icons/react'
 import { isAxiosError } from 'axios'
 import { toast } from 'sonner'
@@ -36,6 +35,8 @@ import {
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { fechaHora, fechaRelativa } from '@/lib/cms/fechas'
+import { useEstadoEditor } from '@/lib/cms/estadoEditor'
 import { cn } from '@/lib/utils'
 import {
   obtenerContenidoAdmin,
@@ -43,58 +44,15 @@ import {
   obtenerRevisiones,
   restaurarRevision,
 } from '@/services/cms'
-import type { CmsRevision, CmsRevisionDetail } from '@/types/cms'
+import type { CmsAdminContent, CmsRevision, CmsRevisionDetail } from '@/types/cms'
 
-type Filtro = 'todas' | CmsRevision['status']
+type Filtro = 'todas' | 'vigente' | 'anteriores'
 
 const FILTROS: { valor: Filtro; etiqueta: string }[] = [
   { valor: 'todas', etiqueta: 'Todas' },
-  { valor: 'PUBLISHED', etiqueta: 'Publicadas' },
-  { valor: 'DRAFT', etiqueta: 'Borradores' },
-  { valor: 'ARCHIVED', etiqueta: 'Archivadas' },
+  { valor: 'vigente', etiqueta: 'Vigente' },
+  { valor: 'anteriores', etiqueta: 'Anteriores' },
 ]
-
-const ESTADOS: Record<
-  CmsRevision['status'],
-  { punto: string; etiqueta: string; icono: typeof CheckCircle }
-> = {
-  PUBLISHED: {
-    punto: 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-600/10',
-    etiqueta: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-50',
-    icono: CheckCircle,
-  },
-  DRAFT: {
-    punto: 'bg-enel-blue/10 text-enel-blue ring-1 ring-enel-blue/10',
-    etiqueta: 'bg-enel-blue/10 text-enel-blue hover:bg-enel-blue/10',
-    icono: PencilSimpleLine,
-  },
-  ARCHIVED: {
-    punto: 'bg-neutral-100 text-neutral-500 ring-1 ring-neutral-500/10',
-    etiqueta: 'bg-neutral-100 text-neutral-600 hover:bg-neutral-100',
-    icono: Archive,
-  },
-}
-
-const RELATIVO = new Intl.RelativeTimeFormat('es', { numeric: 'auto' })
-
-function fecha(valor: string | null): string {
-  if (!valor) return '—'
-  return new Date(valor).toLocaleString('es-CL', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-}
-
-function fechaRelativa(valor: string | null): string {
-  if (!valor) return '—'
-  const segundos = (new Date(valor).getTime() - Date.now()) / 1000
-  const absoluto = Math.abs(segundos)
-  if (absoluto < 60) return 'hace instantes'
-  if (absoluto < 3600) return RELATIVO.format(Math.round(segundos / 60), 'minute')
-  if (absoluto < 86400) return RELATIVO.format(Math.round(segundos / 3600), 'hour')
-  if (absoluto < 2592000) return RELATIVO.format(Math.round(segundos / 86400), 'day')
-  return fecha(valor)
-}
 
 function detalleError(error: unknown): string {
   if (isAxiosError(error)) {
@@ -111,16 +69,18 @@ function detalleError(error: unknown): string {
 export function CmsRevisiones() {
   const navigate = useNavigate()
   const [revisiones, setRevisiones] = useState<CmsRevision[]>([])
+  const [contenidoAdmin, setContenidoAdmin] = useState<CmsAdminContent | null>(null)
   const [cargando, setCargando] = useState(true)
   const [recargando, setRecargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [restaurando, setRestaurando] = useState<string | null>(null)
   const [aRestaurar, setARestaurar] = useState<CmsRevision | null>(null)
   const [filtro, setFiltro] = useState<Filtro>('todas')
-  const [draftActual, setDraftActual] = useState<CmsRevisionDetail | null>(null)
   const [verRevision, setVerRevision] = useState<CmsRevision | null>(null)
   const [detalleRevision, setDetalleRevision] = useState<CmsRevisionDetail | null>(null)
+  const [detalleVigente, setDetalleVigente] = useState<CmsRevisionDetail | null>(null)
   const [cargandoDetalle, setCargandoDetalle] = useState(false)
+  const setResumen = useEstadoEditor((estado) => estado.setResumen)
 
   async function cargar(silencioso = false) {
     if (silencioso) setRecargando(true)
@@ -129,7 +89,12 @@ export function CmsRevisiones() {
     try {
       const [lista, contenido] = await Promise.all([obtenerRevisiones(), obtenerContenidoAdmin()])
       setRevisiones(lista)
-      setDraftActual(contenido.draft)
+      setContenidoAdmin(contenido)
+      setResumen({
+        draft: contenido.draft,
+        published: contenido.published,
+        hasUnpublishedChanges: contenido.has_unpublished_changes,
+      })
     } catch (err) {
       setError(detalleError(err))
     } finally {
@@ -145,31 +110,38 @@ export function CmsRevisiones() {
     void cargar()
   }, [])
 
-  const conteos = useMemo(() => {
-    const mapa: Record<Filtro, number> = {
-      todas: revisiones.length,
-      PUBLISHED: 0,
-      DRAFT: 0,
-      ARCHIVED: 0,
-    }
-    revisiones.forEach((revision) => {
-      mapa[revision.status] += 1
-    })
-    return mapa
-  }, [revisiones])
-
-  const visibles = useMemo(
-    () => (filtro === 'todas' ? revisiones : revisiones.filter((r) => r.status === filtro)),
-    [revisiones, filtro],
+  const vigente = useMemo(
+    () => revisiones.find((revision) => revision.is_current) ?? null,
+    [revisiones],
   )
+
+  const conteos = useMemo(
+    () => ({
+      todas: revisiones.length,
+      vigente: revisiones.filter((revision) => revision.is_current).length,
+      anteriores: revisiones.filter((revision) => !revision.is_current).length,
+    }),
+    [revisiones],
+  )
+
+  const visibles = useMemo(() => {
+    if (filtro === 'vigente') return revisiones.filter((revision) => revision.is_current)
+    if (filtro === 'anteriores') return revisiones.filter((revision) => !revision.is_current)
+    return revisiones
+  }, [filtro, revisiones])
 
   async function confirmarRestauracion() {
     const revision = aRestaurar
     if (!revision) return
     setRestaurando(revision.id)
     try {
-      await restaurarRevision(revision.id)
-      toast.success('Revisión restaurada en el borrador.')
+      const respuesta = await restaurarRevision(revision.id)
+      setResumen({
+        draft: respuesta.draft,
+        published: vigente,
+        hasUnpublishedChanges: Boolean(respuesta.has_unpublished_changes),
+      })
+      toast.success('Versión restaurada en el borrador. Publícala para aplicarla al portal.')
       setARestaurar(null)
       navigate('/cms')
     } catch (err) {
@@ -182,9 +154,15 @@ export function CmsRevisiones() {
   async function abrirRevision(revision: CmsRevision) {
     setVerRevision(revision)
     setDetalleRevision(null)
+    setDetalleVigente(null)
     setCargandoDetalle(true)
     try {
-      setDetalleRevision(await obtenerRevision(revision.id))
+      const [detalle, actual] = await Promise.all([
+        obtenerRevision(revision.id),
+        vigente && vigente.id !== revision.id ? obtenerRevision(vigente.id) : Promise.resolve(null),
+      ])
+      setDetalleRevision(detalle)
+      setDetalleVigente(actual)
     } catch (err) {
       toast.error(detalleError(err))
     } finally {
@@ -195,13 +173,16 @@ export function CmsRevisiones() {
   function cerrarRevision() {
     setVerRevision(null)
     setDetalleRevision(null)
+    setDetalleVigente(null)
     setCargandoDetalle(false)
   }
 
   const cambios = useMemo(() => {
-    if (!detalleRevision || !draftActual) return []
+    if (!detalleRevision || !detalleVigente || detalleRevision.id === detalleVigente.id) {
+      return []
+    }
     const antes = detalleRevision.payload
-    const ahora = draftActual.payload
+    const ahora = detalleVigente.payload
     const claves = new Set([...Object.keys(antes.sections), ...Object.keys(ahora.sections)])
     const nombres: string[] = []
     claves.forEach((clave) => {
@@ -219,7 +200,7 @@ export function CmsRevisiones() {
       nombres.push('Orden de secciones')
     }
     return nombres
-  }, [detalleRevision, draftActual])
+  }, [detalleRevision, detalleVigente])
 
   if (cargando) {
     return (
@@ -245,7 +226,7 @@ export function CmsRevisiones() {
             <ClockCounterClockwise className="size-6" />
           </span>
           <h2 className="text-enel-navy mt-4 text-lg font-semibold">
-            No se pudo cargar el historial
+            No se pudieron cargar las versiones
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">{error}</p>
           <Button className="mt-5" onClick={() => void cargar()}>
@@ -261,10 +242,11 @@ export function CmsRevisiones() {
       <CmsPageHeader
         back={{ to: '/cms', label: 'Volver al contenido' }}
         eyebrow="Trazabilidad"
-        title="Historial de revisiones"
+        title="Versiones publicadas"
         description={
           <span className="text-muted-foreground text-xs">
-            Cada publicación conserva autor, fecha y contenido. Restaurar crea un borrador nuevo.
+            Historial de las publicaciones del portal. Puedes restaurar una versión para editarla y
+            publicarla de nuevo.
           </span>
         }
         actions={
@@ -272,7 +254,7 @@ export function CmsRevisiones() {
             variant="outline"
             onClick={() => void cargar(true)}
             disabled={recargando}
-            title="Actualizar historial"
+            title="Actualizar versiones"
           >
             <ArrowClockwise data-icon="inline-start" className={cn(recargando && 'animate-spin')} />
             {recargando ? 'Actualizando…' : 'Actualizar'}
@@ -282,6 +264,26 @@ export function CmsRevisiones() {
 
       <div className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
         <div className="flex flex-col gap-5">
+          {contenidoAdmin?.draft && contenidoAdmin.has_unpublished_changes && (
+            <div className="flex flex-col gap-3 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2.5">
+                <WarningCircle className="mt-0.5 size-5 shrink-0 text-amber-600" />
+                <div>
+                  <p className="font-medium text-amber-950">Tienes cambios sin publicar</p>
+                  <p className="text-amber-900/80">Restaurar una versión los reemplazará.</p>
+                </div>
+              </div>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="shrink-0 border-amber-200 bg-white text-amber-800 hover:bg-amber-100 hover:text-amber-900"
+              >
+                <Link to="/cms">Continuar editando</Link>
+              </Button>
+            </div>
+          )}
+
           <Tabs value={filtro} onValueChange={(valor) => setFiltro(valor as Filtro)}>
             <TabsList className="h-9 flex-wrap">
               {FILTROS.map((opcion) => (
@@ -300,20 +302,18 @@ export function CmsRevisiones() {
               <ClockCounterClockwise className="text-muted-foreground/50 size-8" />
               <p className="text-enel-navy text-sm font-medium">
                 {filtro === 'todas'
-                  ? 'Todavía no hay revisiones registradas'
-                  : 'No hay revisiones con este estado'}
+                  ? 'Todavía no hay versiones publicadas'
+                  : 'No hay versiones con este filtro'}
               </p>
               <p className="text-muted-foreground max-w-sm text-xs">
                 {filtro === 'todas'
-                  ? 'Cuando publiques por primera vez, el historial conservará cada versión del contenido.'
+                  ? 'Cuando publiques por primera vez, las versiones aparecerán aquí.'
                   : 'Prueba con otro filtro para ver el resto del historial.'}
               </p>
             </div>
           ) : (
             <ol className="relative flex flex-col gap-4 before:absolute before:top-3 before:bottom-3 before:left-[11px] before:w-px before:bg-black/[0.08]">
               {visibles.map((revision) => {
-                const estado = ESTADOS[revision.status]
-                const Icono = estado.icono
                 const autor =
                   revision.published_by?.name ??
                   revision.updated_by?.name ??
@@ -325,25 +325,34 @@ export function CmsRevisiones() {
                     <span
                       className={cn(
                         'absolute top-4 left-0 flex size-6 items-center justify-center rounded-full border-2 border-white shadow-sm',
-                        estado.punto,
+                        revision.is_current
+                          ? 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-600/10'
+                          : 'bg-neutral-100 text-neutral-500 ring-1 ring-neutral-500/10',
                       )}
                     >
-                      <Icono className="size-3.5" weight="fill" />
+                      <CheckCircle className="size-3.5" weight="fill" />
                     </span>
 
                     <div className="rounded-2xl border border-black/[0.06] bg-white p-4 shadow-sm transition-shadow hover:shadow-md md:p-5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-                            <Badge className={cn('text-[10px] font-medium', estado.etiqueta)}>
-                              {revision.status_label}
+                            <Badge
+                              className={cn(
+                                'text-[10px] font-medium',
+                                revision.is_current
+                                  ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-50'
+                                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-100',
+                              )}
+                            >
+                              {revision.is_current ? 'Vigente' : 'Anterior'}
                             </Badge>
                             <span className="text-enel-navy text-sm font-semibold tabular-nums">
-                              v{revision.version}
+                              v{revision.number}
                             </span>
                             <span
                               className="text-muted-foreground text-xs"
-                              title={fecha(revision.published_at ?? revision.created_at)}
+                              title={fechaHora(revision.published_at ?? revision.created_at)}
                             >
                               {fechaRelativa(revision.published_at ?? revision.created_at)}
                             </span>
@@ -355,7 +364,7 @@ export function CmsRevisiones() {
                               {autor}
                             </span>
                             <span className="text-black/15">·</span>
-                            <span>{fecha(revision.published_at ?? revision.created_at)}</span>
+                            <span>{fechaHora(revision.published_at ?? revision.created_at)}</span>
                           </div>
 
                           {revision.message && (
@@ -378,11 +387,11 @@ export function CmsRevisiones() {
                             variant="outline"
                             size="sm"
                             className="bg-white"
-                            disabled={revision.status === 'DRAFT' || restaurando === revision.id}
+                            disabled={revision.is_current || restaurando === revision.id}
                             onClick={() => setARestaurar(revision)}
                             title={
-                              revision.status === 'DRAFT'
-                                ? 'La revisión actual ya es el borrador'
+                              revision.is_current
+                                ? 'La versión vigente ya está publicada'
                                 : 'Restaurar como borrador'
                             }
                           >
@@ -409,19 +418,22 @@ export function CmsRevisiones() {
         <DialogContent className="sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle className="text-enel-navy text-lg">
-              Versión v{verRevision?.version} · {verRevision?.status_label}
+              Versión v{verRevision?.number}
+              {verRevision?.is_current ? ' · Vigente' : ' · Anterior'}
             </DialogTitle>
             <DialogDescription>
-              {fecha(verRevision?.published_at ?? verRevision?.created_at ?? null)} ·{' '}
+              {fechaHora(verRevision?.published_at ?? verRevision?.created_at ?? null)} ·{' '}
               {verRevision?.published_by?.name ??
                 verRevision?.updated_by?.name ??
                 verRevision?.created_by?.name ??
                 'Sistema'}
               {detalleRevision && (
                 <span className="mt-1 block">
-                  {cambios.length > 0
-                    ? `Diferencias con el borrador actual: ${cambios.join(', ')}.`
-                    : 'Esta versión es igual al borrador actual.'}
+                  {verRevision?.is_current
+                    ? 'Esta es la versión vigente del portal.'
+                    : cambios.length > 0
+                      ? `Diferencias con la versión vigente: ${cambios.join(', ')}.`
+                      : 'Esta versión es igual a la versión vigente.'}
                 </span>
               )}
             </DialogDescription>
@@ -431,7 +443,7 @@ export function CmsRevisiones() {
             {verRevision && (
               <iframe
                 src={`/cms/preview?embed=1&revision=${verRevision.id}`}
-                title={`Vista previa de la versión ${verRevision.version}`}
+                title={`Vista previa de la versión ${verRevision.number}`}
                 className="h-full w-full border-0 bg-white"
               />
             )}
@@ -449,10 +461,7 @@ export function CmsRevisiones() {
             </Button>
             <Button
               disabled={
-                !verRevision ||
-                verRevision.status === 'DRAFT' ||
-                Boolean(restaurando) ||
-                cargandoDetalle
+                !verRevision || verRevision.is_current || Boolean(restaurando) || cargandoDetalle
               }
               onClick={() => {
                 const revision = verRevision
@@ -475,11 +484,17 @@ export function CmsRevisiones() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Restaurar esta revisión</AlertDialogTitle>
+            <AlertDialogTitle>Restaurar esta versión</AlertDialogTitle>
             <AlertDialogDescription>
-              Se copiará el contenido de la versión v{aRestaurar?.version} del{' '}
-              {fecha(aRestaurar?.published_at ?? aRestaurar?.created_at ?? null)} en un borrador
-              nuevo. El portal público no cambia hasta que publiques.
+              La versión v{aRestaurar?.number} del{' '}
+              {fechaHora(aRestaurar?.published_at ?? aRestaurar?.created_at ?? null)} se copiará al
+              borrador.{' '}
+              {contenidoAdmin?.draft
+                ? contenidoAdmin.has_unpublished_changes
+                  ? 'Se reemplazarán los cambios sin publicar.'
+                  : 'El borrador actual se reemplazará.'
+                : 'Se creará un borrador nuevo.'}{' '}
+              El portal no cambia hasta que publiques.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

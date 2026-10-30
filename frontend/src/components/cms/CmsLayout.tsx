@@ -1,15 +1,18 @@
-import { useEffect, useState, type MouseEvent } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, Outlet, useBlocker, useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowSquareOut,
   ClockCounterClockwise,
   Files,
+  Info,
   ListNumbers,
   SidebarSimple,
   SignOut,
   WarningCircle,
 } from '@phosphor-icons/react'
 
+import { CmsComoFunciona } from '@/components/cms/CmsComoFunciona'
+import { CmsGuiaPrimeraVez } from '@/components/cms/CmsGuiaPrimeraVez'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +25,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { fechaCorta, fechaRelativa } from '@/lib/cms/fechas'
 import { useEstadoEditor } from '@/lib/cms/estadoEditor'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -31,12 +35,11 @@ import logoEnel from '@/assets/icons/Enel_Group_logo.svg'
 const ENLACES = [
   { to: '/cms', label: 'Contenido', icon: Files, end: true },
   { to: '/cms/orden', label: 'Orden', icon: ListNumbers, end: false },
-  { to: '/cms/revisiones', label: 'Historial', icon: ClockCounterClockwise, end: false },
+  { to: '/cms/revisiones', label: 'Versiones', icon: ClockCounterClockwise, end: false },
 ]
 
 const CLAVE_COLAPSADO = 'cms:sidebar-colapsado'
-
-type SalidaPendiente = { to: string } | 'logout' | null
+const CLAVE_GUIA = 'cms:guia-vista'
 
 function iniciales(nombre: string | undefined): string {
   if (!nombre) return 'EN'
@@ -56,6 +59,8 @@ export function CmsLayout() {
   const nombre = user?.full_name || user?.username || 'Usuario'
   const rol = user?.capabilities.can_manage_cms ? 'Administrador' : 'Editor'
   const dirty = useEstadoEditor((estado) => estado.dirty)
+  const resumen = useEstadoEditor((estado) => estado.resumen)
+  const limpiarResumen = useEstadoEditor((estado) => estado.limpiarResumen)
   const [colapsado, setColapsado] = useState(() => {
     try {
       return window.localStorage.getItem(CLAVE_COLAPSADO) === '1'
@@ -63,7 +68,17 @@ export function CmsLayout() {
       return false
     }
   })
-  const [salidaPendiente, setSalidaPendiente] = useState<SalidaPendiente>(null)
+  const [ayudaAbierta, setAyudaAbierta] = useState(false)
+  const [guiaVista, setGuiaVista] = useState(() => {
+    try {
+      return window.localStorage.getItem(CLAVE_GUIA) === '1'
+    } catch {
+      return true
+    }
+  })
+  const [logoutPendiente, setLogoutPendiente] = useState(false)
+  const [permitirSalida, setPermitirSalida] = useState(false)
+  const blocker = useBlocker(dirty && !permitirSalida)
 
   useEffect(() => {
     try {
@@ -84,31 +99,76 @@ export function CmsLayout() {
     return () => window.removeEventListener('beforeunload', avisar)
   }, [dirty])
 
-  function pedirNavegacion(evento: MouseEvent<HTMLAnchorElement>, destino: string) {
-    if (!dirty || location.pathname === destino) return
-    evento.preventDefault()
-    setSalidaPendiente({ to: destino })
+  useEffect(() => {
+    if (!permitirSalida) return
+    limpiarResumen()
+    logout()
+    navigate('/cms/login', { replace: true })
+  }, [limpiarResumen, permitirSalida, logout, navigate])
+
+  function cerrarGuia() {
+    setGuiaVista(true)
+    try {
+      window.localStorage.setItem(CLAVE_GUIA, '1')
+    } catch {
+      // Si el navegador bloquea el storage, la guía se vuelve a mostrar.
+    }
+  }
+
+  function abrirGuia() {
+    setAyudaAbierta(true)
+    cerrarGuia()
   }
 
   function pedirCerrarSesion() {
     if (dirty) {
-      setSalidaPendiente('logout')
+      setLogoutPendiente(true)
       return
     }
+    limpiarResumen()
     logout()
     navigate('/cms/login', { replace: true })
   }
 
-  function confirmarSalida() {
-    if (!salidaPendiente) return
-    if (salidaPendiente === 'logout') {
-      logout()
-      navigate('/cms/login', { replace: true })
-    } else {
-      navigate(salidaPendiente.to)
-    }
-    setSalidaPendiente(null)
+  function confirmarLogout() {
+    setLogoutPendiente(false)
+    setPermitirSalida(true)
   }
+
+  const estado = (() => {
+    if (!resumen) return null
+    const borrador = resumen.draft
+    if (!borrador) {
+      const publicada = resumen.published
+      return {
+        texto: 'Todo publicado',
+        detalle: publicada
+          ? `v${publicada.number} vigente · ${fechaCorta(publicada.published_at)}`
+          : 'Sin publicaciones',
+        color: 'bg-emerald-500',
+      }
+    }
+    if (dirty) {
+      return {
+        texto: 'Borrador sin publicar',
+        detalle: 'Cambios sin guardar',
+        color: 'bg-amber-500',
+      }
+    }
+    const detalleGuardado = borrador.updated_at
+      ? `Guardado ${fechaRelativa(borrador.updated_at)}${
+          borrador.updated_by ? ` · ${borrador.updated_by.name}` : ''
+        }`
+      : 'Borrador abierto'
+    return {
+      texto: 'Borrador sin publicar',
+      detalle: resumen.hasUnpublishedChanges ? detalleGuardado : `Sin cambios · ${detalleGuardado}`,
+      color: 'bg-sky-500',
+    }
+  })()
+
+  const mostrarGuia =
+    !guiaVista && location.pathname === '/cms' && Boolean(resumen) && !resumen?.draft
 
   return (
     <div className="bg-background flex min-h-svh flex-col lg:flex-row">
@@ -136,7 +196,6 @@ export function CmsLayout() {
         >
           <Link
             to="/cms"
-            onClick={(evento) => pedirNavegacion(evento, '/cms')}
             aria-label="Ir al inicio del CMS"
             className="focus-visible:ring-ring flex min-w-0 items-center gap-2.5 rounded-md focus-visible:ring-2 focus-visible:outline-none"
           >
@@ -161,6 +220,17 @@ export function CmsLayout() {
           </Link>
 
           <div className="flex items-center gap-1 lg:hidden">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={abrirGuia}
+              aria-label="Cómo funciona el CMS"
+              title="Cómo funciona el CMS"
+            >
+              <Info className="size-[18px]" />
+            </Button>
             <Button
               asChild
               variant="ghost"
@@ -222,7 +292,6 @@ export function CmsLayout() {
                 key={enlace.to}
                 to={enlace.to}
                 end={enlace.end}
-                onClick={(evento) => pedirNavegacion(evento, enlace.to)}
                 className={({ isActive }) =>
                   cn(
                     'group focus-visible:ring-ring relative flex h-11 shrink-0 items-center gap-2.5 rounded-lg px-3 text-[13px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none lg:h-10',
@@ -273,6 +342,25 @@ export function CmsLayout() {
         >
           {colapsado ? (
             <div className="flex flex-col items-center gap-1.5">
+              {estado && (
+                <span
+                  role="status"
+                  aria-label={`${estado.texto}. ${estado.detalle}`}
+                  title={`${estado.texto} · ${estado.detalle}`}
+                  className={cn('size-2 rounded-full', estado.color)}
+                />
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={abrirGuia}
+                aria-label="Cómo funciona el CMS"
+                title="Cómo funciona el CMS"
+              >
+                <Info className="size-[18px]" />
+              </Button>
               <Button
                 asChild
                 variant="ghost"
@@ -310,6 +398,37 @@ export function CmsLayout() {
             </div>
           ) : (
             <>
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground mb-1 w-full justify-start gap-2 px-3"
+                onClick={abrirGuia}
+              >
+                <Info className="size-4" />
+                ¿Cómo funciona?
+              </Button>
+
+              {estado && (
+                <Link
+                  to="/cms"
+                  className="border-border bg-muted/40 hover:bg-muted/70 focus-visible:ring-ring mb-3 flex items-start gap-2.5 rounded-lg border px-3.5 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  title={`${estado.texto} · ${estado.detalle}`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={cn('mt-1 size-2 shrink-0 rounded-full', estado.color)}
+                  />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-foreground truncate text-xs font-medium">
+                      {estado.texto}
+                    </span>
+                    <span className="text-muted-foreground truncate text-[11px]">
+                      {estado.detalle}
+                    </span>
+                  </span>
+                </Link>
+              )}
+
               <a
                 href="/"
                 target="_blank"
@@ -359,15 +478,15 @@ export function CmsLayout() {
       </aside>
 
       <main id="contenido-cms" tabIndex={-1} className="bg-muted/25 min-w-0 flex-1 outline-none">
+        {mostrarGuia && (
+          <div className="mx-auto max-w-[1440px] px-4 pt-4 md:px-8">
+            <CmsGuiaPrimeraVez onAbrir={abrirGuia} onCerrar={cerrarGuia} />
+          </div>
+        )}
         <Outlet />
       </main>
 
-      <AlertDialog
-        open={salidaPendiente !== null}
-        onOpenChange={(abierto) => {
-          if (!abierto) setSalidaPendiente(null)
-        }}
-      >
+      <AlertDialog open={blocker.state === 'blocked'}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogMedia className="bg-destructive/10 text-destructive">
@@ -375,18 +494,43 @@ export function CmsLayout() {
             </AlertDialogMedia>
             <AlertDialogTitle>Cambios sin guardar</AlertDialogTitle>
             <AlertDialogDescription>
-              Si sales ahora, se perderá lo último que editaste. Guarda el borrador o descarta los
-              cambios antes de continuar.
+              Si sales ahora, se perderá lo último que editaste. Guarda los cambios o descártalos
+              antes de continuar.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Volver al editor</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={confirmarSalida}>
+            <AlertDialogCancel onClick={() => blocker.reset?.()}>
+              Volver al editor
+            </AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={() => blocker.proceed?.()}>
               Salir sin guardar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={logoutPendiente} onOpenChange={setLogoutPendiente}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive">
+              <WarningCircle />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Cambios sin guardar</AlertDialogTitle>
+            <AlertDialogDescription>
+              Si cierras sesión ahora, se perderá lo último que editaste. Guarda los cambios antes
+              de salir.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Volver al editor</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmarLogout}>
+              Cerrar sesión sin guardar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <CmsComoFunciona open={ayudaAbierta} onOpenChange={setAyudaAbierta} />
     </div>
   )
 }

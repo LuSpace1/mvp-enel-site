@@ -1,6 +1,6 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { preconnect, prefetchDNS } from 'react-dom'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 
 import { RutaProtegida } from '@/components/cms/RutaProtegida'
 import { Toaster } from '@/components/ui/sonner'
@@ -44,6 +44,37 @@ function CargandoRuta() {
   )
 }
 
+function conCarga(elemento: ReactNode) {
+  return <Suspense fallback={<CargandoRuta />}>{elemento}</Suspense>
+}
+
+const router = createBrowserRouter([
+  { path: '/', element: conCarga(<Viaje />) },
+  { path: '/cms/login', element: conCarga(<CmsLogin />) },
+  {
+    path: '/cms/preview',
+    element: conCarga(
+      <RutaProtegida>
+        <CmsPreview />
+      </RutaProtegida>,
+    ),
+  },
+  {
+    path: '/cms',
+    element: conCarga(
+      <RutaProtegida>
+        <CmsLayout />
+      </RutaProtegida>,
+    ),
+    children: [
+      { index: true, element: conCarga(<CmsEditor />) },
+      { path: 'orden', element: conCarga(<CmsOrden />) },
+      { path: 'revisiones', element: conCarga(<CmsRevisiones />) },
+    ],
+  },
+  { path: '*', element: <Navigate to="/" replace /> },
+])
+
 export function App() {
   const access = useAuthStore((estado) => estado.access)
   const actualizarPerfil = useAuthStore((estado) => estado.actualizarPerfil)
@@ -55,35 +86,9 @@ export function App() {
   }, [access, actualizarPerfil])
 
   return (
-    <BrowserRouter>
-      <Suspense fallback={<CargandoRuta />}>
-        <Routes>
-          <Route path="/" element={<Viaje />} />
-          <Route path="/cms/login" element={<CmsLogin />} />
-          <Route
-            path="/cms/preview"
-            element={
-              <RutaProtegida>
-                <CmsPreview />
-              </RutaProtegida>
-            }
-          />
-          <Route
-            path="/cms"
-            element={
-              <RutaProtegida>
-                <CmsLayout />
-              </RutaProtegida>
-            }
-          >
-            <Route index element={<CmsEditor />} />
-            <Route path="orden" element={<CmsOrden />} />
-            <Route path="revisiones" element={<CmsRevisiones />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+    <>
+      <RouterProvider router={router} />
       <Toaster />
-    </BrowserRouter>
+    </>
   )
 }

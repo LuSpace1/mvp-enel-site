@@ -42,7 +42,7 @@ function fusionarPayload(anterior: CmsPayload | null, siguiente: CmsPayload): Cm
   }
 
   const order = mismaLista(anterior.order, siguiente.order) ? anterior.order : siguiente.order
-  if (seccionesIguales && order === anterior.order && anterior.version === siguiente.version) {
+  if (seccionesIguales && order === anterior.order) {
     return anterior
   }
   return {

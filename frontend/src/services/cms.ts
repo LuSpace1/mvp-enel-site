@@ -33,23 +33,23 @@ export async function activarEdicion(): Promise<CmsStartEditingResponse> {
 
 export async function guardarBorrador(
   payload: unknown,
-  version: number,
+  lockVersion: number,
   message = '',
 ): Promise<CmsSaveDraftResponse> {
   const { data } = await http.put<CmsSaveDraftResponse>('/cms/admin/content/', {
     payload,
-    version,
+    lock_version: lockVersion,
     message,
   })
   return data
 }
 
 export async function publicarContenido(
-  version: number,
+  lockVersion: number,
   message = '',
 ): Promise<CmsPublishResponse> {
   const { data } = await http.post<CmsPublishResponse>('/cms/admin/publish/', {
-    version,
+    lock_version: lockVersion,
     message,
   })
   return data

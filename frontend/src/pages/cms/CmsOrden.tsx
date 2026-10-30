@@ -14,11 +14,23 @@ import {
 import { isAxiosError } from 'axios'
 import { toast } from 'sonner'
 
+import { CmsConflictoBanner } from '@/components/cms/CmsConflictoBanner'
 import { CmsPageHeader } from '@/components/cms/CmsPageHeader'
 import { VistaPreviaPortal } from '@/components/cms/VistaPreviaPortal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
+import { compararPayload } from '@/lib/cms/comparar'
+import { fechaHora } from '@/lib/cms/fechas'
 import { useEstadoEditor } from '@/lib/cms/estadoEditor'
 import { cn } from '@/lib/utils'
 import {
@@ -46,14 +58,6 @@ function detalleError(error: unknown): string {
   return 'Ocurrió un error inesperado.'
 }
 
-function fechaHora(valor: string | null | undefined): string {
-  if (!valor) return '—'
-  return new Date(valor).toLocaleString('es-CL', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-}
-
 export function CmsOrden() {
   const [schema, setSchema] = useState<CmsSchemaResponse | null>(null)
   const [draft, setDraft] = useState<CmsRevisionDetail | null>(null)
@@ -67,7 +71,12 @@ export function CmsOrden() {
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const [sobre, setSobre] = useState<string | null>(null)
   const [activando, setActivando] = useState(false)
+  const [dialogoPublicar, setDialogoPublicar] = useState(false)
+  const [mensajePublicacion, setMensajePublicacion] = useState('')
+  const [conflicto, setConflicto] = useState(false)
   const setDirtyGlobal = useEstadoEditor((estado) => estado.setDirty)
+  const setResumen = useEstadoEditor((estado) => estado.setResumen)
+  const actualizarDraft = useEstadoEditor((estado) => estado.actualizarDraft)
 
   useEffect(() => {
     setDirtyGlobal(dirty)
@@ -88,7 +97,13 @@ export function CmsOrden() {
       setPublished(contenido.published)
       setPublicadoPayload(publico?.payload ?? null)
       setOrden(contenido.draft?.payload.order ?? publico?.payload.order ?? esquema.default_order)
+      setResumen({
+        draft: contenido.draft,
+        published: contenido.published,
+        hasUnpublishedChanges: contenido.has_unpublished_changes,
+      })
       setDirty(false)
+      setConflicto(false)
     } catch (err) {
       setError(detalleError(err))
     } finally {
@@ -120,6 +135,11 @@ export function CmsOrden() {
     () => (payloadVisible ? { ...payloadVisible, order: orden } : null),
     [payloadVisible, orden],
   )
+  const comparacion = useMemo(
+    () => compararPayload(draft?.payload, publicadoPayload),
+    [draft?.payload, publicadoPayload],
+  )
+  const sinCambios = !comparacion.contenido && !comparacion.orden
 
   function reordenar(origen: string, destino: string) {
     if (origen === destino) return
@@ -157,13 +177,19 @@ export function CmsOrden() {
     if (!dirty) return draft
     setGuardando(true)
     try {
-      const respuesta = await guardarBorrador({ ...draft.payload, order: orden }, draft.version)
+      const respuesta = await guardarBorrador(
+        { ...draft.payload, order: orden },
+        draft.lock_version,
+      )
       setDraft(respuesta.draft)
       setOrden(respuesta.draft.payload.order)
       setDirty(false)
+      setConflicto(false)
+      actualizarDraft(respuesta.draft, respuesta.has_unpublished_changes)
       toast.success('Orden guardado en el borrador.')
       return respuesta.draft
     } catch (err) {
+      if (isAxiosError(err) && err.response?.status === 409) setConflicto(true)
       toast.error(detalleError(err))
       return null
     } finally {
@@ -177,21 +203,53 @@ export function CmsOrden() {
       toast.info('Guarda los cambios antes de publicar.')
       return
     }
+    if (sinCambios) {
+      toast.info('No hay cambios para publicar.')
+      return
+    }
     setGuardando(true)
     try {
-      const respuesta = await publicarContenido(draft.version, 'Cambio de orden de secciones')
+      const respuesta = await publicarContenido(draft.lock_version, mensajePublicacion)
       setPublished(respuesta.published)
       setPublicadoPayload(draft.payload)
+      setResumen({
+        draft: null,
+        published: respuesta.published,
+        hasUnpublishedChanges: false,
+      })
       // La publicación cierra la sesión de edición: volvemos al modo lectura.
       setDraft(null)
       setOrden(draft.payload.order)
       setDirty(false)
-      toast.success('Nuevo orden publicado en el portal.')
+      setDialogoPublicar(false)
+      setMensajePublicacion('')
+      setConflicto(false)
+      toast.success(
+        `Publicado como v${respuesta.published.number}. Contenido y orden actualizados.`,
+      )
     } catch (err) {
+      if (isAxiosError(err) && err.response?.status === 409) {
+        setConflicto(true)
+        setDialogoPublicar(false)
+      }
       toast.error(detalleError(err))
     } finally {
       setGuardando(false)
     }
+  }
+
+  function abrirDialogoPublicar() {
+    if (!draft) return
+    if (dirty) {
+      toast.info('Guarda los cambios antes de publicar.')
+      return
+    }
+    if (sinCambios) {
+      toast.info('No hay cambios para publicar.')
+      return
+    }
+    setMensajePublicacion(comparacion.soloOrden ? 'Cambio de orden de secciones' : '')
+    setDialogoPublicar(true)
   }
 
   function soltar(evento: DragEvent<HTMLDivElement>, destino: string) {
@@ -249,7 +307,6 @@ export function CmsOrden() {
   }
 
   const enEdicion = Boolean(draft)
-  const versionVisible = enEdicion ? draft?.version : published?.version
 
   return (
     <div className="min-h-svh">
@@ -260,9 +317,7 @@ export function CmsOrden() {
         description={
           enEdicion ? (
             <span className="text-muted-foreground text-xs">
-              Arrastra las secciones para definir cómo se recorre el portal. Este borrador es el
-              mismo que editas en Contenido.
-              {dirty ? ' Hay cambios sin guardar.' : ''}
+              Arrastra las secciones para cambiar el orden. El portal no cambia hasta que publiques.
             </span>
           ) : (
             <span className="text-muted-foreground text-xs">
@@ -288,24 +343,31 @@ export function CmsOrden() {
                     ? 'Guarda los cambios antes de publicar.'
                     : guardando
                       ? 'Guardando los cambios…'
-                      : undefined
+                      : sinCambios
+                        ? 'No hay cambios para publicar.'
+                        : undefined
                 }
               >
-                <Button onClick={() => void publicar()} disabled={guardando || dirty}>
+                <Button onClick={abrirDialogoPublicar} disabled={guardando || dirty || sinCambios}>
                   <CloudArrowUp data-icon="inline-start" />
-                  Publicar orden
+                  Publicar cambios
                 </Button>
               </span>
             </>
           ) : (
             <Button asChild variant="outline">
-              <Link to="/cms/revisiones">Ver historial</Link>
+              <Link to="/cms/revisiones">Ver versiones</Link>
             </Button>
           )
         }
       />
 
       <div className="mx-auto max-w-[1440px] px-4 py-6 md:px-8 md:py-8">
+        {conflicto && (
+          <div className="mb-4">
+            <CmsConflictoBanner onRecargar={() => void cargar()} />
+          </div>
+        )}
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,44%)]">
           <div className="flex min-w-0 flex-col gap-4">
             {!enEdicion && (
@@ -317,8 +379,8 @@ export function CmsOrden() {
                   <div className="min-w-0 flex-1">
                     <h2 className="text-enel-navy text-base font-semibold">Modo lectura</h2>
                     <p className="text-muted-foreground mt-1 max-w-xl text-sm leading-relaxed">
-                      Estás viendo el orden publicado. Para arrastrar o mover secciones, activa el
-                      modo edición: recién entonces se crea un borrador.
+                      Este es el orden publicado. Activa el modo edición para cambiarlo; se creará
+                      un borrador.
                     </p>
                   </div>
                   <Button
@@ -352,8 +414,8 @@ export function CmsOrden() {
                   {enEdicion
                     ? dirty
                       ? 'Sin guardar'
-                      : `v${draft?.version}`
-                    : `Publicado · v${published?.version ?? '—'}`}
+                      : 'Borrador guardado'
+                    : `Publicado · v${published?.number ?? '—'}`}
                 </Badge>
               </div>
 
@@ -537,34 +599,61 @@ export function CmsOrden() {
                 {enEdicion ? 'Estado del borrador' : 'Contenido publicado'}
               </p>
               <p className="relative mt-1.5 text-2xl font-semibold tabular-nums">
-                v{versionVisible ?? '—'}
+                {enEdicion ? 'Sin publicar' : `v${published?.number ?? '—'}`}
               </p>
               <p className="relative mt-1 inline-flex items-center gap-1.5 text-[11px] text-white/55">
                 <span
                   className={cn(
                     'size-1.5 rounded-full',
-                    enEdicion && dirty ? 'bg-amber-400' : 'bg-emerald-400',
+                    enEdicion ? (dirty ? 'bg-amber-400' : 'bg-sky-400') : 'bg-emerald-400',
                   )}
                 />
                 {enEdicion
                   ? dirty
                     ? 'Cambios sin guardar'
-                    : 'Orden guardado'
+                    : 'Borrador guardado'
                   : 'Visible en el portal'}
               </p>
               <div className="relative mt-4 space-y-1.5 border-t border-white/10 pt-3 text-[11px]">
-                <div className="flex justify-between gap-3">
-                  <span className="text-white/40">Última publicación</span>
-                  <span className="text-right text-white/80">
-                    {fechaHora(published?.published_at)}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <span className="text-white/40">Autor</span>
-                  <span className="max-w-[9rem] truncate text-right text-white/80">
-                    {published?.published_by?.name ?? '—'}
-                  </span>
-                </div>
+                {enEdicion ? (
+                  <>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-white/40">Última edición</span>
+                      <span className="text-right text-white/80">
+                        {fechaHora(draft?.updated_at)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-white/40">Por</span>
+                      <span className="max-w-[9rem] truncate text-right text-white/80">
+                        {draft?.updated_by?.name ?? '—'}
+                      </span>
+                    </div>
+                    {draft?.message && (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-white/40">Nota</span>
+                        <span className="line-clamp-3 text-white/80" title={draft.message}>
+                          {draft.message}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-white/40">Última publicación</span>
+                      <span className="text-right text-white/80">
+                        {fechaHora(published?.published_at)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-white/40">Autor</span>
+                      <span className="max-w-[9rem] truncate text-right text-white/80">
+                        {published?.published_by?.name ?? '—'}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -576,6 +665,86 @@ export function CmsOrden() {
           </aside>
         </div>
       </div>
+
+      <Dialog open={dialogoPublicar} onOpenChange={setDialogoPublicar}>
+        <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-enel-navy text-lg">Publicar cambios</DialogTitle>
+            <DialogDescription>
+              Se publicará el contenido y el orden actuales. El portal se actualizará de inmediato y
+              volverás al modo lectura.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-xl border border-black/[0.06] bg-[#fbfcfd] p-4">
+            <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.16em] uppercase">
+              Resumen
+            </p>
+            <ul className="mt-2.5 flex flex-col gap-2 text-[13px]">
+              <li className="flex items-center gap-2">
+                <CheckCircle className="size-4 shrink-0 text-emerald-500" weight="fill" />
+                {orden.length} secciones en el portal
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="size-4 shrink-0 text-emerald-500" weight="fill" />
+                Se creará una versión nueva
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="size-4 shrink-0 text-emerald-500" weight="fill" />
+                La publicación actual es la v{published?.number ?? '—'}
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="size-4 shrink-0 text-emerald-500" weight="fill" />
+                {comparacion.contenido && comparacion.orden
+                  ? 'Cambian contenido y orden.'
+                  : comparacion.contenido
+                    ? 'Cambian textos o imágenes; el orden se mantiene.'
+                    : comparacion.soloOrden
+                      ? 'Solo cambia el orden de las secciones.'
+                      : 'No hay cambios pendientes.'}
+              </li>
+            </ul>
+          </div>
+
+          {comparacion.contenido && (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+              También se publicarán los cambios de contenido del borrador.
+            </p>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="mensaje-publicacion-orden" className="text-sm font-medium">
+              Mensaje de la publicación{' '}
+              <span className="text-muted-foreground font-normal">(opcional)</span>
+            </label>
+            <Textarea
+              id="mensaje-publicacion-orden"
+              value={mensajePublicacion}
+              onChange={(e) => setMensajePublicacion(e.target.value)}
+              placeholder="Ej: Ajuste de orden y textos de Portada"
+              maxLength={255}
+              rows={3}
+            />
+            <p className="text-muted-foreground text-[11px]">
+              Quedará en el historial de versiones.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDialogoPublicar(false)}
+              disabled={guardando}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={() => void publicar()} disabled={guardando}>
+              <CloudArrowUp data-icon="inline-start" />
+              {guardando ? 'Publicando…' : 'Publicar ahora'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
