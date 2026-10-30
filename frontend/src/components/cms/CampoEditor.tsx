@@ -43,6 +43,8 @@ function ListaItem({
   item,
   indice,
   total,
+  nivel,
+  abrirInicial = false,
   onChange,
   onMover,
   onEliminar,
@@ -51,11 +53,13 @@ function ListaItem({
   item: CmsListItem
   indice: number
   total: number
+  nivel: number
+  abrirInicial?: boolean
   onChange: (clave: string, valor: CmsFieldValue) => void
   onMover: (direccion: -1 | 1) => void
   onEliminar: () => void
 }) {
-  const [abierto, setAbierto] = useState(indice === 0)
+  const [abierto, setAbierto] = useState(abrirInicial || (indice === 0 && nivel === 0))
 
   const camposTexto = (field.item_fields ?? []).filter(
     (sub) => sub.type === 'text' || sub.type === 'textarea',
@@ -63,7 +67,14 @@ function ListaItem({
   const textos = camposTexto
     .map((sub) => textoDe(item[sub.key] ?? ''))
     .filter((texto) => texto.length > 0)
-  const titulo = textos[0] ?? `${field.label} ${indice + 1}`
+  const etiquetasSelect = (field.item_fields ?? [])
+    .filter((sub) => sub.type === 'select')
+    .map((sub) => {
+      const valor = textoDe(item[sub.key] ?? '')
+      return sub.options?.find((opcion) => opcion.value === valor)?.label ?? ''
+    })
+    .filter((texto) => texto.length > 0)
+  const titulo = textos[0] ?? etiquetasSelect[0] ?? `${field.label} ${indice + 1}`
   const subtitulo = textos[1] ?? `Elemento ${indice + 1} de ${total}`
 
   return (
@@ -136,6 +147,7 @@ function ListaItem({
             <CampoEditor
               key={sub.key}
               field={sub}
+              nivel={nivel + 1}
               value={item[sub.key] ?? (sub.default as CmsFieldValue)}
               onChange={(nuevo) => onChange(sub.key, nuevo)}
             />
@@ -150,15 +162,18 @@ function ListaEditor({
   field,
   value,
   onChange,
+  nivel,
 }: {
   field: CmsFieldSchema
   value: CmsFieldValue
   onChange: (value: CmsFieldValue) => void
+  nivel: number
 }) {
   const items = Array.isArray(value) ? (value as CmsListItem[]) : []
   const maximo = field.max_items ?? 40
   const ids = useRef(new WeakMap<object, string>())
   const contador = useRef(0)
+  const [recienAgregado, setRecienAgregado] = useState<number | null>(null)
 
   // Clave estable para que mover o editar un elemento no pierda su estado de
   // expansión. El payload no admite campos internos extra, así que la clave
@@ -189,7 +204,14 @@ function ListaEditor({
     const [item] = copia.splice(indice, 1)
     if (!item) return
     copia.splice(destino, 0, item)
+    setRecienAgregado(null)
     onChange(copia)
+  }
+
+  function agregar() {
+    const nuevoIndice = items.length
+    setRecienAgregado(nuevoIndice)
+    onChange([...items, valorLista(field)])
   }
 
   return (
@@ -208,9 +230,14 @@ function ListaEditor({
           item={item}
           indice={indice}
           total={items.length}
+          nivel={nivel}
+          abrirInicial={indice === recienAgregado}
           onChange={(clave, nuevo) => actualizar(indice, clave, nuevo)}
           onMover={(direccion) => mover(indice, direccion)}
-          onEliminar={() => onChange(items.filter((_, i) => i !== indice))}
+          onEliminar={() => {
+            setRecienAgregado(null)
+            onChange(items.filter((_, i) => i !== indice))
+          }}
         />
       ))}
 
@@ -220,10 +247,10 @@ function ListaEditor({
           variant="outline"
           size="sm"
           disabled={items.length >= maximo}
-          onClick={() => onChange([...items, valorLista(field)])}
+          onClick={agregar}
         >
           <Plus data-icon="inline-start" />
-          Agregar {field.label.toLowerCase()}
+          {field.add_label || `Agregar ${field.label.toLowerCase()}`}
         </Button>
         <span className="text-muted-foreground/70 text-[11px] tabular-nums">
           {items.length} / {maximo}
@@ -237,10 +264,12 @@ export function CampoEditor({
   field,
   value,
   onChange,
+  nivel = 0,
 }: {
   field: CmsFieldSchema
   value: CmsFieldValue
   onChange: (value: CmsFieldValue) => void
+  nivel?: number
 }) {
   const id = useId()
   const ayudaId = useId()
@@ -248,7 +277,7 @@ export function CampoEditor({
 
   if (field.type === 'list') {
     return (
-      <Field className="gap-2.5">
+      <Field className={cn('gap-2.5', nivel > 0 && 'border-enel-blue/15 border-l-2 pl-3 md:pl-4')}>
         <div className="flex items-end justify-between gap-3">
           <FieldLabel className="text-enel-navy text-[13px] font-medium">
             {field.label}
@@ -259,10 +288,12 @@ export function CampoEditor({
               </span>
             )}
           </FieldLabel>
-          <span className="text-muted-foreground/70 text-[11px]">Lista</span>
+          <span className="text-muted-foreground/70 text-[11px]">
+            {nivel > 0 ? 'Sub-lista' : 'Lista'}
+          </span>
         </div>
         {field.help_text && <FieldDescription>{field.help_text}</FieldDescription>}
-        <ListaEditor field={field} value={value} onChange={onChange} />
+        <ListaEditor field={field} value={value} onChange={onChange} nivel={nivel} />
       </Field>
     )
   }

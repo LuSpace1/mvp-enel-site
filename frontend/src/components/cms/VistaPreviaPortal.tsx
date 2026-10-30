@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowClockwise, Desktop, DeviceMobile } from '@phosphor-icons/react'
 
+import { CmsTooltip } from '@/components/cms/CmsTooltip'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { CmsPayload } from '@/types/cms'
 
 const ANCHO_ESCRITORIO = 1440
 const VISTA_MOVIL = { ancho: 390, alto: 844 }
+/** Borde de 10px por lado del marco del teléfono. */
+const MARCO_MOVIL = 20
 
 interface VistaPreviaPortalProps {
   /** Contenido que se refleja. En edición es el borrador; en lectura, la publicación. */
@@ -87,8 +90,8 @@ export function VistaPreviaPortal({
           const disponibleAncho = Math.max(width - 24, 1)
           const disponibleAlto = Math.max(height - 24, 1)
           const escala = Math.min(
-            disponibleAncho / VISTA_MOVIL.ancho,
-            disponibleAlto / VISTA_MOVIL.alto,
+            disponibleAncho / (VISTA_MOVIL.ancho + MARCO_MOVIL),
+            disponibleAlto / (VISTA_MOVIL.alto + MARCO_MOVIL),
             1,
           )
           setLienzo((anterior) =>
@@ -126,8 +129,8 @@ export function VistaPreviaPortal({
   const esMovil = modo === 'movil'
   const anchoLienzo = esMovil ? VISTA_MOVIL.ancho : ANCHO_ESCRITORIO
   const altoLienzo = lienzo.alto
-  const anchoMarco = esMovil ? anchoLienzo + 20 : anchoLienzo
-  const altoMarco = esMovil ? altoLienzo + 20 : altoLienzo
+  const anchoMarco = esMovil ? anchoLienzo + MARCO_MOVIL : anchoLienzo
+  const altoMarco = esMovil ? altoLienzo + MARCO_MOVIL : altoLienzo
 
   return (
     <div
@@ -157,39 +160,42 @@ export function VistaPreviaPortal({
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
-          <Button
-            type="button"
-            variant={modo === 'escritorio' ? 'secondary' : 'ghost'}
-            size="icon-xs"
-            aria-label="Vista de escritorio"
-            aria-pressed={modo === 'escritorio'}
-            title="Escritorio"
-            onClick={() => setModo('escritorio')}
-          >
-            <Desktop className="size-3.5" />
-          </Button>
-          <Button
-            type="button"
-            variant={modo === 'movil' ? 'secondary' : 'ghost'}
-            size="icon-xs"
-            aria-label="Vista móvil"
-            aria-pressed={modo === 'movil'}
-            title="Móvil"
-            onClick={() => setModo('movil')}
-          >
-            <DeviceMobile className="size-3.5" />
-          </Button>
+          <CmsTooltip lado="bottom" label="Vista de escritorio">
+            <Button
+              type="button"
+              variant={modo === 'escritorio' ? 'secondary' : 'ghost'}
+              size="icon-xs"
+              aria-label="Vista de escritorio"
+              aria-pressed={modo === 'escritorio'}
+              onClick={() => setModo('escritorio')}
+            >
+              <Desktop className="size-3.5" />
+            </Button>
+          </CmsTooltip>
+          <CmsTooltip lado="bottom" label="Vista móvil">
+            <Button
+              type="button"
+              variant={modo === 'movil' ? 'secondary' : 'ghost'}
+              size="icon-xs"
+              aria-label="Vista móvil"
+              aria-pressed={modo === 'movil'}
+              onClick={() => setModo('movil')}
+            >
+              <DeviceMobile className="size-3.5" />
+            </Button>
+          </CmsTooltip>
           <span className="mx-1 h-4 w-px bg-black/10" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label="Recargar vista previa"
-            title="Recargar vista previa"
-            onClick={recargar}
-          >
-            <ArrowClockwise className="size-3.5" />
-          </Button>
+          <CmsTooltip lado="bottom" label="Recargar vista previa">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Recargar vista previa"
+              onClick={recargar}
+            >
+              <ArrowClockwise className="size-3.5" />
+            </Button>
+          </CmsTooltip>
         </div>
       </div>
 
@@ -211,7 +217,7 @@ export function VistaPreviaPortal({
             className={cn(
               'absolute top-0 left-0 bg-white',
               esMovil
-                ? 'rounded-[2.6rem] border-[10px] border-[#141413] bg-[#141413] shadow-[0_30px_80px_-32px_rgba(0,0,0,0.6)]'
+                ? 'overflow-hidden rounded-[2.6rem] border-[10px] border-[#141413] bg-[#141413] shadow-[0_30px_80px_-32px_rgba(0,0,0,0.6)]'
                 : 'overflow-hidden rounded-lg shadow-[0_18px_50px_-28px_rgba(16,20,24,0.5)] ring-1 ring-black/10',
             )}
             style={{

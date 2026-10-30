@@ -5,8 +5,9 @@ export function Toaster(props: ToasterProps) {
     <Sonner
       theme="light"
       position="top-right"
-      richColors
-      closeButton
+      closeButton={false}
+      gap={10}
+      offset={16}
       toastOptions={{ duration: 4500 }}
       {...props}
     />

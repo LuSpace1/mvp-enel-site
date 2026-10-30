@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { AlertCircle } from 'lucide-react'
 
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { CmsAlert } from '@/components/cms/CmsAlert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel, FieldSeparator } from '@/components/ui/field'
@@ -96,10 +95,11 @@ export function CmsLogin() {
                 </Field>
 
                 {mensajeError && (
-                  <Alert variant="destructive">
-                    <AlertCircle />
-                    <AlertDescription>{mensajeError}</AlertDescription>
-                  </Alert>
+                  <CmsAlert
+                    variant="danger"
+                    title="No se pudo iniciar sesión"
+                    description={mensajeError}
+                  />
                 )}
 
                 <Field>

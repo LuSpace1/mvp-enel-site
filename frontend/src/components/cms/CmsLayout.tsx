@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useBlocker, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useBlocker, useNavigate } from 'react-router-dom'
 import {
   ArrowSquareOut,
   ClockCounterClockwise,
@@ -12,7 +12,6 @@ import {
 } from '@phosphor-icons/react'
 
 import { CmsComoFunciona } from '@/components/cms/CmsComoFunciona'
-import { CmsGuiaPrimeraVez } from '@/components/cms/CmsGuiaPrimeraVez'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +24,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { fechaCorta, fechaRelativa } from '@/lib/cms/fechas'
 import { useEstadoEditor } from '@/lib/cms/estadoEditor'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -39,7 +37,6 @@ const ENLACES = [
 ]
 
 const CLAVE_COLAPSADO = 'cms:sidebar-colapsado'
-const CLAVE_GUIA = 'cms:guia-vista'
 
 function iniciales(nombre: string | undefined): string {
   if (!nombre) return 'EN'
@@ -55,11 +52,9 @@ export function CmsLayout() {
   const user = useAuthStore((estado) => estado.user)
   const logout = useAuthStore((estado) => estado.logout)
   const navigate = useNavigate()
-  const location = useLocation()
   const nombre = user?.full_name || user?.username || 'Usuario'
   const rol = user?.capabilities.can_manage_cms ? 'Administrador' : 'Editor'
   const dirty = useEstadoEditor((estado) => estado.dirty)
-  const resumen = useEstadoEditor((estado) => estado.resumen)
   const limpiarResumen = useEstadoEditor((estado) => estado.limpiarResumen)
   const [colapsado, setColapsado] = useState(() => {
     try {
@@ -69,13 +64,6 @@ export function CmsLayout() {
     }
   })
   const [ayudaAbierta, setAyudaAbierta] = useState(false)
-  const [guiaVista, setGuiaVista] = useState(() => {
-    try {
-      return window.localStorage.getItem(CLAVE_GUIA) === '1'
-    } catch {
-      return true
-    }
-  })
   const [logoutPendiente, setLogoutPendiente] = useState(false)
   const [permitirSalida, setPermitirSalida] = useState(false)
   const blocker = useBlocker(dirty && !permitirSalida)
@@ -106,18 +94,8 @@ export function CmsLayout() {
     navigate('/cms/login', { replace: true })
   }, [limpiarResumen, permitirSalida, logout, navigate])
 
-  function cerrarGuia() {
-    setGuiaVista(true)
-    try {
-      window.localStorage.setItem(CLAVE_GUIA, '1')
-    } catch {
-      // Si el navegador bloquea el storage, la guía se vuelve a mostrar.
-    }
-  }
-
   function abrirGuia() {
     setAyudaAbierta(true)
-    cerrarGuia()
   }
 
   function pedirCerrarSesion() {
@@ -134,41 +112,6 @@ export function CmsLayout() {
     setLogoutPendiente(false)
     setPermitirSalida(true)
   }
-
-  const estado = (() => {
-    if (!resumen) return null
-    const borrador = resumen.draft
-    if (!borrador) {
-      const publicada = resumen.published
-      return {
-        texto: 'Todo publicado',
-        detalle: publicada
-          ? `v${publicada.number} vigente · ${fechaCorta(publicada.published_at)}`
-          : 'Sin publicaciones',
-        color: 'bg-emerald-500',
-      }
-    }
-    if (dirty) {
-      return {
-        texto: 'Borrador sin publicar',
-        detalle: 'Cambios sin guardar',
-        color: 'bg-amber-500',
-      }
-    }
-    const detalleGuardado = borrador.updated_at
-      ? `Guardado ${fechaRelativa(borrador.updated_at)}${
-          borrador.updated_by ? ` · ${borrador.updated_by.name}` : ''
-        }`
-      : 'Borrador abierto'
-    return {
-      texto: 'Borrador sin publicar',
-      detalle: resumen.hasUnpublishedChanges ? detalleGuardado : `Sin cambios · ${detalleGuardado}`,
-      color: 'bg-sky-500',
-    }
-  })()
-
-  const mostrarGuia =
-    !guiaVista && location.pathname === '/cms' && Boolean(resumen) && !resumen?.draft
 
   return (
     <div className="bg-background flex min-h-svh flex-col lg:flex-row">
@@ -322,7 +265,7 @@ export function CmsLayout() {
                       <span
                         role="tooltip"
                         aria-hidden="true"
-                        className="bg-enel-navy pointer-events-none absolute top-1/2 left-full z-50 ml-2 hidden -translate-y-1/2 rounded-md px-2 py-1 text-[11px] font-medium whitespace-nowrap text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:block"
+                        className="bg-enel-navy pointer-events-none absolute top-1/2 left-full z-50 ml-2 hidden -translate-y-1/2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium whitespace-nowrap text-white opacity-0 shadow-[0_14px_32px_-14px_rgba(10,25,47,0.7)] ring-1 ring-white/10 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:block"
                       >
                         {enlace.label}
                       </span>
@@ -342,14 +285,6 @@ export function CmsLayout() {
         >
           {colapsado ? (
             <div className="flex flex-col items-center gap-1.5">
-              {estado && (
-                <span
-                  role="status"
-                  aria-label={`${estado.texto}. ${estado.detalle}`}
-                  title={`${estado.texto} · ${estado.detalle}`}
-                  className={cn('size-2 rounded-full', estado.color)}
-                />
-              )}
               <Button
                 type="button"
                 variant="ghost"
@@ -401,33 +336,12 @@ export function CmsLayout() {
               <Button
                 type="button"
                 variant="ghost"
-                className="text-muted-foreground hover:text-foreground mb-1 w-full justify-start gap-2 px-3"
+                className="text-muted-foreground hover:text-foreground mb-3 w-full justify-start gap-2 px-3"
                 onClick={abrirGuia}
               >
                 <Info className="size-4" />
                 ¿Cómo funciona?
               </Button>
-
-              {estado && (
-                <Link
-                  to="/cms"
-                  className="border-border bg-muted/40 hover:bg-muted/70 focus-visible:ring-ring mb-3 flex items-start gap-2.5 rounded-lg border px-3.5 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                  title={`${estado.texto} · ${estado.detalle}`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={cn('mt-1 size-2 shrink-0 rounded-full', estado.color)}
-                  />
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-foreground truncate text-xs font-medium">
-                      {estado.texto}
-                    </span>
-                    <span className="text-muted-foreground truncate text-[11px]">
-                      {estado.detalle}
-                    </span>
-                  </span>
-                </Link>
-              )}
 
               <a
                 href="/"
@@ -478,11 +392,6 @@ export function CmsLayout() {
       </aside>
 
       <main id="contenido-cms" tabIndex={-1} className="bg-muted/25 min-w-0 flex-1 outline-none">
-        {mostrarGuia && (
-          <div className="mx-auto max-w-[1440px] px-4 pt-4 md:px-8">
-            <CmsGuiaPrimeraVez onAbrir={abrirGuia} onCerrar={cerrarGuia} />
-          </div>
-        )}
         <Outlet />
       </main>
 

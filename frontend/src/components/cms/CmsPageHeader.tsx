@@ -26,7 +26,7 @@ export function CmsPageHeader({
         className,
       )}
     >
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-4 md:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+      <div className="flex w-full flex-col gap-4 px-4 py-4 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 xl:px-8">
         <div className="min-w-0">
           {back && (
             <Link

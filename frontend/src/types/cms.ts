@@ -17,6 +17,7 @@ export interface CmsFieldSchema {
   options?: CmsFieldOption[]
   item_fields?: CmsFieldSchema[]
   max_items?: number
+  add_label?: string
 }
 
 export interface CmsSectionSchema {

@@ -7,12 +7,14 @@ import {
   ClockCounterClockwise,
   Eye,
   User,
-  WarningCircle,
 } from '@phosphor-icons/react'
 import { isAxiosError } from 'axios'
-import { toast } from 'sonner'
 
+import { CmsAlert, CmsAlertAction } from '@/components/cms/CmsAlert'
+import { CmsDraftStatus } from '@/components/cms/CmsDraftStatus'
+import { CmsHelpButton } from '@/components/cms/CmsHelpButton'
 import { CmsPageHeader } from '@/components/cms/CmsPageHeader'
+import { CmsTooltip } from '@/components/cms/CmsTooltip'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +39,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { fechaHora, fechaRelativa } from '@/lib/cms/fechas'
 import { useEstadoEditor } from '@/lib/cms/estadoEditor'
+import { notificarError, notificarExito } from '@/lib/cms/notificaciones'
 import { cn } from '@/lib/utils'
 import {
   obtenerContenidoAdmin,
@@ -141,11 +144,11 @@ export function CmsRevisiones() {
         published: vigente,
         hasUnpublishedChanges: Boolean(respuesta.has_unpublished_changes),
       })
-      toast.success('Versión restaurada en el borrador. Publícala para aplicarla al portal.')
+      notificarExito('Versión restaurada', 'Publícala para aplicarla al portal.')
       setARestaurar(null)
       navigate('/cms')
     } catch (err) {
-      toast.error(detalleError(err))
+      notificarError('No se pudo restaurar la versión', detalleError(err))
     } finally {
       setRestaurando(null)
     }
@@ -164,7 +167,7 @@ export function CmsRevisiones() {
       setDetalleRevision(detalle)
       setDetalleVigente(actual)
     } catch (err) {
-      toast.error(detalleError(err))
+      notificarError('No se pudo cargar la versión', detalleError(err))
     } finally {
       setCargandoDetalle(false)
     }
@@ -250,38 +253,35 @@ export function CmsRevisiones() {
           </span>
         }
         actions={
-          <Button
-            variant="outline"
-            onClick={() => void cargar(true)}
-            disabled={recargando}
-            title="Actualizar versiones"
-          >
-            <ArrowClockwise data-icon="inline-start" className={cn(recargando && 'animate-spin')} />
-            {recargando ? 'Actualizando…' : 'Actualizar'}
-          </Button>
+          <>
+            <CmsDraftStatus />
+            <CmsTooltip lado="bottom" label="Actualizar versiones">
+              <Button variant="outline" onClick={() => void cargar(true)} disabled={recargando}>
+                <ArrowClockwise
+                  data-icon="inline-start"
+                  className={cn(recargando && 'animate-spin')}
+                />
+                {recargando ? 'Actualizando…' : 'Actualizar'}
+              </Button>
+            </CmsTooltip>
+            <CmsHelpButton />
+          </>
         }
       />
 
       <div className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
         <div className="flex flex-col gap-5">
           {contenidoAdmin?.draft && contenidoAdmin.has_unpublished_changes && (
-            <div className="flex flex-col gap-3 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-2.5">
-                <WarningCircle className="mt-0.5 size-5 shrink-0 text-amber-600" />
-                <div>
-                  <p className="font-medium text-amber-950">Tienes cambios sin publicar</p>
-                  <p className="text-amber-900/80">Restaurar una versión los reemplazará.</p>
-                </div>
-              </div>
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="shrink-0 border-amber-200 bg-white text-amber-800 hover:bg-amber-100 hover:text-amber-900"
-              >
-                <Link to="/cms">Continuar editando</Link>
-              </Button>
-            </div>
+            <CmsAlert
+              variant="warning"
+              title="Tienes cambios sin publicar"
+              description="Restaurar una versión los reemplazará."
+              action={
+                <CmsAlertAction tono="warning" asChild>
+                  <Link to="/cms">Continuar editando</Link>
+                </CmsAlertAction>
+              }
+            />
           )}
 
           <Tabs value={filtro} onValueChange={(valor) => setFiltro(valor as Filtro)}>

@@ -1,9 +1,9 @@
 import { useRef, useState, type DragEvent } from 'react'
 import { CircleNotch, ImageSquare, Trash, UploadSimple } from '@phosphor-icons/react'
-import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { notificarAviso, notificarError, notificarExito } from '@/lib/cms/notificaciones'
 import { cn } from '@/lib/utils'
 import { subirImagen } from '@/services/cms'
 
@@ -21,16 +21,16 @@ export function ImageField({
   async function subir(file: File | undefined) {
     if (!file) return
     if (!file.type.startsWith('image/')) {
-      toast.error('El archivo debe ser una imagen JPEG, PNG o WebP.')
+      notificarAviso('Formato no compatible', 'El archivo debe ser una imagen JPEG, PNG o WebP.')
       return
     }
     setSubiendo(true)
     try {
       const media = await subirImagen(file)
       onChange(media.url)
-      toast.success('Imagen subida al CMS.')
+      notificarExito('Imagen subida', 'La imagen quedó disponible para el CMS.')
     } catch {
-      toast.error('No se pudo subir la imagen. Revisa el formato y el tamaño (máx. 5 MB).')
+      notificarError('No se pudo subir la imagen', 'Revisa el formato y el tamaño (máx. 5 MB).')
     } finally {
       setSubiendo(false)
       if (inputRef.current) inputRef.current.value = ''

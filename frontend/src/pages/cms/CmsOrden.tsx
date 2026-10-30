@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState, type DragEvent } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowDown,
@@ -12,10 +12,13 @@ import {
   PencilSimpleLine,
 } from '@phosphor-icons/react'
 import { isAxiosError } from 'axios'
-import { toast } from 'sonner'
 
+import { CmsAlert } from '@/components/cms/CmsAlert'
 import { CmsConflictoBanner } from '@/components/cms/CmsConflictoBanner'
+import { CmsDraftStatus } from '@/components/cms/CmsDraftStatus'
+import { CmsHelpButton } from '@/components/cms/CmsHelpButton'
 import { CmsPageHeader } from '@/components/cms/CmsPageHeader'
+import { CmsTooltip } from '@/components/cms/CmsTooltip'
 import { VistaPreviaPortal } from '@/components/cms/VistaPreviaPortal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -30,8 +33,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { compararPayload } from '@/lib/cms/comparar'
-import { fechaHora } from '@/lib/cms/fechas'
 import { useEstadoEditor } from '@/lib/cms/estadoEditor'
+import { notificarError, notificarExito, notificarInfo } from '@/lib/cms/notificaciones'
 import { cn } from '@/lib/utils'
 import {
   activarEdicion,
@@ -186,25 +189,37 @@ export function CmsOrden() {
       setDirty(false)
       setConflicto(false)
       actualizarDraft(respuesta.draft, respuesta.has_unpublished_changes)
-      toast.success('Orden guardado en el borrador.')
+      notificarExito('Orden guardado', 'El nuevo orden quedó guardado en el borrador.')
       return respuesta.draft
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) setConflicto(true)
-      toast.error(detalleError(err))
+      notificarError('No se pudo guardar el orden', detalleError(err))
       return null
     } finally {
       setGuardando(false)
     }
   }
 
+  const guardarEvento = useEffectEvent(guardar)
+
+  useEffect(() => {
+    function alPresionar(evento: KeyboardEvent) {
+      if (!(evento.metaKey || evento.ctrlKey) || evento.key.toLowerCase() !== 's') return
+      evento.preventDefault()
+      if (!dialogoPublicar) void guardarEvento()
+    }
+    window.addEventListener('keydown', alPresionar)
+    return () => window.removeEventListener('keydown', alPresionar)
+  }, [dialogoPublicar])
+
   async function publicar() {
     if (!draft) return
     if (dirty) {
-      toast.info('Guarda los cambios antes de publicar.')
+      notificarInfo('Guarda los cambios antes de publicar', 'El orden tiene cambios sin guardar.')
       return
     }
     if (sinCambios) {
-      toast.info('No hay cambios para publicar.')
+      notificarInfo('No hay cambios para publicar', 'El orden coincide con la última publicación.')
       return
     }
     setGuardando(true)
@@ -224,15 +239,16 @@ export function CmsOrden() {
       setDialogoPublicar(false)
       setMensajePublicacion('')
       setConflicto(false)
-      toast.success(
-        `Publicado como v${respuesta.published.number}. Contenido y orden actualizados.`,
+      notificarExito(
+        `Publicado como v${respuesta.published.number}`,
+        'Contenido y orden actualizados.',
       )
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
         setConflicto(true)
         setDialogoPublicar(false)
       }
-      toast.error(detalleError(err))
+      notificarError('No se pudo publicar', detalleError(err))
     } finally {
       setGuardando(false)
     }
@@ -241,11 +257,11 @@ export function CmsOrden() {
   function abrirDialogoPublicar() {
     if (!draft) return
     if (dirty) {
-      toast.info('Guarda los cambios antes de publicar.')
+      notificarInfo('Guarda los cambios antes de publicar', 'El orden tiene cambios sin guardar.')
       return
     }
     if (sinCambios) {
-      toast.info('No hay cambios para publicar.')
+      notificarInfo('No hay cambios para publicar', 'El orden coincide con la última publicación.')
       return
     }
     setMensajePublicacion(comparacion.soloOrden ? 'Cambio de orden de secciones' : '')
@@ -298,9 +314,9 @@ export function CmsOrden() {
     try {
       await activarEdicion()
       await cargar()
-      toast.success('Modo edición activado. Ya puedes reordenar las secciones.')
+      notificarExito('Modo edición activado', 'Ya puedes reordenar las secciones.')
     } catch (err) {
-      toast.error(detalleError(err))
+      notificarError('No se pudo activar el modo edición', detalleError(err))
     } finally {
       setActivando(false)
     }
@@ -326,49 +342,69 @@ export function CmsOrden() {
           )
         }
         actions={
-          enEdicion ? (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => void guardar()}
-                disabled={!dirty || guardando}
-              >
-                <FloppyDisk data-icon="inline-start" />
-                Guardar orden
-              </Button>
-              <span
-                className="inline-flex"
-                title={
-                  dirty
-                    ? 'Guarda los cambios antes de publicar.'
-                    : guardando
+          <>
+            <CmsDraftStatus />
+            {enEdicion ? (
+              <>
+                <CmsTooltip
+                  lado="bottom"
+                  label={
+                    guardando
                       ? 'Guardando los cambios…'
-                      : sinCambios
-                        ? 'No hay cambios para publicar.'
-                        : undefined
-                }
-              >
-                <Button onClick={abrirDialogoPublicar} disabled={guardando || dirty || sinCambios}>
-                  <CloudArrowUp data-icon="inline-start" />
-                  Publicar cambios
-                </Button>
-              </span>
-            </>
-          ) : (
-            <Button asChild variant="outline">
-              <Link to="/cms/revisiones">Ver versiones</Link>
-            </Button>
-          )
+                      : !dirty
+                        ? 'No hay cambios para guardar.'
+                        : 'Guardar orden'
+                  }
+                  shortcut={dirty && !guardando ? 'Ctrl S' : undefined}
+                >
+                  <Button
+                    variant="outline"
+                    onClick={() => void guardar()}
+                    disabled={!dirty || guardando}
+                    aria-keyshortcuts="Control+S"
+                  >
+                    <FloppyDisk data-icon="inline-start" />
+                    Guardar orden
+                  </Button>
+                </CmsTooltip>
+                <CmsTooltip
+                  lado="bottom"
+                  label={
+                    dirty
+                      ? 'Guarda los cambios antes de publicar.'
+                      : guardando
+                        ? 'Guardando los cambios…'
+                        : sinCambios
+                          ? 'No hay cambios para publicar.'
+                          : 'Publicar cambios'
+                  }
+                >
+                  <Button
+                    onClick={abrirDialogoPublicar}
+                    disabled={guardando || dirty || sinCambios}
+                  >
+                    <CloudArrowUp data-icon="inline-start" />
+                    Publicar cambios
+                  </Button>
+                </CmsTooltip>
+              </>
+            ) : (
+              <Button asChild variant="outline">
+                <Link to="/cms/revisiones">Ver versiones</Link>
+              </Button>
+            )}
+            <CmsHelpButton />
+          </>
         }
       />
 
-      <div className="mx-auto max-w-[1440px] px-4 py-6 md:px-8 md:py-8">
+      <div className="w-full px-4 py-6 md:px-6 md:py-8 xl:px-8">
         {conflicto && (
           <div className="mb-4">
             <CmsConflictoBanner onRecargar={() => void cargar()} />
           </div>
         )}
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,44%)]">
+        <div className="grid gap-6 xl:grid-cols-[minmax(440px,0.95fr)_minmax(0,1.3fr)]">
           <div className="flex min-w-0 flex-col gap-4">
             {!enEdicion && (
               <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-sm md:p-6">
@@ -401,22 +437,10 @@ export function CmsOrden() {
                   <h2 className="text-enel-navy text-base font-semibold">Recorrido del portal</h2>
                   <p className="text-muted-foreground text-xs">
                     {enEdicion
-                      ? dirty
-                        ? 'Tienes cambios sin guardar en el borrador.'
-                        : 'Así se verá el orden en el portal.'
+                      ? 'Así se verá el orden en el portal.'
                       : 'Este es el orden que ve el portal público.'}
                   </p>
                 </div>
-                <Badge
-                  variant={dirty ? 'secondary' : 'outline'}
-                  className="text-[10px] tabular-nums"
-                >
-                  {enEdicion
-                    ? dirty
-                      ? 'Sin guardar'
-                      : 'Borrador guardado'
-                    : `Publicado · v${published?.number ?? '—'}`}
-                </Badge>
               </div>
 
               <ol className="flex flex-col gap-2 p-3 md:p-4">
@@ -564,103 +588,13 @@ export function CmsOrden() {
                 </span>
               </div>
             </div>
-
-            <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-sm">
-              <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.16em] uppercase">
-                Cómo funciona
-              </p>
-              <ul className="mt-3 flex flex-col gap-3 text-xs leading-relaxed">
-                <li className="flex gap-2.5">
-                  <CheckCircle className="text-enel-blue mt-0.5 size-4 shrink-0" weight="fill" />
-                  <span>
-                    <strong className="text-enel-navy font-medium">Inicio</strong> y{' '}
-                    <strong className="text-enel-navy font-medium">Cierre</strong> están fijados en
-                    los extremos del recorrido.
-                  </span>
-                </li>
-                <li className="flex gap-2.5">
-                  <CheckCircle className="text-enel-blue mt-0.5 size-4 shrink-0" weight="fill" />
-                  <span>Arrastra una sección o usa las flechas para moverla.</span>
-                </li>
-                <li className="flex gap-2.5">
-                  <CheckCircle className="text-enel-blue mt-0.5 size-4 shrink-0" weight="fill" />
-                  <span>
-                    El orden alimenta la página, el header y el índice lateral del portal.
-                  </span>
-                </li>
-              </ul>
-            </div>
           </div>
 
           <aside className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-24 xl:self-start">
-            <div className="bg-enel-navy relative overflow-hidden rounded-2xl p-5 text-white shadow-sm">
-              <div className="bg-enel-blue/30 pointer-events-none absolute -top-10 -right-10 size-32 rounded-full blur-2xl" />
-              <p className="relative text-[10px] font-semibold tracking-[0.16em] text-white/45 uppercase">
-                {enEdicion ? 'Estado del borrador' : 'Contenido publicado'}
-              </p>
-              <p className="relative mt-1.5 text-2xl font-semibold tabular-nums">
-                {enEdicion ? 'Sin publicar' : `v${published?.number ?? '—'}`}
-              </p>
-              <p className="relative mt-1 inline-flex items-center gap-1.5 text-[11px] text-white/55">
-                <span
-                  className={cn(
-                    'size-1.5 rounded-full',
-                    enEdicion ? (dirty ? 'bg-amber-400' : 'bg-sky-400') : 'bg-emerald-400',
-                  )}
-                />
-                {enEdicion
-                  ? dirty
-                    ? 'Cambios sin guardar'
-                    : 'Borrador guardado'
-                  : 'Visible en el portal'}
-              </p>
-              <div className="relative mt-4 space-y-1.5 border-t border-white/10 pt-3 text-[11px]">
-                {enEdicion ? (
-                  <>
-                    <div className="flex justify-between gap-3">
-                      <span className="text-white/40">Última edición</span>
-                      <span className="text-right text-white/80">
-                        {fechaHora(draft?.updated_at)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <span className="text-white/40">Por</span>
-                      <span className="max-w-[9rem] truncate text-right text-white/80">
-                        {draft?.updated_by?.name ?? '—'}
-                      </span>
-                    </div>
-                    {draft?.message && (
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-white/40">Nota</span>
-                        <span className="line-clamp-3 text-white/80" title={draft.message}>
-                          {draft.message}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-between gap-3">
-                      <span className="text-white/40">Última publicación</span>
-                      <span className="text-right text-white/80">
-                        {fechaHora(published?.published_at)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <span className="text-white/40">Autor</span>
-                      <span className="max-w-[9rem] truncate text-right text-white/80">
-                        {published?.published_by?.name ?? '—'}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
             <VistaPreviaPortal
               payload={payloadPreview}
               enVivo={enEdicion}
-              className="h-[62svh] xl:h-[calc(100svh-19rem)]"
+              className="h-[70svh] xl:h-[calc(100svh-8rem)]"
             />
           </aside>
         </div>
@@ -707,9 +641,11 @@ export function CmsOrden() {
           </div>
 
           {comparacion.contenido && (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
-              También se publicarán los cambios de contenido del borrador.
-            </p>
+            <CmsAlert
+              compact
+              variant="warning"
+              title="También se publicarán los cambios de contenido del borrador."
+            />
           )}
 
           <div className="flex flex-col gap-2">

@@ -7,7 +7,6 @@ import {
   CaretLeft,
   CaretRight,
   CheckCircle,
-  ClockCounterClockwise,
   CloudArrowUp,
   Eye,
   EyeSlash,
@@ -30,10 +29,13 @@ import {
   WarningCircle,
 } from '@phosphor-icons/react'
 import { isAxiosError } from 'axios'
-import { toast } from 'sonner'
 
+import { CmsAlert, CmsAlertAction } from '@/components/cms/CmsAlert'
 import { CmsConflictoBanner } from '@/components/cms/CmsConflictoBanner'
+import { CmsDraftStatus } from '@/components/cms/CmsDraftStatus'
+import { CmsHelpButton } from '@/components/cms/CmsHelpButton'
 import { CmsPageHeader } from '@/components/cms/CmsPageHeader'
+import { CmsTooltip } from '@/components/cms/CmsTooltip'
 import { CampoEditor } from '@/components/cms/CampoEditor'
 import { VistaPreviaPortal } from '@/components/cms/VistaPreviaPortal'
 import {
@@ -60,7 +62,8 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { useEstadoEditor } from '@/lib/cms/estadoEditor'
-import { fechaCorta, fechaHora } from '@/lib/cms/fechas'
+import { fechaHora } from '@/lib/cms/fechas'
+import { notificarError, notificarExito, notificarInfo } from '@/lib/cms/notificaciones'
 import { cn } from '@/lib/utils'
 import {
   activarEdicion,
@@ -72,7 +75,9 @@ import {
   publicarContenido,
 } from '@/services/cms'
 import type {
+  CmsFieldSchema,
   CmsFieldValue,
+  CmsListItem,
   CmsPayload,
   CmsRevision,
   CmsRevisionDetail,
@@ -115,6 +120,20 @@ function estaVacio(valor: CmsFieldValue): boolean {
   if (Array.isArray(valor)) return valor.length === 0
   const documento = valor as RichTextDoc
   return !(documento.content ?? []).some((nodo) => textoNodo(nodo).trim().length > 0)
+}
+
+/** Considera incompleto un campo requerido, incluso dentro de listas anidadas. */
+function campoIncompleto(campo: CmsFieldSchema, valor: CmsFieldValue): boolean {
+  if (campo.type === 'list') {
+    const items = Array.isArray(valor) ? (valor as CmsListItem[]) : []
+    if (items.length === 0) return Boolean(campo.required)
+    return items.some((item) =>
+      (campo.item_fields ?? []).some((sub) =>
+        campoIncompleto(sub, item[sub.key] ?? (sub.default as CmsFieldValue)),
+      ),
+    )
+  }
+  return Boolean(campo.required) && estaVacio(valor)
 }
 
 const CLAVE_SECCIONES = 'cms:secciones-colapsadas'
@@ -321,9 +340,8 @@ export function CmsEditor() {
     for (const seccion of schema?.sections ?? []) {
       const valores = draft.payload.sections[seccion.key] ?? {}
       const pendientes = seccion.fields.filter((campo) => {
-        if (!campo.required) return false
         const valor = valores[campo.key] ?? (campo.default as CmsFieldValue)
-        return estaVacio(valor)
+        return campoIncompleto(campo, valor)
       }).length
       mapa.set(seccion.key, pendientes)
     }
@@ -414,9 +432,12 @@ export function CmsEditor() {
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
         setConflicto(true)
-        toast.error('Otra persona guardó el borrador. Recarga para continuar.')
+        notificarError(
+          'No se pudo guardar el borrador',
+          'Otra persona guardó cambios. Recarga para continuar.',
+        )
       } else {
-        toast.error(detalleError(err))
+        notificarError('No se pudo guardar el borrador', detalleError(err))
       }
       return null
     } finally {
@@ -430,9 +451,12 @@ export function CmsEditor() {
     const guardado = await persistir()
     if (!guardado) return
     if (edicionRef.current !== edicionAntes) {
-      toast.info('Se guardaron los cambios anteriores. Los nuevos siguen pendientes.')
+      notificarInfo('Se guardaron los cambios anteriores', 'Los nuevos cambios siguen pendientes.')
     } else {
-      toast.success('Borrador guardado.')
+      notificarExito(
+        'Borrador guardado',
+        'Los cambios quedaron guardados. Publícalos para aplicarlos al portal.',
+      )
     }
   }
 
@@ -442,11 +466,17 @@ export function CmsEditor() {
   async function publicar() {
     if (!draft) return
     if (dirty) {
-      toast.info('Guarda los cambios antes de publicar.')
+      notificarInfo(
+        'Guarda los cambios antes de publicar',
+        'El borrador tiene cambios sin guardar.',
+      )
       return
     }
     if (!hayCambiosPendientes) {
-      toast.info('No hay cambios para publicar.')
+      notificarInfo(
+        'No hay cambios para publicar',
+        'El borrador coincide con la última publicación.',
+      )
       return
     }
 
@@ -466,15 +496,16 @@ export function CmsEditor() {
       setDirty(false)
       setDialogoPublicar(false)
       setMensajePublicacion('')
-      toast.success(
-        `Contenido publicado como v${respuesta.published.number}. Ya está visible en el portal.`,
+      notificarExito(
+        `Publicado como v${respuesta.published.number}`,
+        'El contenido ya está visible en el portal.',
       )
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
         setConflicto(true)
         setDialogoPublicar(false)
       }
-      toast.error(detalleError(err))
+      notificarError('No se pudo publicar', detalleError(err))
     } finally {
       setSaving(false)
     }
@@ -505,9 +536,9 @@ export function CmsEditor() {
       setDirty(false)
       setConflicto(false)
       setDialogoDescartar(false)
-      toast.success('Borrador descartado. Se restauró la última publicación.')
+      notificarExito('Borrador descartado', 'Se restauró la última publicación.')
     } catch (err) {
-      toast.error(detalleError(err))
+      notificarError('No se pudo descartar el borrador', detalleError(err))
     } finally {
       setDescartando(false)
     }
@@ -527,9 +558,9 @@ export function CmsEditor() {
       setActiva(respuesta.draft.payload.order[0] ?? 'portada')
       setDirty(false)
       setConflicto(false)
-      toast.success('Modo edición activado. Ya puedes editar el borrador.')
+      notificarExito('Modo edición activado', 'Ya puedes editar el borrador.')
     } catch (err) {
-      toast.error(detalleError(err))
+      notificarError('No se pudo activar el modo edición', detalleError(err))
     } finally {
       setActivando(false)
     }
@@ -546,7 +577,7 @@ export function CmsEditor() {
           <Skeleton className="h-3 w-28" />
           <Skeleton className="mt-2 h-6 w-56" />
         </div>
-        <div className="mx-auto grid max-w-[1440px] gap-6 p-4 md:p-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="grid w-full gap-6 p-4 md:p-6 lg:grid-cols-[300px_minmax(0,1fr)] xl:p-8">
           <div className="flex flex-col gap-4">
             <Skeleton className="h-80 rounded-2xl" />
             <Skeleton className="hidden h-44 rounded-2xl lg:block" />
@@ -601,8 +632,8 @@ export function CmsEditor() {
           }
         />
 
-        <div className="mx-auto max-w-[1440px] px-4 py-6 md:px-8 md:py-8">
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,46%)]">
+        <div className="w-full px-4 py-6 md:px-6 md:py-8 xl:px-8">
+          <div className="grid gap-6 xl:grid-cols-[minmax(440px,0.95fr)_minmax(0,1.3fr)]">
             <div className="flex min-w-0 flex-col gap-4">
               <div className="rounded-2xl border border-black/[0.06] bg-white p-6 shadow-sm md:p-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -730,151 +761,105 @@ export function CmsEditor() {
         eyebrow="Contenido del portal"
         title="Editor de contenido"
         description={
-          <div className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                className={cn(
-                  'size-1.5 rounded-full',
-                  saving ? 'bg-primary animate-pulse' : dirty ? 'bg-amber-500' : 'bg-sky-500',
-                )}
-              />
-              <span className="text-foreground/70 font-medium">
-                {saving ? 'Guardando…' : dirty ? 'Cambios sin guardar' : 'Borrador sin publicar'}
-              </span>
-            </span>
-            <span className="text-black/15">·</span>
-            <span>
-              {published?.published_at
-                ? `Última publicación: ${fechaHora(published.published_at)}`
-                : 'Todavía sin publicar'}
-            </span>
-          </div>
+          <span className="text-muted-foreground text-xs">
+            {published?.published_at
+              ? `Última publicación: ${fechaHora(published.published_at)}`
+              : 'Todavía sin publicar'}
+          </span>
         }
         actions={
           <>
-            <Button
-              variant={previewVisible ? 'secondary' : 'outline'}
-              onClick={alternarPreview}
-              aria-pressed={previewVisible}
-              title={
-                previewVisible
-                  ? 'Ocultar la vista previa en vivo'
-                  : 'Mostrar la vista previa en vivo'
-              }
+            <CmsDraftStatus />
+            <CmsTooltip
+              lado="bottom"
+              label={previewVisible ? 'Ocultar vista previa' : 'Mostrar vista previa'}
             >
-              {previewVisible ? (
-                <EyeSlash data-icon="inline-start" />
-              ) : (
-                <Eye data-icon="inline-start" />
-              )}
-              Vista previa
-            </Button>
-            <span className="group relative inline-flex">
+              <Button
+                variant={previewVisible ? 'secondary' : 'outline'}
+                onClick={alternarPreview}
+                aria-pressed={previewVisible}
+              >
+                {previewVisible ? (
+                  <EyeSlash data-icon="inline-start" />
+                ) : (
+                  <Eye data-icon="inline-start" />
+                )}
+                Vista previa
+              </Button>
+            </CmsTooltip>
+            <CmsTooltip
+              lado="bottom"
+              label={!dirty || saving ? motivoGuardarDeshabilitado : 'Guardar borrador'}
+              shortcut={!dirty || saving ? undefined : 'Ctrl S'}
+            >
               <Button
                 variant={dirty ? 'secondary' : 'outline'}
                 onClick={() => void guardar()}
                 disabled={!dirty || saving}
-                aria-describedby={!dirty || saving ? 'motivo-guardar-cabecera' : undefined}
-                title={dirty && !saving ? 'Guardar borrador (Ctrl+S)' : undefined}
+                aria-keyshortcuts="Control+S"
               >
                 <FloppyDisk data-icon="inline-start" />
                 Guardar
               </Button>
-              {(!dirty || saving) && (
-                <span
-                  id="motivo-guardar-cabecera"
-                  role="tooltip"
-                  className="bg-enel-navy pointer-events-none absolute top-full right-0 z-50 mt-2.5 w-max max-w-[17rem] rounded-md px-2.5 py-1.5 text-left text-[11px] leading-snug font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100"
-                >
-                  {motivoGuardarDeshabilitado}
-                  <span
-                    aria-hidden="true"
-                    className="bg-enel-navy absolute right-5 bottom-full size-2 translate-y-1/2 rotate-45"
-                  />
-                </span>
-              )}
-            </span>
-            <span className="group relative inline-flex">
-              <Button
-                onClick={() => setDialogoPublicar(true)}
-                disabled={publicarDeshabilitado}
-                aria-describedby={publicarDeshabilitado ? 'motivo-publicar-cabecera' : undefined}
-              >
+            </CmsTooltip>
+            <CmsTooltip
+              lado="bottom"
+              label={publicarDeshabilitado ? motivoPublicarDeshabilitado : 'Publicar cambios'}
+            >
+              <Button onClick={() => setDialogoPublicar(true)} disabled={publicarDeshabilitado}>
                 <CloudArrowUp data-icon="inline-start" />
                 Publicar
               </Button>
-              {publicarDeshabilitado && (
-                <span
-                  id="motivo-publicar-cabecera"
-                  role="tooltip"
-                  className="bg-enel-navy pointer-events-none absolute top-full right-0 z-50 mt-2.5 w-max max-w-[17rem] rounded-md px-2.5 py-1.5 text-left text-[11px] leading-snug font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100"
-                >
-                  {motivoPublicarDeshabilitado}
-                  <span
-                    aria-hidden="true"
-                    className="bg-enel-navy absolute right-5 bottom-full size-2 translate-y-1/2 rotate-45"
-                  />
-                </span>
-              )}
-            </span>
+            </CmsTooltip>
+            <CmsHelpButton />
           </>
         }
       />
 
-      <div className="mx-auto max-w-[1440px] px-4 py-6 md:px-8 md:py-8">
+      <div className="w-full px-4 py-6 md:px-6 md:py-8 xl:px-8">
         <div className="flex flex-col gap-4">
           {conflicto && <CmsConflictoBanner onRecargar={() => void cargar()} />}
 
           {!dirty && hayCambiosPendientes && (
-            <div className="flex flex-col gap-3 rounded-xl border border-sky-200/80 bg-sky-50/70 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-2.5">
-                <ClockCounterClockwise className="mt-0.5 size-5 shrink-0 text-sky-600" />
-                <div>
-                  <p className="font-medium text-sky-950">Tienes cambios guardados sin publicar</p>
-                  <p className="text-sky-900/70">
-                    Última edición: {fechaHora(draft.updated_at)}
-                    {draft.updated_by ? ` · ${draft.updated_by.name}` : ''}. Puedes continuar cuando
-                    quieras.
-                  </p>
-                  {draft.message && <p className="mt-1 text-sky-900/80">{draft.message}</p>}
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="shrink-0 border-sky-200 bg-white text-sky-800 hover:bg-sky-100 hover:text-sky-900"
-                onClick={() => setDialogoDescartar(true)}
-              >
-                Descartar cambios
-              </Button>
-            </div>
+            <CmsAlert
+              variant="info"
+              title="Tienes cambios guardados sin publicar"
+              description={
+                <>
+                  Última edición: {fechaHora(draft.updated_at)}
+                  {draft.updated_by ? ` · ${draft.updated_by.name}` : ''}. Puedes continuar cuando
+                  quieras.
+                  {draft.message && <p className="mt-1">{draft.message}</p>}
+                </>
+              }
+              action={
+                <CmsAlertAction tono="info" onClick={() => setDialogoDescartar(true)}>
+                  Descartar cambios
+                </CmsAlertAction>
+              }
+            />
           )}
 
           <div
             className={cn(
               'grid gap-6',
               previewVisible
-                ? seccionesColapsadas
-                  ? 'xl:grid-cols-[minmax(0,1fr)_minmax(420px,52%)]'
-                  : 'xl:grid-cols-[minmax(0,1fr)_minmax(360px,42%)]'
+                ? 'xl:grid-cols-[minmax(440px,0.95fr)_minmax(0,1.3fr)]'
                 : 'grid-cols-1',
             )}
           >
             <div
               className={cn(
                 'grid min-w-0 gap-6',
-                seccionesColapsadas
+                seccionesColapsadas || previewVisible
                   ? 'grid-cols-1'
-                  : previewVisible
-                    ? 'grid-cols-1 2xl:grid-cols-[220px_minmax(0,1fr)]'
-                    : 'lg:grid-cols-[300px_minmax(0,1fr)]',
+                  : 'lg:grid-cols-[300px_minmax(0,1fr)]',
               )}
             >
               <aside
                 className={cn(
                   'flex-col gap-4 lg:sticky lg:top-24 lg:self-start',
-                  seccionesColapsadas ? 'hidden' : previewVisible ? 'hidden 2xl:flex' : 'flex',
+                  seccionesColapsadas || previewVisible ? 'hidden' : 'flex',
                 )}
               >
                 <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-[#fbfcfd] shadow-sm">
@@ -980,71 +965,11 @@ export function CmsEditor() {
                     )}
                   </div>
                 </div>
-
-                <div className="hidden rounded-2xl border border-black/[0.06] bg-white p-4 shadow-sm lg:block">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.16em] uppercase">
-                      Estado del borrador
-                    </p>
-                    <Badge variant={dirty ? 'secondary' : 'outline'} className="h-5 text-[10px]">
-                      {dirty ? 'Sin guardar' : 'Guardado'}
-                    </Badge>
-                  </div>
-                  <p className="text-enel-navy mt-2 text-2xl font-semibold tabular-nums">
-                    Sin publicar
-                  </p>
-                  <dl className="mt-3 space-y-2 text-[11px]">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <dt className="text-muted-foreground">Última edición</dt>
-                      <dd className="text-foreground/80 text-right">
-                        {fechaCorta(draft.updated_at)}
-                      </dd>
-                    </div>
-                    <div className="flex items-baseline justify-between gap-3">
-                      <dt className="text-muted-foreground">Por</dt>
-                      <dd className="text-foreground/80 max-w-[9rem] truncate text-right">
-                        {draft.updated_by?.name ?? '—'}
-                      </dd>
-                    </div>
-                    <div className="flex items-baseline justify-between gap-3">
-                      <dt className="text-muted-foreground">Publicado</dt>
-                      <dd className="text-foreground/80 text-right">
-                        {published
-                          ? `v${published.number} · ${fechaCorta(published.published_at)}`
-                          : '—'}
-                      </dd>
-                    </div>
-                  </dl>
-                  {draft.message && (
-                    <div className="mt-3 rounded-lg border border-black/[0.05] bg-[#fbfcfd] px-2.5 py-2">
-                      <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase">
-                        Nota
-                      </p>
-                      <p
-                        className="text-foreground/70 mt-1 line-clamp-3 text-[11px] leading-relaxed"
-                        title={draft.message}
-                      >
-                        {draft.message}
-                      </p>
-                    </div>
-                  )}
-                  <Button asChild variant="ghost" size="sm" className="mt-2 w-full justify-between">
-                    <Link to="/cms/revisiones">
-                      Ver versiones
-                      <ArrowRight className="size-3.5" />
-                    </Link>
-                  </Button>
-                </div>
               </aside>
 
               <section className="flex min-w-0 flex-col gap-4">
                 {(previewVisible || seccionesColapsadas) && (
-                  <div
-                    className={cn(
-                      'overflow-hidden rounded-xl border border-black/[0.06] bg-white shadow-sm',
-                      !seccionesColapsadas && '2xl:hidden',
-                    )}
-                  >
+                  <div className="overflow-hidden rounded-xl border border-black/[0.06] bg-white shadow-sm">
                     <div className="flex items-center gap-2 p-1.5">
                       <span className="text-muted-foreground hidden shrink-0 pl-1 text-[10px] font-semibold tracking-[0.14em] uppercase sm:inline">
                         Secciones
@@ -1109,7 +1034,7 @@ export function CmsEditor() {
                           </div>
                         )}
                       </div>
-                      {seccionesColapsadas && (
+                      {seccionesColapsadas && !previewVisible && (
                         <Button
                           type="button"
                           variant="ghost"
