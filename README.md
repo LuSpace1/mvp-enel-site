@@ -67,7 +67,7 @@ npm run format   # formatear con prettier
 
 ## CMS
 
-El CMS permite que se actualice el contenido del portal sin desplegar código. Se accede en `/cms`, donde se editan las secciones y el orden en que se recorre el portal.
+El CMS permite que se actualice el contenido del portal sin desplegar código. Se accede en `/cms`, donde se editan las secciones y el orden en que se recorre el portal. Cubre Inicio, Historia, Cultura, Equipos, Cadena de valor, SIG, ME, Novedades, Espacios y Cierre. Concesión mantiene sus datos geográficos, métricas y subestaciones como datos de negocio.
 
 Los cambios se trabajan sobre un borrador único, compartido entre las vistas de Contenido y Orden. El borrador solo se guarda con **Guardar** o **Guardar orden**, y la vista previa permite revisar el resultado antes de publicar. Guardar no crea una versión: solo actualiza el borrador.
 
