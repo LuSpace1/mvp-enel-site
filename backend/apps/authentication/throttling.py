@@ -3,7 +3,12 @@ from rest_framework.throttling import SimpleRateThrottle
 
 
 class LoginRateThrottle(SimpleRateThrottle):
-    """Limita intentos de inicio de sesión por dirección IP para evitar fuerza bruta."""
+    """
+    Limita intentos por IP y credencial.
+
+    Detras de la VPN cientos de personas comparten la IP publica: limitar solo
+    por IP bloquearia a toda la empresa.
+    """
 
     scope = "login"
 
@@ -11,9 +16,32 @@ class LoginRateThrottle(SimpleRateThrottle):
         return getattr(settings, "LOGIN_THROTTLE_RATE", "10/min")
 
     def get_cache_key(self, request, view):
+        credencial = ""
+        if isinstance(request.data, dict):
+            credencial = str(
+                request.data.get("username") or request.data.get("email") or ""
+            ).lower()
         return self.cache_format % {
             "scope": self.scope,
-            "ident": self.get_ident(request),
+            "ident": f"{self.get_ident(request)}:{credencial}",
+        }
+
+
+class RegistroRateThrottle(SimpleRateThrottle):
+    """Limita altas locales por IP y correo."""
+
+    scope = "registro"
+
+    def get_rate(self):
+        return getattr(settings, "REGISTRO_THROTTLE_RATE", "30/hour")
+
+    def get_cache_key(self, request, view):
+        correo = ""
+        if isinstance(request.data, dict):
+            correo = str(request.data.get("email") or "").lower()
+        return self.cache_format % {
+            "scope": self.scope,
+            "ident": f"{self.get_ident(request)}:{correo}",
         }
 
 

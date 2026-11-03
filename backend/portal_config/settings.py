@@ -108,10 +108,13 @@ REST_FRAMEWORK = {
     },
 }
 
-# Dominios aceptados por la identificacion piloto de KPIs. Vacio = cualquiera.
-ANALYTICS_CORREO_DOMINIOS = tuple(
+# Dominios corporativos aceptados para entrar al portal. Vacio = cualquiera.
+PORTAL_CORREO_DOMINIOS = tuple(
     dominio.strip().lower()
-    for dominio in os.getenv("ANALYTICS_CORREO_DOMINIOS", "").split(",")
+    for dominio in os.getenv(
+        "PORTAL_CORREO_DOMINIOS",
+        os.getenv("ANALYTICS_CORREO_DOMINIOS", "enel.com,enel.cl"),
+    ).split(",")
     if dominio.strip()
 )
 

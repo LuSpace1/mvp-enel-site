@@ -353,6 +353,52 @@ class IdentityService:
 
     @staticmethod
     @transaction.atomic
+    def register_local_user(
+        email: str,
+        password: str,
+        first_name: str = "",
+        last_name: str = "",
+    ) -> User:
+        """
+        Alta local desde el portal mientras no existe SSO corporativo.
+
+        No asigna roles: una cuenta de visitante no puede entrar al CMS.
+        """
+        correo = (email or "").strip().lower()
+        if not correo:
+            raise IdentityError("El correo es obligatorio.")
+        if (
+            User.objects.filter(username__iexact=correo).exists()
+            or User.objects.filter(email__iexact=correo).exists()
+        ):
+            raise UserAlreadyExistsError(f"El correo '{correo}' ya tiene una cuenta.")
+
+        user = User(
+            username=correo,
+            email=correo,
+            first_name=(first_name or "").strip(),
+            last_name=(last_name or "").strip(),
+            is_active=True,
+        )
+        user.set_password(password)
+        try:
+            user.save()
+        except IntegrityError as exc:
+            raise UserAlreadyExistsError(
+                f"El correo '{correo}' ya tiene una cuenta."
+            ) from exc
+
+        IdentityService._log(
+            user,
+            None,
+            IdentityAuditAction.USER_PROVISIONED,
+            source=IdentityAuditSource.LOCAL,
+            detail="Alta local desde el portal",
+        )
+        return user
+
+    @staticmethod
+    @transaction.atomic
     def update_user(
         user: User, data: dict, actor=None, source: str = IdentityAuditSource.SCIM
     ) -> User:

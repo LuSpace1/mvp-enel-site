@@ -11,6 +11,7 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import IdentityAuditAction, IdentityAuditLog, IdentityAuditSource, User
@@ -18,9 +19,12 @@ from .permissions import IsPortalAdmin
 from .serializers import (
     CustomTokenObtainPairSerializer,
     IdentityAuditLogSerializer,
+    PortalUserSerializer,
+    RegistroSerializer,
     UserSerializer,
 )
-from .throttling import LoginRateThrottle, TokenEndpointThrottle
+from .services import IdentityService, UserAlreadyExistsError
+from .throttling import LoginRateThrottle, RegistroRateThrottle, TokenEndpointThrottle
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -28,6 +32,38 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
     serializer_class = CustomTokenObtainPairSerializer
     throttle_classes = [LoginRateThrottle]
+
+
+class RegistroView(APIView):
+    """Alta local del portal mientras no existe SSO corporativo."""
+
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [RegistroRateThrottle]
+
+    def post(self, request):
+        serializador = RegistroSerializer(data=request.data)
+        serializador.is_valid(raise_exception=True)
+        datos = serializador.validated_data
+        try:
+            usuario = IdentityService.register_local_user(
+                email=datos["email"],
+                password=datos["password"],
+                first_name=datos.get("first_name", ""),
+                last_name=datos.get("last_name", ""),
+            )
+        except UserAlreadyExistsError as error:
+            raise DRFValidationError({"email": str(error)}) from error
+
+        refresh = RefreshToken.for_user(usuario)
+        return Response(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": PortalUserSerializer(usuario).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class ThrottledTokenView(TokenView):
@@ -55,7 +91,9 @@ class MeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
+        return Response(
+            PortalUserSerializer(request.user).data, status=status.HTTP_200_OK
+        )
 
 
 class UserPagination(PageNumberPagination):
