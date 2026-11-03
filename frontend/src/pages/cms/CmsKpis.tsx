@@ -3,6 +3,7 @@ import {
   ArrowClockwise,
   ChartBar,
   DownloadSimple,
+  Info,
   SmileyMeh,
   UsersThree,
 } from '@phosphor-icons/react'
@@ -20,11 +21,19 @@ import {
   YAxis,
 } from 'recharts'
 
-import { CmsAlert } from '@/components/cms/CmsAlert'
 import { CmsPageHeader } from '@/components/cms/CmsPageHeader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -34,7 +43,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ETIQUETAS_SECCION } from '@/lib/cms/registro'
+import { ETIQUETAS_SECCION, SECCIONES_ORDEN } from '@/lib/cms/registro'
 import { notificarError, notificarExito } from '@/lib/cms/notificaciones'
 import { cn } from '@/lib/utils'
 import { descargarCsv, obtenerPersonas, obtenerTablero, type RangoKpi } from '@/services/kpis'
@@ -49,6 +58,64 @@ const RANGOS = [
 const AZUL = '#006fbb'
 const ROSA = '#eb0053'
 const GRIS = '#d9dfe8'
+
+type ExplicacionKpi = {
+  resumen: string
+  calculo: string
+  nota?: string
+}
+
+/** Cómo se arma cada número hoy. Se muestra al abrir la tarjeta. */
+const EXPLICACIONES = {
+  personas: {
+    resumen: 'Personas distintas que entraron al portal en el rango.',
+    calculo:
+      'Sale de las cuentas que abrieron el portal al menos una vez. Como se exige iniciar sesión, cada persona queda con una sola ficha aunque entre desde el notebook y el celular.',
+    nota: 'Una misma persona puede sumar varias visitas; aquí se cuenta una sola vez.',
+  },
+  visitas: {
+    resumen: 'Cuántas veces se abrió el portal.',
+    calculo:
+      'Cada visita es una sesión: se abre al entrar y se cierra a los 30 minutos sin actividad. Recargar dentro de esa ventana no suma otra visita; volver después, sí.',
+    nota: 'Una persona puede tener varias visitas. Por eso visitas y personas se muestran por separado.',
+  },
+  pageViews: {
+    resumen: 'Cuántas veces se cargó la página del portal.',
+    calculo:
+      'Se cuenta cada carga real, incluidas las recargas. Sirve para detectar recargas y compararlo con las visitas.',
+    nota: 'Una misma visita puede tener varios page views.',
+  },
+  completitud: {
+    resumen: 'Personas que llegaron a Cierre habiendo recorrido el portal.',
+    calculo:
+      'Cuenta como completa la visita que llegó a Cierre y antes vio al menos el 60% de las secciones. El porcentaje se saca sobre las personas: si entraron 10 y 4 completaron, se muestra 40%.',
+    nota: 'Entrar directo a Cierre no suma, aunque la visita llegue al final.',
+  },
+  profundidad: {
+    resumen: 'Cuánto del portal alcanza a ver una visita, en promedio.',
+    calculo:
+      'En cada visita contamos las secciones distintas que se abrieron sobre las 11 del portal, y después promediamos esas visitas. Repetir una sección no suma.',
+    nota: 'Si el número es 45%, abajo aparece 5 de 11: es el mismo dato, pero en secciones.',
+  },
+  tiempoCompletitud: {
+    resumen: 'Cuánto tarda alguien en llegar a Cierre.',
+    calculo:
+      'Tomamos el tiempo activo acumulado hasta que la visita entra a Cierre por primera vez. Usamos la mediana: una visita muy larga no arrastra el número.',
+    nota: 'Solo considera visitas que completaron el recorrido.',
+  },
+  permanencia: {
+    resumen: 'Cuánto dura una visita, en el medio.',
+    calculo:
+      'Sumamos los ratos con la pestaña a la vista y con actividad reciente. Una pausa de más de un minuto deja de contar. Después tomamos la mediana de todas las visitas.',
+    nota: 'No es el tiempo con la pestaña abierta de fondo.',
+  },
+  satisfaccion: {
+    resumen: 'Cómo evalúan el portal quienes dejan su nota al final.',
+    calculo:
+      'Promedio simple de las notas de 1 a 5 que se dejan en Cierre. Cada visita puede responder una vez.',
+    nota: 'El porcentaje de abajo dice cuántas visitas dejaron nota: si hubo 50 visitas y 10 respondieron, son 20%.',
+  },
+} satisfies Record<string, ExplicacionKpi>
 
 function iso(fecha: Date): string {
   const mes = String(fecha.getMonth() + 1).padStart(2, '0')
@@ -75,6 +142,10 @@ function porcentaje(valor: number | null | undefined): string {
   return `${Math.round((valor ?? 0) * 100)}%`
 }
 
+function promedio(valor: number): string {
+  return new Intl.NumberFormat('es-CL', { maximumFractionDigits: 1 }).format(valor)
+}
+
 function duracion(segundos: number | null | undefined): string {
   if (segundos === null || segundos === undefined) return '—'
   if (segundos <= 0) return '0 s'
@@ -88,6 +159,23 @@ function duracion(segundos: number | null | undefined): string {
 
 function etiqueta(clave: string): string {
   return ETIQUETAS_SECCION[clave] ?? clave
+}
+
+/** Completa las 11 secciones para que las que no tuvieron uso aparezcan en cero. */
+function seccionesCompletas(datos: KpiSeccion[]): KpiSeccion[] {
+  const porClave = new Map(datos.map((fila) => [fila.clave, fila]))
+  return SECCIONES_ORDEN.map(
+    (clave) =>
+      porClave.get(clave) ?? {
+        clave,
+        vistas: 0,
+        personas: 0,
+        interacciones: 0,
+        personas_interactuaron: 0,
+        tasa_interaccion: 0,
+        tiempo_medio: null,
+      },
+  )
 }
 
 function detalleError(error: unknown): string {
@@ -107,32 +195,79 @@ function TarjetaKpi({
   valor,
   detalle,
   acento,
+  explicacion,
 }: {
   titulo: string
   valor: string
   detalle?: string
   acento?: 'azul' | 'rosa'
+  explicacion: ExplicacionKpi
 }) {
+  const [abierto, setAbierto] = useState(false)
+
   return (
-    <Card size="sm" className="gap-2">
-      <CardHeader>
-        <CardTitle className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-          {titulo}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p
-          className={cn(
-            'text-enel-navy font-heading text-2xl leading-none font-semibold',
-            acento === 'azul' && 'text-enel-blue',
-            acento === 'rosa' && 'text-enel-pink',
-          )}
+    <>
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        aria-haspopup="dialog"
+        className="group/kpi cursor-pointer text-left focus-visible:outline-none"
+      >
+        <Card
+          size="sm"
+          className="group-hover/kpi:ring-enel-blue/25 group-focus-visible/kpi:ring-enel-blue/60 h-full gap-2 transition duration-150 group-hover/kpi:-translate-y-0.5 group-hover/kpi:shadow-md group-focus-visible/kpi:ring-2"
         >
-          {valor}
-        </p>
-        {detalle && <p className="text-muted-foreground mt-1.5 text-xs">{detalle}</p>}
-      </CardContent>
-    </Card>
+          <CardHeader>
+            <CardTitle className="text-muted-foreground flex items-center justify-between gap-2 text-xs font-medium tracking-wide uppercase">
+              <span>{titulo}</span>
+              <Info
+                size={14}
+                weight="duotone"
+                aria-hidden="true"
+                className="text-muted-foreground/40 group-hover/kpi:text-enel-blue shrink-0 transition"
+              />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p
+              className={cn(
+                'text-enel-navy font-heading text-2xl leading-none font-semibold',
+                acento === 'azul' && 'text-enel-blue',
+                acento === 'rosa' && 'text-enel-pink',
+              )}
+            >
+              {valor}
+            </p>
+            {detalle && <p className="text-muted-foreground mt-1.5 text-xs">{detalle}</p>}
+          </CardContent>
+        </Card>
+        <span className="sr-only">Ver cómo se calcula</span>
+      </button>
+
+      <Dialog open={abierto} onOpenChange={setAbierto}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-base">{titulo}</DialogTitle>
+            <DialogDescription>{explicacion.resumen}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-enel-navy text-sm leading-relaxed">{explicacion.calculo}</p>
+            {explicacion.nota && (
+              <p className="text-muted-foreground rounded-lg bg-black/[0.03] p-3 text-xs leading-relaxed">
+                {explicacion.nota}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" size="sm">
+                Entendido
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
@@ -142,7 +277,9 @@ function EstadoVacio() {
       <div className="bg-enel-blue/8 text-enel-blue mx-auto flex size-12 items-center justify-center rounded-2xl">
         <ChartBar size={22} weight="duotone" />
       </div>
-      <p className="text-enel-navy mt-4 text-sm font-semibold">Todavía no hay datos en este rango</p>
+      <p className="text-enel-navy mt-4 text-sm font-semibold">
+        Todavía no hay datos en este rango
+      </p>
       <p className="text-muted-foreground mt-1 max-w-sm text-xs leading-relaxed">
         Los KPIs se completan a medida que las personas recorren el portal. Comparte el enlace y
         vuelve a revisar en unas horas.
@@ -188,18 +325,16 @@ function GraficoSerie({ datos }: { datos: KpiTablero['serie'] }) {
 }
 
 function GraficoSecciones({ datos }: { datos: KpiSeccion[] }) {
-  const filas = datos.slice(0, 8).map((fila) => ({
-    nombre: etiqueta(fila.clave),
-    vistas: fila.vistas,
-    interacciones: fila.interacciones,
-  }))
+  const filas = [...datos]
+    .sort((a, b) => b.vistas - a.vistas)
+    .slice(0, 8)
+    .map((fila) => ({
+      nombre: etiqueta(fila.clave),
+      vistas: fila.vistas,
+    }))
   return (
     <ResponsiveContainer width="100%" height={Math.max(240, filas.length * 38)}>
-      <BarChart
-        data={filas}
-        layout="vertical"
-        margin={{ top: 4, right: 12, left: 0, bottom: 0 }}
-      >
+      <BarChart data={filas} layout="vertical" margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
         <CartesianGrid horizontal={false} stroke={GRIS} strokeDasharray="3 3" />
         <XAxis
           type="number"
@@ -280,7 +415,7 @@ function TablaSecciones({ datos }: { datos: KpiSeccion[] }) {
               <td className="py-2.5 pr-3 text-right tabular-nums">{numero(fila.personas)}</td>
               <td className="py-2.5 pr-3 text-right tabular-nums">{numero(fila.interacciones)}</td>
               <td className="py-2.5 pr-3 text-right tabular-nums">
-                {porcentaje(fila.tasa_interaccion)}
+                {promedio(fila.tasa_interaccion)}×
               </td>
               <td className="py-2.5 text-right tabular-nums">{duracion(fila.tiempo_medio)}</td>
             </tr>
@@ -291,13 +426,7 @@ function TablaSecciones({ datos }: { datos: KpiSeccion[] }) {
   )
 }
 
-function TablaPersonas({
-  rango,
-  recarga,
-}: {
-  rango: RangoKpi
-  recarga: number
-}) {
+function TablaPersonas({ rango, recarga }: { rango: RangoKpi; recarga: number }) {
   const [pagina, setPagina] = useState(1)
   const [datos, setDatos] = useState<{
     total: number
@@ -558,14 +687,9 @@ export function CmsKpis() {
       />
 
       <div className="flex-1 space-y-5 p-4 md:p-6 xl:p-8">
-        <CmsAlert variant="info" title="Cómo se leen estos datos">
-          Las métricas se calculan sobre visitas cerradas cada 30 minutos de inactividad. Con menos
-          de 20 personas conviene leer números absolutos, no porcentajes.
-        </CmsAlert>
-
         {cargando && !tablero && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {Array.from({ length: 6 }).map((_, indice) => (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, indice) => (
               <Skeleton key={indice} className="h-28 rounded-xl" />
             ))}
           </div>
@@ -588,12 +712,25 @@ export function CmsKpis() {
               <EstadoVacio />
             ) : (
               <>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <TarjetaKpi
                     titulo="Personas"
                     valor={numero(resumen.personas)}
-                    detalle={plural(resumen.visitas, 'visita', 'visitas')}
+                    detalle={`${promedio(resumen.visitas / Math.max(resumen.personas, 1))} visitas por persona`}
                     acento="azul"
+                    explicacion={EXPLICACIONES.personas}
+                  />
+                  <TarjetaKpi
+                    titulo="Visitas"
+                    valor={numero(resumen.visitas)}
+                    detalle="Sesiones cerradas a los 30 min sin actividad"
+                    explicacion={EXPLICACIONES.visitas}
+                  />
+                  <TarjetaKpi
+                    titulo="Page views"
+                    valor={numero(resumen.page_views)}
+                    detalle="Cargas de página"
+                    explicacion={EXPLICACIONES.pageViews}
                   />
                   <TarjetaKpi
                     titulo="Completitud"
@@ -604,26 +741,31 @@ export function CmsKpis() {
                         : `${numero(resumen.personas_completaron)} personas completaron el recorrido`
                     }
                     acento="rosa"
+                    explicacion={EXPLICACIONES.completitud}
                   />
                   <TarjetaKpi
                     titulo="Profundidad media"
                     valor={porcentaje(resumen.profundidad_media)}
                     detalle={`${resumen.secciones_promedio.toFixed(1)} de 11 secciones`}
+                    explicacion={EXPLICACIONES.profundidad}
                   />
                   <TarjetaKpi
                     titulo="Tiempo de completitud"
                     valor={duracion(resumen.tiempo_completitud)}
                     detalle="Mediana, no promedio"
+                    explicacion={EXPLICACIONES.tiempoCompletitud}
                   />
                   <TarjetaKpi
                     titulo="Permanencia"
                     valor={duracion(resumen.permanencia_mediana)}
                     detalle="Mediana por visita"
+                    explicacion={EXPLICACIONES.permanencia}
                   />
                   <TarjetaKpi
                     titulo="Satisfacción"
                     valor={resumen.likert_promedio ? `${resumen.likert_promedio}/5` : '—'}
                     detalle={`${porcentaje(resumen.tasa_respuesta)} respondió`}
+                    explicacion={EXPLICACIONES.satisfaccion}
                   />
                 </div>
 
@@ -660,7 +802,7 @@ export function CmsKpis() {
                           <CardTitle>Secciones más vistas</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <GraficoSecciones datos={tablero.secciones} />
+                          <GraficoSecciones datos={seccionesCompletas(tablero.secciones)} />
                         </CardContent>
                       </Card>
                     </div>
@@ -672,13 +814,7 @@ export function CmsKpis() {
                         <CardTitle>Uso por sección</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        {tablero.secciones.length ? (
-                          <TablaSecciones datos={tablero.secciones} />
-                        ) : (
-                          <p className="text-muted-foreground py-8 text-center text-sm">
-                            Sin secciones registradas.
-                          </p>
-                        )}
+                        <TablaSecciones datos={seccionesCompletas(tablero.secciones)} />
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -692,8 +828,8 @@ export function CmsKpis() {
                         <CardContent>
                           <GraficoRecorrido datos={tablero.recorrido.histograma} />
                           <p className="text-muted-foreground mt-2 text-xs">
-                            Las barras rosadas superan el 60% del recorrido y cuentan como
-                            completas si además llegaron a Recursos.
+                            Las barras rosadas superan el 60% del recorrido y cuentan como completas
+                            si además llegaron a Recursos.
                           </p>
                         </CardContent>
                       </Card>
