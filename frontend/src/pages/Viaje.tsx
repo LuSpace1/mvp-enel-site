@@ -4,7 +4,6 @@ import { Nav } from '@/components/Nav'
 import { SmoothScroll } from '@/components/SmoothScroll'
 import { Indice } from '@/components/Indice'
 import { StormIntro } from '@/components/StormIntro'
-import { IdentificacionBubble } from '@/components/IdentificacionBubble'
 import { FeedbackBubble } from '@/components/FeedbackBubble'
 import {
   cerrarSeccion,
@@ -132,12 +131,7 @@ export function Viaje({ preview = false }: { preview?: boolean }) {
           <Secciones />
         </Suspense>
       </main>
-      {!preview && (
-        <>
-          <IdentificacionBubble />
-          <FeedbackBubble />
-        </>
-      )}
+      {!preview && <FeedbackBubble />}
     </div>
   )
 }

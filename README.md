@@ -77,7 +77,7 @@ La interfaz incluye una guía **¿Cómo funciona?**, un estado permanente del bo
 
 ## KPIs
 
-El portal mide adopción sin depender todavía del login corporativo. Una visita se cierra a los 30 minutos de inactividad y se registran secciones vistas, tiempo por sección, interacción con recursos críticos y profundidad del recorrido. Al llegar a Cierre se ofrece un Likert 1–5 con reseña opcional.
+El portal mide adopción sin depender todavía del SSO corporativo. El acceso exige una cuenta local (correo `@enel` y contraseña, con alta desde la misma pantalla) y queda ligada a `Visitante` sin verificar hasta que llegue CompAC/SSO. Una visita se cierra a los 30 minutos de inactividad y se registran secciones vistas, tiempo por sección, interacción con recursos críticos y profundidad del recorrido. Al llegar a Cierre se ofrece un Likert 1–5 con reseña opcional, una vez por visita.
 
 - Especificación y definiciones: `docs/KPIS.md`.
 - Recolección: `POST /api/analytics/eventos/` (público, detrás de la VPN).

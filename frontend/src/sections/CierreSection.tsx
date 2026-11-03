@@ -16,6 +16,7 @@ import { useCampo, useLista } from '@/lib/cms/contenido'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { track } from '@/lib/analytics'
 import { desplazarASeccion } from '@/lib/scroll'
+import { useAuthStore } from '@/store/useAuthStore'
 
 const RECURSOS = [
   {
@@ -297,6 +298,7 @@ interface RedCms {
 
 export function Footer() {
   const footerTexto = useCampo('cierre', 'footer_texto', 'Enel Distribución Chile')
+  const logout = useAuthStore((estado) => estado.logout)
   const redesCms = useLista<RedCms>('cierre', 'redes', [])
   const redes = redesCms.length
     ? redesCms.flatMap((red, indice) => {
@@ -322,19 +324,32 @@ export function Footer() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-6 px-5 text-center md:flex-row md:px-8 md:text-left">
         <p className="text-xs font-medium text-white/70">{footerTexto}</p>
 
-        <div className="flex items-center gap-3">
-          {redes.map((red, indice) => (
-            <a
-              key={`${red.red}-${indice}`}
-              href={red.url}
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] text-white/40 transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-white/[0.12] hover:text-white"
-              aria-label={red.nombre}
-            >
-              {red.icono}
-            </a>
-          ))}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => {
+              logout()
+              window.location.assign('/acceso')
+            }}
+            className="text-[11px] font-medium text-white/50 underline-offset-4 transition-colors hover:text-white hover:underline"
+          >
+            Cerrar sesión
+          </button>
+
+          <div className="flex items-center gap-3">
+            {redes.map((red, indice) => (
+              <a
+                key={`${red.red}-${indice}`}
+                href={red.url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] text-white/40 transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-white/[0.12] hover:text-white"
+                aria-label={red.nombre}
+              >
+                {red.icono}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

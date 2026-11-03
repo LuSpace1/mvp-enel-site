@@ -23,12 +23,13 @@ type EstadoSesion = {
   vistas: string[]
   duracionActiva: number
   completo: boolean
+  opinionEnviada: boolean
+  opinionDescartada: boolean
 }
 
 const CLAVE_PID = 'enel.kpi.pid'
 const CLAVE_SESION = 'enel.kpi.sesion'
 const CLAVE_IDENTIDAD = 'enel.kpi.identidad'
-const CLAVE_OPINION = 'enel.kpi.opinion'
 
 const VENTANA_SESION_MS = 30 * 60 * 1000
 const LATIDO_MS = 5_000
@@ -95,7 +96,11 @@ function leerSesion(): EstadoSesion | null {
   try {
     const sesion = JSON.parse(crudo) as EstadoSesion
     if (!sesion.id || !sesion.iniciadaEn) return null
-    return sesion
+    return {
+      ...sesion,
+      opinionEnviada: Boolean(sesion.opinionEnviada),
+      opinionDescartada: Boolean(sesion.opinionDescartada),
+    }
   } catch {
     return null
   }
@@ -110,6 +115,8 @@ function nuevaSesion(): EstadoSesion {
     vistas: [],
     duracionActiva: 0,
     completo: false,
+    opinionEnviada: false,
+    opinionDescartada: false,
   }
   escribir(CLAVE_SESION, JSON.stringify(sesion))
   return sesion
@@ -234,7 +241,8 @@ export function registrar(
     datos?: Record<string, unknown>
   } = {},
 ) {
-  // Si la visita anterior expiro, este evento abre una nueva.
+  // Antes de identificarse no se mide nada: el recorrido aun no comenzo.
+  if (!iniciada) return
   sesionVigente()
   cola.push({
     nombre,
@@ -357,6 +365,21 @@ export function identidadGuardada(): string | null {
   return identidad()?.email ?? null
 }
 
+/** Guarda la identidad que devuelve el backend al iniciar sesion. */
+export function vincularIdentidad(email: string, visitanteId: string) {
+  if (!email || !visitanteId) return
+  escribir(
+    CLAVE_IDENTIDAD,
+    JSON.stringify({ email: email.trim().toLowerCase(), visitante_id: visitanteId }),
+  )
+}
+
+/** Borra la identidad y la visita activa (al cerrar sesion). */
+export function olvidarIdentidad() {
+  borrar(CLAVE_IDENTIDAD)
+  borrar(CLAVE_SESION)
+}
+
 export async function opinar(puntaje: number, comentario: string): Promise<boolean> {
   const sesion = sesionVigente()
   const actual = identidad()
@@ -376,15 +399,28 @@ export async function opinar(puntaje: number, comentario: string): Promise<boole
       }),
     })
     if (!respuesta.ok) return false
-    escribir(CLAVE_OPINION, '1')
+    sesion.opinionEnviada = true
+    guardarSesion(sesion)
     return true
   } catch {
     return false
   }
 }
 
-export function opinionEnviada(): boolean {
-  return leer(CLAVE_OPINION) === '1'
+export type EstadoOpinion = 'pendiente' | 'enviada' | 'descartada'
+
+/** La encuesta se pide una vez por visita, no una vez por navegador. */
+export function estadoOpinion(): EstadoOpinion {
+  const sesion = sesionVigente()
+  if (sesion.opinionEnviada) return 'enviada'
+  if (sesion.opinionDescartada) return 'descartada'
+  return 'pendiente'
+}
+
+export function marcarOpinionDescartada() {
+  const sesion = sesionVigente()
+  sesion.opinionDescartada = true
+  guardarSesion(sesion)
 }
 
 function latido() {
@@ -481,5 +517,4 @@ export function reiniciarIdentidad() {
   borrar(CLAVE_PID)
   borrar(CLAVE_SESION)
   borrar(CLAVE_IDENTIDAD)
-  borrar(CLAVE_OPINION)
 }
