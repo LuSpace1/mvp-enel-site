@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "oauth2_provider",
     # Aplicaciones propias
     "apps.authentication",
+    "apps.analytics",
     "apps.cms",
 ]
 
@@ -101,7 +102,18 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_THROTTLE_RATES": {
+        # Por visitante, no por IP: la VPN corporativa comparte la IP publica.
+        "analytics": os.getenv("ANALYTICS_THROTTLE_RATE", "300/min"),
+    },
 }
+
+# Dominios aceptados por la identificacion piloto de KPIs. Vacio = cualquiera.
+ANALYTICS_CORREO_DOMINIOS = tuple(
+    dominio.strip().lower()
+    for dominio in os.getenv("ANALYTICS_CORREO_DOMINIOS", "").split(",")
+    if dominio.strip()
+)
 
 
 # Tokens de sesion del portal (login humano local, puente del MVP).
