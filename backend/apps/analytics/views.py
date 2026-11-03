@@ -96,7 +96,11 @@ class IdentificarView(APIView):
             request.data.get("visitante_id"),
         )
         return Response(
-            {"visitante_id": str(visitante.id), "email": visitante.email},
+            {
+                "visitante_id": str(visitante.id),
+                "email": visitante.email,
+                "email_verificado": visitante.email_verificado,
+            },
             status=status.HTTP_200_OK,
         )
 

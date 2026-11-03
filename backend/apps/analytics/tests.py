@@ -64,6 +64,31 @@ class RecolectaTests(TestCase):
         )
         self.assertFalse(Sesion.objects.get(id=sesion_id).completo)
 
+    def test_identificacion_rechaza_dominio_ajeno(self):
+        respuesta = self.client.post(
+            "/api/analytics/identificar/",
+            data=json.dumps(
+                {"anonymous_id": "dispositivo-x", "email": "persona@gmail.com"}
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(respuesta.status_code, 400)
+        self.assertFalse(Visitante.objects.filter(email="persona@gmail.com").exists())
+
+    def test_identificacion_queda_sin_verificar(self):
+        respuesta = self.client.post(
+            "/api/analytics/identificar/",
+            data=json.dumps(
+                {"anonymous_id": "dispositivo-y", "email": "persona@enel.com"}
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertFalse(respuesta.json()["email_verificado"])
+        self.assertFalse(
+            Visitante.objects.get(anonymous_id="dispositivo-y").email_verificado
+        )
+
     def test_identificacion_fusiona_dispositivos(self):
         primero, _ = self._lote("dispositivo-a")
         segundo, _ = self._lote("dispositivo-b")

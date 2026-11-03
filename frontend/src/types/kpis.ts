@@ -62,6 +62,7 @@ export interface KpiTablero {
 export interface KpiPersona {
   id: string
   email: string
+  email_verificado: boolean
   origen: string
   primera_vez: string
   ultima_vez: string

@@ -5,7 +5,14 @@ from .models import Evento, Opinion, Sesion, Visitante
 
 @admin.register(Visitante)
 class VisitanteAdmin(admin.ModelAdmin):
-    list_display = ("email", "anonymous_id", "origen", "first_seen_at", "last_seen_at")
+    list_display = (
+        "email",
+        "email_verificado",
+        "anonymous_id",
+        "origen",
+        "first_seen_at",
+        "last_seen_at",
+    )
     list_filter = ("origen",)
     search_fields = ("email", "anonymous_id")
 

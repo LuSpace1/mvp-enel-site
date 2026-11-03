@@ -36,6 +36,11 @@ class Visitante(models.Model):
     email = models.EmailField(
         blank=True, default="", db_index=True, verbose_name="Correo"
     )
+    email_verificado = models.BooleanField(
+        default=False,
+        verbose_name="Correo verificado",
+        help_text="Se activa cuando CompAC/SSO confirma que la identidad existe.",
+    )
     origen = models.CharField(
         max_length=20,
         choices=OrigenVisitante.choices,

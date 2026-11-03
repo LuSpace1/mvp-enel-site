@@ -32,14 +32,15 @@ def normalizar_correo(correo: str) -> str:
 
 
 def dominios_permitidos() -> tuple[str, ...]:
-    """Dominios aceptados para la identificacion piloto, si se configuran."""
-    return tuple(getattr(settings, "ANALYTICS_CORREO_DOMINIOS", ()) or ())
+    """Dominios aceptados para entrar al portal, si se configuran."""
+    return tuple(getattr(settings, "PORTAL_CORREO_DOMINIOS", ()) or ())
 
 
 def correo_valido(correo: str) -> bool:
     dominios = dominios_permitidos()
     if not dominios:
         return True
+    correo = normalizar_correo(correo)
     return any(correo.endswith(f"@{dominio}") for dominio in dominios)
 
 
@@ -91,7 +92,9 @@ def identificar(anonymous_id: str, correo: str, visitante_id=None) -> Visitante:
     """
     visitante = _visitante_de_identificacion(anonymous_id, visitante_id)
     correo = normalizar_correo(correo)
-    visitante.email = correo
+    if visitante.email != correo:
+        visitante.email = correo
+        visitante.email_verificado = False
     visitante.last_seen_at = timezone.now()
 
     canonico = (
@@ -109,8 +112,43 @@ def identificar(anonymous_id: str, correo: str, visitante_id=None) -> Visitante:
         canonico.save(update_fields=["last_seen_at"])
         visitante = canonico
 
-    visitante.save(update_fields=["email", "last_seen_at"])
+    visitante.save(update_fields=["email", "email_verificado", "last_seen_at"])
     return visitante
+
+
+@transaction.atomic
+def vincular_usuario(user) -> Visitante:
+    """
+    Vincula la cuenta autenticada con su visitante de analitica.
+
+    Si la persona ya habia entrado con el formulario anterior, se conserva esa
+    fila y sus visitas; si tenia varias, se fusionan en la mas antigua.
+    """
+    correo = normalizar_correo(getattr(user, "email", "") or "")
+    candidatos = (
+        list(Visitante.objects.filter(email=correo).order_by("first_seen_at"))
+        if correo
+        else []
+    )
+    principal = Visitante.objects.filter(user=user).first()
+    if principal is None:
+        principal = candidatos[0] if candidatos else None
+    if principal is None:
+        principal = Visitante(anonymous_id=f"user:{user.pk}")
+    principal.user = user
+    principal.email = correo or principal.email
+    principal.origen = OrigenVisitante.PILOTO
+    principal.save()
+
+    for otro in candidatos:
+        if otro.pk == principal.pk:
+            continue
+        Sesion.objects.filter(visitante=otro).update(visitante=principal)
+        Evento.objects.filter(visitante=otro).update(visitante=principal)
+        Opinion.objects.filter(visitante=otro).update(visitante=principal)
+        otro.delete()
+
+    return principal
 
 
 @transaction.atomic
@@ -445,6 +483,7 @@ def _persona_a_fila(visitante: Visitante) -> dict:
     return {
         "id": str(visitante.id),
         "email": visitante.email,
+        "email_verificado": visitante.email_verificado,
         "origen": visitante.origen,
         "primera_vez": visitante.first_seen_at.isoformat(),
         "ultima_vez": visitante.last_seen_at.isoformat(),
