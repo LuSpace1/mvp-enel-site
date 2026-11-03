@@ -31,6 +31,9 @@ const CmsRevisiones = lazy(() =>
 const CmsPreview = lazy(() =>
   import('@/pages/cms/CmsPreview').then((modulo) => ({ default: modulo.CmsPreview })),
 )
+const CmsKpis = lazy(() =>
+  import('@/pages/cms/CmsKpis').then((modulo) => ({ default: modulo.CmsKpis })),
+)
 
 function CargandoRuta() {
   return (
@@ -70,6 +73,7 @@ const router = createBrowserRouter([
       { index: true, element: conCarga(<CmsEditor />) },
       { path: 'orden', element: conCarga(<CmsOrden />) },
       { path: 'revisiones', element: conCarga(<CmsRevisiones />) },
+      { path: 'kpis', element: conCarga(<CmsKpis />) },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

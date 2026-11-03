@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useBlocker, useNavigate } from 'react-router-dom'
 import {
   ArrowSquareOut,
+  ChartBar,
   ClockCounterClockwise,
   Files,
   Info,
@@ -34,6 +35,7 @@ const ENLACES = [
   { to: '/cms', label: 'Contenido', icon: Files, end: true },
   { to: '/cms/orden', label: 'Orden', icon: ListNumbers, end: false },
   { to: '/cms/revisiones', label: 'Versiones', icon: ClockCounterClockwise, end: false },
+  { to: '/cms/kpis', label: 'KPIs', icon: ChartBar, end: false },
 ]
 
 const CLAVE_COLAPSADO = 'cms:sidebar-colapsado'
@@ -56,6 +58,9 @@ export function CmsLayout() {
   const rol = user?.capabilities.can_manage_cms ? 'Administrador' : 'Editor'
   const dirty = useEstadoEditor((estado) => estado.dirty)
   const limpiarResumen = useEstadoEditor((estado) => estado.limpiarResumen)
+  const enlaces = user?.capabilities.can_manage_cms
+    ? ENLACES
+    : ENLACES.filter((enlace) => enlace.to !== '/cms/kpis')
   const [colapsado, setColapsado] = useState(() => {
     try {
       return window.localStorage.getItem(CLAVE_COLAPSADO) === '1'
@@ -200,7 +205,7 @@ export function CmsLayout() {
         <nav
           id="cms-nav"
           aria-label="Navegación del CMS"
-          className="relative flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-3 lg:pb-0"
+          className="relative flex gap-0.5 overflow-x-auto px-3 pb-3 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-3 lg:pb-0"
         >
           <div
             className={cn(
@@ -228,7 +233,7 @@ export function CmsLayout() {
             </Button>
           </div>
 
-          {ENLACES.map((enlace) => {
+          {enlaces.map((enlace) => {
             const Icono = enlace.icon
             return (
               <NavLink
@@ -237,7 +242,7 @@ export function CmsLayout() {
                 end={enlace.end}
                 className={({ isActive }) =>
                   cn(
-                    'group focus-visible:ring-ring relative flex h-11 shrink-0 items-center gap-2.5 rounded-lg px-3 text-[13px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none lg:h-10',
+                    'group focus-visible:ring-ring relative flex h-11 shrink-0 items-center gap-2.5 rounded-lg px-2 text-[13px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none lg:h-10 lg:px-3',
                     colapsado && 'lg:justify-center lg:px-0',
                     isActive
                       ? 'bg-primary/10 text-primary'

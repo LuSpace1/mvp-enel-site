@@ -5,6 +5,7 @@ import type { Variants } from 'motion/react'
 import { Reveal } from '@/components/ui/Reveal'
 import { RevealTexto } from '@/components/ui/RevealTexto'
 import { useCampo, useLista } from '@/lib/cms/contenido'
+import { track } from '@/lib/analytics'
 import { SectionShell } from '@/components/ui/SectionShell'
 import { VideoEmbed } from '@/components/ui/VideoEmbed'
 import fotoHombre from '@/assets/images/placeholder_hombre.webp'
@@ -289,6 +290,7 @@ export function OrganigramaSection() {
           <motion.div variants={cardHija} className="z-10">
             <div
               onClick={() => {
+                track('organigrama.gerente.abrir', { seccion: 'organigrama' })
                 setGgAbierto(true)
                 setNodoAbierto(null)
                 setStaffActivo(null)
@@ -337,6 +339,10 @@ export function OrganigramaSection() {
                   foto={fotoDeSubgerencia(sub, idx)}
                   delay={idx * 0.35}
                   onClick={() => {
+                    track('organigrama.subgerencia.abrir', {
+                      seccion: 'organigrama',
+                      recurso: sub.nombre,
+                    })
                     setNodoAbierto(idx)
                     setStaffActivo(null)
                   }}
@@ -402,6 +408,10 @@ export function OrganigramaSection() {
                 foto={fotoDeAreaStaff(area, idx)}
                 delay={idx * 0.35}
                 onClick={() => {
+                  track('organigrama.area.abrir', {
+                    seccion: 'organigrama',
+                    recurso: area.nombre,
+                  })
                   setStaffActivo(idx)
                   setNodoAbierto(null)
                 }}
