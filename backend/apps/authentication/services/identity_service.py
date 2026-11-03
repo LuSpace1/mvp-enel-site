@@ -68,9 +68,6 @@ class IdentityService:
     Centraliza altas, bajas lógicas, actualizaciones y auditoría tanto para SCIM como para el panel local.
     """
 
-    # ------------------------------------------------------------------
-    # Auditoría
-    # ------------------------------------------------------------------
     @staticmethod
     def _log(
         target_user,
@@ -98,9 +95,6 @@ class IdentityService:
         with suppress_identity_audit():
             role.save(update_fields=["updated_at"])
 
-    # ------------------------------------------------------------------
-    # Consultas
-    # ------------------------------------------------------------------
     @staticmethod
     def get_user(user_id) -> User:
         try:
@@ -145,9 +139,6 @@ class IdentityService:
             return True
         return display_name in set(core_technical_roles()) | set(allowed)
 
-    # ------------------------------------------------------------------
-    # Roles técnicos
-    # ------------------------------------------------------------------
     @staticmethod
     def _reactivate_role_if_needed(
         role: Role, actor=None, source: str = IdentityAuditSource.SCIM
@@ -265,9 +256,6 @@ class IdentityService:
                 detail=f"Rol removido: {role.display_name}",
             )
 
-    # ------------------------------------------------------------------
-    # Ciclo de vida del usuario
-    # ------------------------------------------------------------------
     @staticmethod
     @transaction.atomic
     def create_local_user(user: User, actor=None) -> User:

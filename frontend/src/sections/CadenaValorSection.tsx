@@ -69,7 +69,6 @@ export function CadenaValorSection() {
   const imagenActual = etapaActual.imagen || IMAGENES[etapaActual.clave] || fotoCliente
   const total = etapas.length
 
-  // Cada etapa arranca con sus procesos plegados.
   useEffect(() => {
     setProcesoAbierto(null)
   }, [etapaActual.clave])
@@ -160,7 +159,6 @@ export function CadenaValorSection() {
         </div>
       </div>
 
-      {/* Detalle de la etapa activa */}
       <div
         id="cadena-detalle"
         className="border-enel-navy/10 ring-enel-navy/[0.03] mt-8 overflow-hidden rounded-[2rem] border bg-white shadow-[0_30px_90px_-50px_rgba(10,25,47,0.35)] ring-1 md:mt-10"

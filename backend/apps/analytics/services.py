@@ -22,11 +22,6 @@ UMBRAL_COMPLETITUD = 0.6
 EVENTOS_NO_INTERACCION = {"pagina.vista", "seccion.ver", "seccion.tiempo", "sesion.fin"}
 
 
-# ---------------------------------------------------------------------------
-# Recoleccion
-# ---------------------------------------------------------------------------
-
-
 def normalizar_correo(correo: str) -> str:
     return correo.strip().lower()
 
@@ -240,11 +235,6 @@ def registrar_opinion(sesion: Sesion, opinion: dict) -> Opinion:
         },
     )
     return registro
-
-
-# ---------------------------------------------------------------------------
-# Agregacion
-# ---------------------------------------------------------------------------
 
 
 def rango_por_defecto(desde: date | None, hasta: date | None) -> tuple[date, date]:

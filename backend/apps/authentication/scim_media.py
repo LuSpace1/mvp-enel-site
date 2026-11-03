@@ -1,7 +1,6 @@
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 
-# Media type estándar de SCIM 2.0
 SCIM_MEDIA_TYPE = "application/scim+json"
 
 

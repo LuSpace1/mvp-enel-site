@@ -118,7 +118,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         raw_credential = (attrs.get(self.username_field) or "").strip()
 
-        # Buscar usuario por username (ID Enel) o por correo corporativo (insensible a mayúsculas)
         matched_user = (
             User.objects.filter(username__iexact=raw_credential).first()
             or User.objects.filter(email__iexact=raw_credential).first()

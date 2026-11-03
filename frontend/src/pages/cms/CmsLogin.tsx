@@ -39,9 +39,7 @@ export function CmsLogin() {
         return
       }
       navigate('/cms', { replace: true })
-    } catch {
-      // El store ya expone el mensaje de error.
-    }
+    } catch {}
   }
 
   const cargando = status === 'loading'

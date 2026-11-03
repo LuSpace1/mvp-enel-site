@@ -96,10 +96,6 @@ class SectionDef:
         return values
 
 
-# ---------------------------------------------------------------------------
-# Definiciones de campos
-# ---------------------------------------------------------------------------
-
 HERO_VIDEO_URL = "https://www.youtube.com/watch?v=5aEIFxjHEf0"
 
 PORTADA = SectionDef(

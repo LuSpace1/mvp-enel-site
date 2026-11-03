@@ -11,7 +11,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Ruta base del proyecto.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Carga variables locales desde .env (ignorado por git); en produccion las
@@ -25,7 +24,6 @@ ALLOWED_HOSTS = [
 ]
 
 
-# Aplicaciones del proyecto.
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -33,13 +31,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Aplicaciones de terceros
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "oauth2_provider",
-    # Aplicaciones propias
     "apps.authentication",
     "apps.analytics",
     "apps.cms",
@@ -91,11 +87,9 @@ DATABASES = {
 }
 
 
-# Modelo de usuario personalizado.
 AUTH_USER_MODEL = "authentication.User"
 
 
-# Django REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -210,7 +204,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internacionalizacion
 LANGUAGE_CODE = "es-cl"
 
 TIME_ZONE = "America/Santiago"
@@ -220,12 +213,10 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Archivos estaticos (CSS, JavaScript, imagenes)
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Logging
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

@@ -1,9 +1,7 @@
 from django.conf import settings
 
-# Rol administrador técnico
 DEFAULT_ADMIN_ROLE = "Portal_Admin"
 
-# Rol para edición y publicación del CMS
 PROPOSED_CMS_ADMIN = "CMS_Admin"
 PROPOSED_ROLES = (PROPOSED_CMS_ADMIN,)
 

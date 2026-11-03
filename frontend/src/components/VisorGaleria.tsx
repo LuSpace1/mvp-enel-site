@@ -93,7 +93,6 @@ export function VisorGaleria({
             if (Math.abs(delta) > 50) onNavegar(delta < 0 ? 1 : -1)
           }}
         >
-          {/* Contador */}
           <div className="pointer-events-none fixed top-0 left-0 z-30 p-4 md:p-6">
             <div className="flex items-center gap-3 rounded-full bg-white/80 px-4 py-2 shadow-sm ring-1 ring-black/5 backdrop-blur-md">
               <span className="text-lg font-semibold text-[#d97757] md:text-xl">
@@ -106,9 +105,7 @@ export function VisorGaleria({
           </div>
 
           <div className="flex min-h-dvh flex-col md:h-dvh md:flex-row">
-            {/* Imagen */}
             <div className="relative flex min-h-[52dvh] flex-1 items-center justify-center px-4 pt-20 pb-8 md:min-h-0 md:px-12 md:pt-24 md:pb-20 lg:px-16">
-              {/* Controles centrados sobre la imagen */}
               <div className="absolute top-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/80 p-1 shadow-sm ring-1 ring-black/5 backdrop-blur-md">
                 <button
                   type="button"

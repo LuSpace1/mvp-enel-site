@@ -43,9 +43,7 @@ export function AccesoPage() {
       await login(usuario.trim(), password)
       // Recarga completa: el portal arranca limpio y ya autenticado.
       window.location.assign('/')
-    } catch {
-      // El store expone el mensaje.
-    }
+    } catch {}
   }
 
   async function crearCuenta(evento: FormEvent) {
@@ -59,9 +57,7 @@ export function AccesoPage() {
         password_confirm: confirmar,
       })
       window.location.assign('/')
-    } catch {
-      // El store expone el mensaje.
-    }
+    } catch {}
   }
 
   return (
