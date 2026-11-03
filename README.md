@@ -75,6 +75,15 @@ Cada publicación crea una **versión numerada** (v1, v2, v3…) que queda en el
 
 La interfaz incluye una guía **¿Cómo funciona?**, un estado permanente del borrador en la barra lateral, aviso al salir con cambios sin guardar y confirmación de publicación que distingue contenido y orden. Restaurar advierte si va a reemplazar un borrador con cambios.
 
+## KPIs
+
+El portal mide adopción sin depender todavía del login corporativo. Una visita se cierra a los 30 minutos de inactividad y se registran secciones vistas, tiempo por sección, interacción con recursos críticos y profundidad del recorrido. Al llegar a Cierre se ofrece un Likert 1–5 con reseña opcional.
+
+- Especificación y definiciones: `docs/KPIS.md`.
+- Recolección: `POST /api/analytics/eventos/` (público, detrás de la VPN).
+- Tablero: `/cms/kpis`, visible para `CMS_Admin`.
+- Exportación: `GET /api/analytics/admin/export/` en CSV.
+
 ---
 
 *Mejora Continua — Quality Assurance, Enel Distribución Chile*
