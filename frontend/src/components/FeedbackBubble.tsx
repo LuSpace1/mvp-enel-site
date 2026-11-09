@@ -1,31 +1,27 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ChatCircleDots, CheckCircle, PaperPlaneTilt, Star, X } from '@phosphor-icons/react'
+import { ChatCircleDots, CheckCircle, PaperPlaneTilt, X } from '@phosphor-icons/react'
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  estadoOpinion,
-  marcarOpinionDescartada,
-  opinar,
-  registrar,
-} from '@/lib/analytics'
+import { estadoOpinion, opinar, registrar } from '@/lib/analytics'
 import { useViajeStore } from '@/store/useViajeStore'
 
 const ESCALA = [1, 2, 3, 4, 5] as const
-const SEGUNDOS_AUTO_EXPANDIR = 5
+const SEGUNDOS_AUTO_EXPANDIR = 8
 
 /**
- * Solicitud de opinion al llegar a Cierre.
+ * Solicitud de opinión al llegar a Cierre.
  *
- * Se pide una vez por visita. Aparece como pildora con pulso y, si la persona
- * no la toca, se expande sola para que la solicitud sea inconfundible.
+ * Utiliza el rojo oficial de Enel (#eb0053). Permite cerrarse y volver
+ * a abrirse en cualquier momento si la persona desea responder después.
  */
 export function FeedbackBubble() {
   const reduce = useReducedMotion()
   const pasoActual = useViajeStore((estado) => estado.pasoActual)
   const [visible, setVisible] = useState(false)
   const [abierta, setAbierta] = useState(false)
+  const [yaIntentadoAuto, setYaIntentadoAuto] = useState(false)
   const [puntaje, setPuntaje] = useState<number | null>(null)
   const [comentario, setComentario] = useState('')
   const [estado, setEstado] = useState<'inicial' | 'enviando' | 'listo' | 'error'>('inicial')
@@ -46,21 +42,31 @@ export function FeedbackBubble() {
     registrar('opinion.abrir', { seccion: 'cierre', datos: { auto } })
   }, [])
 
-  // Si nadie toca la pildora, se abre sola una vez por visita.
+  // Auto-expansión sutil una sola vez si no se interactúa
   useEffect(() => {
-    if (!visible || abierta || reduce || estado !== 'inicial') return
-    const temporizador = window.setTimeout(
-      () => abrir(true),
-      SEGUNDOS_AUTO_EXPANDIR * 1000,
-    )
+    if (!visible || abierta || reduce || estado !== 'inicial' || yaIntentadoAuto) return
+    const temporizador = window.setTimeout(() => {
+      setYaIntentadoAuto(true)
+      abrir(true)
+    }, SEGUNDOS_AUTO_EXPANDIR * 1000)
     return () => window.clearTimeout(temporizador)
-  }, [visible, abierta, reduce, estado, abrir])
+  }, [visible, abierta, reduce, estado, yaIntentadoAuto, abrir])
 
-  function descartar() {
-    registrar('opinion.descartar', { seccion: 'cierre' })
-    marcarOpinionDescartada()
-    setVisible(false)
-  }
+  const cerrarFormulario = useCallback(() => {
+    registrar('opinion.cerrar', { seccion: 'cierre' })
+    setAbierta(false)
+    setYaIntentadoAuto(true)
+  }, [])
+
+  // Cierre con Escape
+  useEffect(() => {
+    if (!abierta) return
+    function alPresionarEscape(evento: KeyboardEvent) {
+      if (evento.key === 'Escape') cerrarFormulario()
+    }
+    window.addEventListener('keydown', alPresionarEscape)
+    return () => window.removeEventListener('keydown', alPresionarEscape)
+  }, [abierta, cerrarFormulario])
 
   async function enviar(evento: React.FormEvent) {
     evento.preventDefault()
@@ -80,108 +86,80 @@ export function FeedbackBubble() {
   if (estado === 'listo') {
     return (
       <motion.aside
-        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-emerald-700 shadow-lg ring-1 ring-emerald-600/20 backdrop-blur-xl"
+        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        className="fixed right-4 bottom-5 z-50 flex items-center gap-2.5 rounded-full border border-emerald-600/20 bg-white px-5 py-3 text-sm font-semibold text-emerald-700 shadow-xl sm:right-8 sm:bottom-8"
       >
-        <CheckCircle size={18} weight="fill" />
-        Gracias por tu opinión
+        <CheckCircle size={20} weight="fill" className="text-emerald-600" />
+        ¡Gracias por tu opinión!
       </motion.aside>
     )
   }
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       <motion.aside
-        key="feedback"
+        key={abierta ? 'form' : 'boton'}
         aria-live="polite"
-        initial={reduce ? { opacity: 0 } : { opacity: 0, x: 48, scale: 0.96 }}
-        animate={{ opacity: 1, x: 0, scale: 1 }}
-        exit={reduce ? { opacity: 0 } : { opacity: 0, x: 32, scale: 0.96 }}
+        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.96 }}
         transition={
           reduce
             ? { duration: 0.2 }
-            : { type: 'spring', stiffness: 340, damping: 24, mass: 0.9 }
+            : { type: 'spring', stiffness: 340, damping: 26, mass: 0.8 }
         }
-        className="fixed right-4 bottom-4 z-40"
+        className="fixed right-4 bottom-5 z-50 sm:right-8 sm:bottom-8"
       >
         {!abierta ? (
-          <div className="relative">
-            {!reduce && (
-              <>
-                <motion.span
-                  aria-hidden="true"
-                  className="bg-enel-pink/40 absolute inset-0 rounded-full"
-                  initial={{ scale: 1, opacity: 0.55 }}
-                  animate={{ scale: [1, 1.35], opacity: [0.45, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1.2, ease: 'easeOut' }}
-                />
-                <motion.span
-                  aria-hidden="true"
-                  className="bg-enel-pink/25 absolute inset-0 rounded-full"
-                  initial={{ scale: 1, opacity: 0.35 }}
-                  animate={{ scale: [1, 1.6], opacity: [0.3, 0] }}
-                  transition={{
-                    duration: 1.5,
-                    delay: 0.5,
-                    repeat: Infinity,
-                    repeatDelay: 1.2,
-                    ease: 'easeOut',
-                  }}
-                />
-              </>
-            )}
-
-            <motion.button
-              type="button"
-              onClick={() => abrir(false)}
-              whileHover={reduce ? undefined : { scale: 1.04 }}
-              whileTap={reduce ? undefined : { scale: 0.97 }}
-              animate={reduce ? undefined : { scale: [1, 1.035, 1] }}
-              transition={
-                reduce
-                  ? undefined
-                  : { duration: 1.1, repeat: Infinity, repeatDelay: 2.2, ease: 'easeInOut' }
-              }
-              className="bg-enel-navy shadow-enel-navy/30 relative flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white shadow-xl"
-            >
-              <Star size={17} weight="fill" className="text-enel-pink" />
+          <motion.button
+            type="button"
+            onClick={() => {
+              setYaIntentadoAuto(true)
+              abrir(false)
+            }}
+            whileHover={reduce ? undefined : { scale: 1.03 }}
+            whileTap={reduce ? undefined : { scale: 0.97 }}
+            className="group bg-enel-pink hover:bg-[#d6004b] flex h-12 cursor-pointer items-center gap-3 rounded-full border border-white/20 px-4 text-white shadow-[0_10px_25px_rgba(235,0,83,0.32)] transition-colors hover:shadow-[0_14px_32px_rgba(235,0,83,0.42)] active:scale-[0.97]"
+          >
+            <span className="flex size-7 items-center justify-center rounded-full bg-white/20 text-white transition-transform duration-200 group-hover:scale-110">
+              <ChatCircleDots size={16} weight="bold" />
+            </span>
+            <span className="text-[15px] font-semibold tracking-[-0.01em]">
               Danos tu opinión
-              {!reduce && (
-                <span className="bg-enel-pink absolute -top-0.5 -right-0.5 flex size-2.5">
-                  <span className="bg-enel-pink absolute inline-flex size-full animate-ping rounded-full opacity-75" />
-                  <span className="bg-enel-pink relative inline-flex size-2.5 rounded-full" />
-                </span>
-              )}
-            </motion.button>
-          </div>
+            </span>
+          </motion.button>
         ) : (
           <form
             onSubmit={enviar}
-            className="w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-white/70 bg-white/95 p-4 shadow-[0_20px_60px_rgba(20,20,19,0.22)] ring-1 ring-black/5 backdrop-blur-2xl"
+            className="w-[min(22rem,calc(100vw-2rem))] rounded-3xl border border-black/[0.08] bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.03]"
           >
-            <div className="flex items-start gap-3">
-              <div className="bg-enel-pink/10 text-enel-pink flex size-9 shrink-0 items-center justify-center rounded-xl">
-                <ChatCircleDots size={18} weight="duotone" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-enel-navy text-sm font-semibold">¿Qué tal estuvo el recorrido?</p>
-                <p className="mt-0.5 text-xs text-neutral-500">
-                  Tu respuesta ayuda a mejorar el portal.
-                </p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="bg-enel-pink/10 text-enel-pink flex size-10 shrink-0 items-center justify-center rounded-2xl">
+                  <ChatCircleDots size={22} weight="bold" />
+                </div>
+                <div>
+                  <p className="text-enel-navy text-sm font-semibold">
+                    ¿Qué tal estuvo el recorrido?
+                  </p>
+                  <p className="text-xs text-neutral-500">
+                    Tu respuesta ayuda a mejorar el portal.
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
-                onClick={descartar}
-                aria-label="Cerrar y no responder"
-                className="rounded-full p-1 text-neutral-400 transition-colors hover:bg-black/5 hover:text-neutral-600"
+                onClick={cerrarFormulario}
+                aria-label="Cerrar formulario"
+                className="text-neutral-400 hover:text-neutral-700 -mr-1 -mt-1 rounded-full p-1.5 transition-colors hover:bg-neutral-100"
               >
-                <X size={16} weight="bold" />
+                <X size={18} weight="bold" />
               </button>
             </div>
 
             <div
-              className="mt-3 flex items-center justify-between gap-1.5"
+              className="mt-4 flex items-center justify-between gap-1.5"
               role="radiogroup"
               aria-label="Satisfacción"
             >
@@ -197,8 +175,8 @@ export function FeedbackBubble() {
                     onClick={() => setPuntaje(valor)}
                     className={
                       activo
-                        ? 'bg-enel-blue flex size-10 items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm'
-                        : 'hover:border-enel-blue/40 hover:text-enel-blue flex size-10 items-center justify-center rounded-full border border-black/10 text-sm font-medium text-neutral-500 transition-colors'
+                        ? 'bg-enel-pink flex size-10 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm transition-transform active:scale-95'
+                        : 'border border-neutral-200 text-neutral-700 hover:border-enel-pink/50 hover:text-enel-pink flex size-10 items-center justify-center rounded-xl text-sm font-medium transition-colors hover:bg-enel-pink/[0.04] active:scale-95'
                     }
                   >
                     {valor}
@@ -206,7 +184,7 @@ export function FeedbackBubble() {
                 )
               })}
             </div>
-            <div className="mt-1 flex justify-between text-[10px] font-medium tracking-wide text-neutral-400 uppercase">
+            <div className="mt-1.5 flex justify-between px-1 text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
               <span>Malo</span>
               <span>Excelente</span>
             </div>
@@ -217,22 +195,22 @@ export function FeedbackBubble() {
               placeholder="¿Qué te gustaría mejorar? (opcional)"
               aria-label="Comentario"
               maxLength={2000}
-              className="mt-3 min-h-16 bg-white/70 text-sm"
+              className="mt-3.5 min-h-20 rounded-xl border-neutral-200 bg-neutral-50/50 text-sm focus-visible:ring-enel-pink/30"
             />
 
             {estado === 'error' && (
-              <p role="alert" className="text-destructive mt-2 text-xs">
+              <p role="alert" className="text-destructive mt-2 text-xs font-medium">
                 No se pudo enviar. Inténtalo otra vez.
               </p>
             )}
 
             <Button
               type="submit"
-              size="sm"
-              className="mt-3 w-full"
+              size="default"
+              className="bg-enel-pink hover:bg-[#d6004b] mt-4 h-11 w-full rounded-xl text-sm font-semibold text-white shadow-sm transition-colors"
               disabled={!puntaje || estado === 'enviando'}
             >
-              <PaperPlaneTilt size={16} weight="duotone" />
+              <PaperPlaneTilt size={16} weight="bold" />
               {estado === 'enviando' ? 'Enviando…' : 'Enviar opinión'}
             </Button>
           </form>
