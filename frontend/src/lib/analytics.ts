@@ -203,10 +203,16 @@ function armarCarga(sesion: EstadoSesion): Record<string, unknown> {
   }
 }
 
+let ultimaDuracionEnviada = 0
+
 async function enviarConSesion(sesion: EstadoSesion, usarBeacon: boolean, forzar = false) {
-  if (!cola.length && !forzar) return
+  acumularTramoActivo(sesion)
+  const duracionCambio = sesion.duracionActiva !== ultimaDuracionEnviada
+  if (!cola.length && !forzar && !duracionCambio) return
+
   const carga = armarCarga(sesion)
   cola = []
+  ultimaDuracionEnviada = sesion.duracionActiva
 
   if (usarBeacon && typeof navigator.sendBeacon === 'function') {
     const cuerpo = new Blob([JSON.stringify(carga)], { type: 'application/json' })
@@ -228,8 +234,8 @@ async function enviarConSesion(sesion: EstadoSesion, usarBeacon: boolean, forzar
   }
 }
 
-async function enviar(usarBeacon: boolean) {
-  await enviarConSesion(sesionActiva ?? sesionVigente(), usarBeacon)
+async function enviar(usarBeacon: boolean, forzar = false) {
+  await enviarConSesion(sesionActiva ?? sesionVigente(), usarBeacon, forzar)
 }
 
 export function registrar(
@@ -461,11 +467,11 @@ function marcarInteraccion() {
 }
 
 function alCambiarVisibilidad() {
-  if (document.visibilityState === 'hidden') void enviar(true)
+  if (document.visibilityState === 'hidden') void enviar(true, true)
 }
 
 function alSalirDePagina() {
-  void enviar(true)
+  void enviar(true, true)
 }
 
 export function iniciarAnalitica() {
@@ -494,7 +500,7 @@ export function iniciarAnalitica() {
  */
 export function detenerAnalitica() {
   if (!iniciada || typeof window === 'undefined') return
-  void enviar(true)
+  void enviar(true, true)
 
   if (intervaloLatido !== null) window.clearInterval(intervaloLatido)
   if (intervaloEnvio !== null) window.clearInterval(intervaloEnvio)

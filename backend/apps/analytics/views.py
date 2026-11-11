@@ -28,9 +28,6 @@ from .services import (
     registrar_opinion,
     tablero,
 )
-from .services import (
-    personas as personas_kpi,
-)
 from .throttling import ColectaThrottle
 
 
@@ -137,19 +134,6 @@ class DashboardView(APIView):
     def get(self, request):
         desde, hasta = _fechas(request)
         return Response(tablero(desde, hasta))
-
-
-class PersonasView(APIView):
-    permission_classes = [CanViewAnalytics]
-
-    def get(self, request):
-        desde, hasta = _fechas(request)
-        try:
-            pagina = int(request.query_params.get("pagina", 1))
-            tamano = int(request.query_params.get("tamano", 25))
-        except ValueError as error:
-            raise ValidationError({"pagina": "Debe ser numerico."}) from error
-        return Response(personas_kpi(desde, hasta, pagina, tamano))
 
 
 class ExportView(APIView):

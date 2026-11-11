@@ -1,5 +1,5 @@
 import { http } from '@/lib/http'
-import type { KpiPersonasRespuesta, KpiTablero } from '@/types/kpis'
+import type { KpiTablero } from '@/types/kpis'
 
 export interface RangoKpi {
   desde: string
@@ -8,15 +8,6 @@ export interface RangoKpi {
 
 export async function obtenerTablero(rango: RangoKpi): Promise<KpiTablero> {
   const { data } = await http.get<KpiTablero>('/analytics/admin/dashboard/', {
-    params: rango,
-  })
-  return data
-}
-
-export async function obtenerPersonas(
-  rango: RangoKpi & { pagina: number; tamano?: number },
-): Promise<KpiPersonasRespuesta> {
-  const { data } = await http.get<KpiPersonasRespuesta>('/analytics/admin/personas/', {
     params: rango,
   })
   return data

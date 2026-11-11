@@ -58,24 +58,3 @@ export interface KpiTablero {
   satisfaccion: KpiSatisfaccion
   serie: KpiSeriePunto[]
 }
-
-export interface KpiPersona {
-  id: string
-  email: string
-  email_verificado: boolean
-  origen: string
-  primera_vez: string
-  ultima_vez: string
-  visitas: number
-  tiempo_activo: number
-  profundidad_maxima: number
-  completo: boolean
-  likert: number | null
-}
-
-export interface KpiPersonasRespuesta {
-  total: number
-  pagina: number
-  tamano: number
-  resultados: KpiPersona[]
-}

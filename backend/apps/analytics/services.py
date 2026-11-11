@@ -10,7 +10,7 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Avg, Count, Max, OuterRef, Q, Subquery, Sum
+from django.db.models import Avg, Count, Q
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
@@ -450,82 +450,27 @@ def tablero(desde: date | None = None, hasta: date | None = None) -> dict:
     }
 
 
-def _consulta_personas(desde: date, hasta: date):
-    rango = Sesion.objects.filter(iniciada_en__date__range=(desde, hasta))
-    ids = rango.values("visitante_id")
-    ultima_opinion = Opinion.objects.filter(visitante=OuterRef("pk")).order_by(
-        "-creada_en"
-    )
-    return Visitante.objects.filter(id__in=ids).annotate(
-        visitas=Count("sesiones", filter=Q(sesiones__in=rango), distinct=True),
-        tiempo_activo=Sum("sesiones__duracion_activa", filter=Q(sesiones__in=rango)),
-        profundidad_maxima=Max("sesiones__profundidad", filter=Q(sesiones__in=rango)),
-        completas=Count(
-            "sesiones",
-            filter=Q(sesiones__in=rango, sesiones__completo=True),
-            distinct=True,
-        ),
-        likert=Subquery(ultima_opinion.values("puntaje")[:1]),
-    )
-
-
-def _persona_a_fila(visitante: Visitante) -> dict:
-    return {
-        "id": str(visitante.id),
-        "email": visitante.email,
-        "email_verificado": visitante.email_verificado,
-        "origen": visitante.origen,
-        "primera_vez": visitante.first_seen_at.isoformat(),
-        "ultima_vez": visitante.last_seen_at.isoformat(),
-        "visitas": visitante.visitas,
-        "tiempo_activo": visitante.tiempo_activo or 0,
-        "profundidad_maxima": round(visitante.profundidad_maxima or 0, 4),
-        "completo": bool(visitante.completas),
-        "likert": visitante.likert,
-    }
-
-
-def personas(
-    desde: date | None = None,
-    hasta: date | None = None,
-    pagina: int = 1,
-    tamano: int = 25,
-) -> dict:
-    desde, hasta = rango_por_defecto(desde, hasta)
-    consulta = _consulta_personas(desde, hasta).order_by("-last_seen_at")
-
-    total = consulta.count()
-    tamano = max(1, min(tamano, 100))
-    inicio = max(0, (max(pagina, 1) - 1) * tamano)
-    filas = consulta[inicio : inicio + tamano]
-
-    return {
-        "total": total,
-        "pagina": pagina,
-        "tamano": tamano,
-        "resultados": [_persona_a_fila(visitante) for visitante in filas],
-    }
-
-
 def exportar_csv(desde: date | None = None, hasta: date | None = None) -> str:
-    """Exporta todas las personas del rango, sin paginar."""
+    """Exporta las métricas agregadas de uso y secciones del portal."""
     desde, hasta = rango_por_defecto(desde, hasta)
-    filas = _consulta_personas(desde, hasta).order_by("-last_seen_at")
+    visitas = _visitas(desde, hasta)
+    eventos = _eventos(desde, hasta)
+    secciones = _secciones(visitas, eventos)
+
     salida = io.StringIO()
     escritor = csv.writer(salida)
     escritor.writerow(
-        ["correo", "visitas", "tiempo_activo_s", "profundidad", "completo", "likert"]
+        ["seccion", "vistas", "personas", "interacciones", "tasa_interaccion", "tiempo_medio_s"]
     )
-    for visitante in filas.iterator(chunk_size=500):
-        fila = _persona_a_fila(visitante)
+    for fila in secciones:
         escritor.writerow(
             [
-                fila["email"],
-                fila["visitas"],
-                fila["tiempo_activo"],
-                f"{fila['profundidad_maxima']:.2f}",
-                "si" if fila["completo"] else "no",
-                fila["likert"] or "",
+                fila["clave"],
+                fila["vistas"],
+                fila["personas"],
+                fila["interacciones"],
+                f"{fila['tasa_interaccion']:.4f}",
+                fila["tiempo_medio"] or "",
             ]
         )
     return salida.getvalue()

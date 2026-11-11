@@ -64,7 +64,7 @@ const Secciones = memo(function Secciones() {
         const Componente = componenteDeSeccion(id)
         if (!Componente) return null
         return (
-          <div key={id} data-seccion={id} className="scroll-mt-32">
+          <div key={id} id={id} data-seccion={id} className="scroll-mt-32">
             <Componente />
           </div>
         )

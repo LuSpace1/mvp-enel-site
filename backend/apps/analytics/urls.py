@@ -6,7 +6,6 @@ from .views import (
     ExportView,
     IdentificarView,
     OpinionView,
-    PersonasView,
 )
 
 urlpatterns = [
@@ -14,6 +13,5 @@ urlpatterns = [
     path("identificar/", IdentificarView.as_view(), name="analytics_identificar"),
     path("opiniones/", OpinionView.as_view(), name="analytics_opiniones"),
     path("admin/dashboard/", DashboardView.as_view(), name="analytics_dashboard"),
-    path("admin/personas/", PersonasView.as_view(), name="analytics_personas"),
     path("admin/export/", ExportView.as_view(), name="analytics_export"),
 ]
