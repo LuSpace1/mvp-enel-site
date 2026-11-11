@@ -22,4 +22,7 @@ urlpatterns = [
     path("Groups/<uuid:group_id>/", ScimGroupDetailView.as_view()),
     path("Schemas", ScimSchemasView.as_view(), name="schemas"),
     path("Schemas/", ScimSchemasView.as_view()),
+    # Los URN de Schema contienen ':' y el converter str los conserva.
+    path("Schemas/<str:schema_id>", ScimSchemasView.as_view(), name="schema-detail"),
+    path("Schemas/<str:schema_id>/", ScimSchemasView.as_view()),
 ]

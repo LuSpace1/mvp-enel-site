@@ -488,8 +488,8 @@ class ScimGroupDetailView(ScimAPIView):
 class ScimSchemasView(ScimAPIView):
     """Endpoint SCIM /Schemas: informa los esquemas soportados (User y Group)."""
 
-    def get(self, request):
-        schemas = [
+    def _schema_resources(self):
+        return [
             {
                 "id": SCIM_USER_SCHEMA,
                 "name": "User",
@@ -547,6 +547,17 @@ class ScimSchemasView(ScimAPIView):
                 ],
             },
         ]
+
+    def get(self, request, schema_id: str | None = None):
+        schemas = self._schema_resources()
+        if schema_id is not None:
+            schema = next((item for item in schemas if item["id"] == schema_id), None)
+            if schema is None:
+                return Response(
+                    scim_error(f"Schema no encontrado: '{schema_id}'.", 404),
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            return Response(schema)
         return Response(
             {
                 "schemas": [SCIM_LIST_SCHEMA],
